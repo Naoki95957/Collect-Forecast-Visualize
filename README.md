@@ -1,6 +1,10 @@
 # Collect-Forecast-Visualize
 Collect, Forecast, &amp; Visualize – Global Electricity Generation Data
 
+![Sat Image](https://cdn.vox-cdn.com/thumbor/xEsmQD9pDOqW9jpyfc_m85MQtx4=/0x0:3000x2000/1820x1213/filters:focal(1495x526:1975x1006)/cdn.vox-cdn.com/uploads/chorus_image/image/63748384/shutterstock_229816288.0.jpg)
+
+
+
 A collaboration between multiple nonprofits, governments, and tech companies is currently building [an AI](https://www.vox.com/energy-and-environment/2019/5/7/18530811/global-power-plants-real-time-pollution-data) to continuously monitor pollution from every power plant in the world from space, using satellite data.
 
 A crucial component of that system is its ability to be trained on a sufficiently large and accurate training dataset. This will be a mix of readily available satellite imagery, combined with accurate ground truth generation data. The purpose of this project is to help build that ground truthing system. Students will implement real-time scrapers for web-based data from power grids around the world and analyze the data for accuracy. 
