@@ -12,15 +12,15 @@ Students will be working within a framework provided by WattTime which already i
 
 ## Members:
 
-### Mentor - TBD
+### Mentor - [Connor Guest](mailto:connor@watttime.org)
 
-### Proffessor - Sara F.
+### Proffessor - [Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
 
-### Team:
-  - Andre Weertman
+### Team (github links):
+  - [Andre Weertman](https://github.com/aweertman)
   - Maximiliano Ayala
-  - Naoki Lucas
-  - Vitaly Stepanov
+  - [Naoki Lucas](https://github.com/Naoki95957)
+  - [Vitaly Stepanov](https://github.com/vitaliybeinspired)
 
 ## Project Outcome:
   1. Python code that will sit within an existing WattTime tool which will automatcially scrape, test, and correct data
