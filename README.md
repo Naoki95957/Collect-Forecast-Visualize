@@ -34,7 +34,7 @@ Students will be working within a framework provided by WattTime which already i
   3. Create a forecasting model to predict future generation values 
   4. Build a tool to visualize the data
 
-## Prerequisites
+## Prerequisites:
 ### Python:
 
   We will be using [python 3](https://www.python.org/downloads/)
@@ -44,11 +44,11 @@ Students will be working within a framework provided by WattTime which already i
   
 ### Unit analysis:
  Any neccessary tools TBD
-## APIs
+## APIs:
  - [Watttime.org](https://www.watttime.org/api-documentation/#introduction)
     - HTTP requests/responses
     - Details like auth/account TBD
     - [Example code](https://github.com/WattTime/apiv2-example/blob/master/query_apiv2.py)
     
-## Misc.
+## Misc.:
 Current version of readme is mostly comprised of reformatted information found on our outline. 
