@@ -34,7 +34,7 @@ Students will be working within a framework provided by WattTime which already i
   3. Create a forecasting model to predict future generation values 
   4. Build a tool to visualize the data
 
-## Pre-Requsits
+## Prerequisites
 ### Python:
 
   We will be using [python 3](https://www.python.org/downloads/)
