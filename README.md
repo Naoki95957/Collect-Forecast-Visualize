@@ -20,7 +20,7 @@ Students will be working within a framework provided by WattTime which already i
   - [Andre Weertman](https://github.com/aweertman)
   - Maximiliano Ayala
   - [Naoki Lucas](https://github.com/Naoki95957)
-  - [Vitaly Stepanov](https://github.com/vitaliybeinspired)
+  - [Vitaliy Stepanov](https://github.com/vitaliybeinspired)
 
 ## Project Outcome:
   1. Python code that will sit within an existing WattTime tool which will automatcially scrape, test, and correct data
