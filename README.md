@@ -22,7 +22,7 @@ Students will be working within a framework provided by WattTime which already i
 
 ### Team (github links):
   - [Andre Weertman](https://github.com/aweertman)
-  - Maximiliano Ayala
+  - [Maximiliano Ayala](https://github.com/Ayalaboy)
   - [Naoki Lucas](https://github.com/Naoki95957)
   - [Vitaliy Stepanov](https://github.com/vitaliybeinspired)
 
