@@ -18,7 +18,7 @@ Students will be working within a framework provided by WattTime which already i
 
 ### Mentor - [Connor Guest](mailto:connor@watttime.org)
 
-### Proffessor - [Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
+### Proffessor - [Dr. Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
 
 ### Team (github links):
   - [Andre Weertman](https://github.com/aweertman)
