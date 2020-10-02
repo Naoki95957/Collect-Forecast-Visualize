@@ -16,7 +16,7 @@ Students will be working within a framework provided by WattTime which already i
 
 ### Proffessor - [Dr. Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
 
-### Software Engineers (github links):
+### Software Engineers:
   - [Andre Weertman](https://github.com/aweertman)
   - [Maximiliano Ayala](https://github.com/Ayalaboy)
   - [Naoki Lucas](https://github.com/Naoki95957)
