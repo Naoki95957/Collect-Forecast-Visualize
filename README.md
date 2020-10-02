@@ -27,28 +27,21 @@ Students will be working within a framework provided by WattTime which already i
   2. Forecasting model
   3. Front-end visualization tool of the data
 
-## Technologies:
 ### This project has four components:
   1. Write scrapers, likely in Python, to scrape data from power grid websites around the world. 
   2. Analyze the scraped data for accuracy. (For example, many coal-fired power plants report emissions that are exactly 1,000 times smaller than is possible, which is a clear sign that they are reporting in the wrong units.) 
   3. Create a forecasting model to predict future generation values 
   4. Build a tool to visualize the data
 
-## Prerequisites:
-### Python:
-
-  We will be using [python 3](https://www.python.org/downloads/)
-  
-  Libraries:
+### Technologies:
+   [Python 3](https://www.python.org/downloads/)  
   - Any neccessary libraries TBD
+  - Unit analysis
   
-### Unit analysis:
- Any neccessary tools TBD
 ## APIs:
  - [Watttime.org](https://www.watttime.org/api-documentation/#introduction)
     - HTTP requests/responses
     - Details like auth/account TBD
     - [Example code](https://github.com/WattTime/apiv2-example/blob/master/query_apiv2.py)
     
-## Misc.:
-Current version of readme is mostly comprised of reformatted information found on our outline. 
+
