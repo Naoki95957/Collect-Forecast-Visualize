@@ -1,5 +1,4 @@
-# Collect-Forecast-Visualize
-Collect, Forecast, &amp; Visualize – Global Electricity Generation Data
+# Collect, Forecast, & Visualize – Global Electricity Generation Data.
 
 ![Sat Image](https://cdn.vox-cdn.com/thumbor/xEsmQD9pDOqW9jpyfc_m85MQtx4=/0x0:3000x2000/1820x1213/filters:focal(1495x526:1975x1006)/cdn.vox-cdn.com/uploads/chorus_image/image/63748384/shutterstock_229816288.0.jpg)
 
@@ -11,16 +10,13 @@ A crucial component of that system is its ability to be trained on a sufficientl
 
 A forecasting model will be implemented to predict future generation values and a front-end tool will be created to visualize the collected data. 
 
-### Additional info:
 Students will be working within a framework provided by WattTime which already includes a robust ETL pipeline, database, and significant support on where to find data and how to interpret it. 
-
-## Members:
 
 ### Mentor - [Connor Guest](mailto:connor@watttime.org)
 
 ### Proffessor - [Dr. Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
 
-### Team (github links):
+### Software Engineers (github links):
   - [Andre Weertman](https://github.com/aweertman)
   - [Maximiliano Ayala](https://github.com/Ayalaboy)
   - [Naoki Lucas](https://github.com/Naoki95957)
