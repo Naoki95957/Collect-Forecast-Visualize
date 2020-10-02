@@ -1,7 +1,2 @@
-Here is the PR FAQ Online Microsoft Word Document that anyone can work on together at the same time.
-https://bellevuec-my.sharepoint.com/:w:/g/personal/vitaliy_stepanov_bellevuecollege_edu/EXp5rbz4I0BDqYuHcniH87UBNt7YYB4Ko1OOQR8zFvfu2w?e=kIMfh0
-[Go to the Support Web Site](https://bellevuec-my.sharepoint.com/:w:/g/personal/vitaliy_stepanov_bellevuecollege_edu/EXp5rbz4I0BDqYuHcniH87UBNt7YYB4Ko1OOQR8zFvfu2w?e=kIMfh0)
-
-<a href="./product/download.html" target="_top">Download Page</a>
-
-[I'm an inline-style link](https://www.google.com)
+Here is the [Press Release FAQ](https://bellevuec-my.sharepoint.com/:w:/g/personal/vitaliy_stepanov_bellevuecollege_edu/EXp5rbz4I0BDqYuHcniH87UBNt7YYB4Ko1OOQR8zFvfu2w?e=kIMfh0
+) Online Microsoft Word Document that anyone can work on together at the same time.
