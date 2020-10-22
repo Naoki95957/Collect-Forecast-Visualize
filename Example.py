@@ -35,11 +35,26 @@ def opener():
     encodedData = urllib.parse.urlencode(formData)
     encodedData = encodedData.encode('ascii')
     response = urllib.request.urlopen(URL, encodedData)
+    
+    html_content = response.read()
+    encoding = response.headers.get_content_charset('utf-8')
+    html_text = html_content.decode(encoding)
+
+    #had to do manual replacing since decoding it doesn't completely work ^^
+    html_text = html_text.replace("\\t", "\t")
+    html_text = html_text.replace("\\n", "\n")
+    html_text = html_text.replace("\\'", "'")
+    #writing to a file so we can see the data more easily
+    file = open("output.txt", "w")
+    file.write(html_text)
+    file.close()
+
     soup = BeautifulSoup(response, "html5lib")
     return soup
 
 def main():
     soup = opener()
+    print(soup)
 
 if __name__ == "__main__":
     main()
