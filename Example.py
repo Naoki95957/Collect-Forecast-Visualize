@@ -1,4 +1,6 @@
 import urllib
+import json
+import re
 from bs4 import BeautifulSoup
 
 URL = "http://estadistico.ut.com.sv/OperacionDiaria.aspx"
@@ -36,25 +38,49 @@ def opener():
     encodedData = encodedData.encode('ascii')
     response = urllib.request.urlopen(URL, encodedData)
     
-    html_content = response.read()
+    responseContent = response.read()
     encoding = response.headers.get_content_charset('utf-8')
-    html_text = html_content.decode(encoding)
+    responseTxt = responseContent.decode(encoding)
 
     #had to do manual replacing since decoding it doesn't completely work ^^
-    html_text = html_text.replace("\\t", "\t")
-    html_text = html_text.replace("\\n", "\n")
-    html_text = html_text.replace("\\'", "'")
-    #writing to a file so we can see the data more easily
-    file = open("output.txt", "w")
-    file.write(html_text)
-    file.close()
+    responseTxt = responseTxt.replace("\\t", "\t")
+    responseTxt = responseTxt.replace("\\n", "\n")
+    responseTxt = responseTxt.replace("\\'", "'")
+    responseTxt = responseTxt.replace("\'", "\"")
 
-    soup = BeautifulSoup(response, "html5lib")
-    return soup
+
+
+    #cleans up the junk in the response to get just the JSON part
+    responseTxt = responseTxt.split('\n', 1)[1]
+    responseTxt = responseTxt[:responseTxt.rfind('\n')]
+    responseTxt = "{" + responseTxt + "}"
+    #yes, this monster is back but because python can parse JS 'new Date' so instead a string
+    responseTxt = re.sub(r'(new Date\((\d+,)+\d\))', '\"some date\"', responseTxt)
+
+    #writing file to see it for now
+    #file = open("output.txt", "w")
+    #file.write(responseTxt)
+    #file.close()
+
+    jsonObj = json.loads(responseTxt)
+    data = jsonObj['PaneContent'][0]['ItemData']['DataStorageDTO']['Slices'][1]['Data']
+    #the data is weird...
+    #[x, y, z]
+    #x is column
+    #z is row : by hour of day
+    #y???
+    #x:columns
+    columnIdentifier = ["Biomass", "Geothermal", "HydroElectric", "Interconnection", "Solar", "Thermal"]
+    for entry in data:
+        column = int(re.search(r'\[(\d+),\d+,\d+\]', entry).group(1))
+        row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
+        value = data[entry]["0"]
+        print(entry,":\t\t", value)
+        print("type:", columnIdentifier[column],"\nhour:", row, ":00", "\nvalue:", value)
+
 
 def main():
-    soup = opener()
-    print(soup)
+    opener()
 
 if __name__ == "__main__":
     main()
