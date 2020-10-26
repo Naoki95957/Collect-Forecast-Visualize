@@ -67,11 +67,12 @@ def opener():
     data = jsonObj['PaneContent'][0]['ItemData']['DataStorageDTO']['Slices'][1]['Data']
     
     #the data is weird...
-    #[x, y, z]
+    #[x, y, z]:{"0":data}
     #x is column
     #z is row : by hour of day
     #y???
     #x:columns
+    #data: the numbers we're after
     columnIdentifier = ["Biomass", "Geothermal", "HydroElectric", "Interconnection", "Solar", "Thermal"]
     for entry in data:
         column = int(re.search(r'\[(\d+),\d+,\d+\]', entry).group(1))
