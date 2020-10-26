@@ -73,7 +73,10 @@ def opener():
     #y???
     #x:columns
     #data: the numbers we're after
-    columnIdentifier = ["Biomass", "Geothermal", "HydroElectric", "Interconnection", "Solar", "Thermal"]
+    #they don't even have their indexing correct!!!! :( 
+    #the table goes: ... interconnection, solar, thermal
+    #the index goes: ... interconnection, thermal, solar
+    columnIdentifier = ["Biomass", "Geothermal", "HydroElectric", "Interconnection", "Thermal", "Solar"]
     for entry in data:
         column = int(re.search(r'\[(\d+),\d+,\d+\]', entry).group(1))
         row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
