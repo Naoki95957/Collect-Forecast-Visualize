@@ -62,8 +62,10 @@ def opener():
     #file.write(responseTxt)
     #file.close()
 
+    #parse json and fetch our specific bits of data
     jsonObj = json.loads(responseTxt)
     data = jsonObj['PaneContent'][0]['ItemData']['DataStorageDTO']['Slices'][1]['Data']
+    
     #the data is weird...
     #[x, y, z]
     #x is column
