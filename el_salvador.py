@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 URL = "http://estadistico.ut.com.sv/OperacionDiaria.aspx"
 
-def opener() -> list:
+def scraper() -> list:
     """
     Create a request to the URL defined above. This then takes the hidden keys 
     and event triggers to make a second request with the encoded data.
@@ -82,8 +82,8 @@ def opener() -> list:
         column = int(re.search(r'\[(\d+),\d+,\d+\]', entry).group(1))
         row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
         value = data[entry]["0"]
-        print(entry,":\t\t", value)
-        print("type:", columnIdentifier[column],"\nhour:", row, ":00", "\nvalue:", value, "MWh")
+        print(entry,":\t", value)
+        print("\ttype:", columnIdentifier[column],"\n\thour:", str(row) + ":00", "\n\tvalue:", value, "MWh")
 
 def formatter(columnName: str, hour: int, value: float) -> dict:
     """
@@ -102,7 +102,7 @@ def formatter(columnName: str, hour: int, value: float) -> dict:
     pass
 
 def main():
-    opener()
+    scraper()
 
 if __name__ == "__main__":
     main()
