@@ -1,5 +1,6 @@
 import urllib
 import json
+import datetime
 import re
 from bs4 import BeautifulSoup
 
@@ -89,6 +90,11 @@ def formatter(columnName: str, hour: int, value: float) -> dict:
     """
     Takes column, hour, and value from the scraper and prepares it as a datapoint
 
+    The day should always be the current day and El-Salvador's time zone is:
+    Central Standard Time (GMT-6)
+
+    Their reports show up an hour late.
+
     Should return a single dictionary in the proper form WattTime requested
 
     Parameters:
@@ -99,6 +105,8 @@ def formatter(columnName: str, hour: int, value: float) -> dict:
 
     value -- a decimal value that represents the electricty produced in MWh
     """
+    
+
     pass
 
 def main():
