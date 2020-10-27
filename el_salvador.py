@@ -5,13 +5,16 @@ from bs4 import BeautifulSoup
 
 URL = "http://estadistico.ut.com.sv/OperacionDiaria.aspx"
 
-def opener():
+def opener() -> list:
     """
-    So this makes the initial request, then submits the form data to get the appropriate response from the server
+    Create a request to the URL defined above. This then takes the hidden keys 
+    and event triggers to make a second request with the encoded data.
 
-    From here there needs to be some sort of loading going on.
-    The packet still doesn't contain a matching html page to that of a browser for example
-    But we are making the same GET/POST to get the appropriate data. Its just hiding in here somewhere
+    The response is actually just encoded data to be loaded into the page.
+    
+    Luckily for us, it is encoded in JSON and is easily parsible.
+
+    Returns an array of datapoints
     """
     opener = urllib.request.FancyURLopener()
     firstpage = opener.open(URL)
@@ -38,6 +41,7 @@ def opener():
     encodedData = encodedData.encode('ascii')
     response = urllib.request.urlopen(URL, encodedData)
     
+    #decode response
     responseContent = response.read()
     encoding = response.headers.get_content_charset('utf-8')
     responseTxt = responseContent.decode(encoding)
@@ -48,13 +52,11 @@ def opener():
     responseTxt = responseTxt.replace("\\'", "'")
     responseTxt = responseTxt.replace("\'", "\"")
 
-
-
     #cleans up the junk in the response to get just the JSON part
     responseTxt = responseTxt.split('\n', 1)[1]
     responseTxt = responseTxt[:responseTxt.rfind('\n')]
     responseTxt = "{" + responseTxt + "}"
-    #yes, this monster is back but because python can parse JS 'new Date' so instead a string
+    #yes, this monster is back but because python can't perfectly parse JSON. So 'new Date' is now instead a string
     responseTxt = re.sub(r'(new Date\((\d+,)+\d\))', '\"some date\"', responseTxt)
 
     #writing file to see it for now
@@ -69,10 +71,9 @@ def opener():
     #the data is weird...
     #[x, y, z]:{"0":data}
     #x is column
+    #y ???
     #z is row : by hour of day
-    #y???
-    #x:columns
-    #data: the numbers we're after
+    #data: the numbers we're after (MWh)
     #they don't even have their indexing correct!!!! :( 
     #the table goes: ... interconnection, solar, thermal
     #the index goes: ... interconnection, thermal, solar
@@ -82,8 +83,23 @@ def opener():
         row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
         value = data[entry]["0"]
         print(entry,":\t\t", value)
-        print("type:", columnIdentifier[column],"\nhour:", row, ":00", "\nvalue:", value)
+        print("type:", columnIdentifier[column],"\nhour:", row, ":00", "\nvalue:", value, "MWh")
 
+def formatter(columnName: str, hour: int, value: float) -> dict:
+    """
+    Takes column, hour, and value from the scraper and prepares it as a datapoint
+
+    Should return a single dictionary in the proper form WattTime requested
+
+    Parameters:
+
+    columnName -- str that simple has the name of the production
+    
+    hour -- int that represents the hour in a 24hr day
+
+    value -- a decimal value that represents the electricty produced in MWh
+    """
+    pass
 
 def main():
     opener()
