@@ -1,5 +1,4 @@
 import selenium
-import re
 import datetime
 import dateutil
 import arrow
@@ -15,7 +14,16 @@ DRIVER_PATH = './driver/chromedriver86.exe'
 URL = 'http://www.cndc.org.ni/consultas/reportesDiarios/postDespachoEnergia.php?fecha=tr&d=1'
 BA = 'Centro Nacional de Despacho de Carga'
 
-def costaRicaScraper() -> list:
+def nicaraguaScraper() -> list:
+    """
+    Scraper for Nicaragua
+    
+    This required selenium and some waiting for pages to load
+    
+    After that it was somewhat straight forward
+    
+    Returns a list of dictionaries as per WattTime spec
+    """
     #set up a few options for selenium
     options = Options()
     options.headless = True
@@ -86,7 +94,7 @@ def formatter(location: str, todaysDate: str, hour: int, value: float) -> dict:
     return datapoint
 
 def main():
-    for datapoint in costaRicaScraper():
+    for datapoint in nicaraguaScraper():
         print(datapoint)
 
 if __name__ == "__main__":
