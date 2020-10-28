@@ -1,6 +1,8 @@
 import urllib
+import requests
 import json
 import datetime
+import arrow
 import re
 from bs4 import BeautifulSoup
 
@@ -17,9 +19,8 @@ def scraper() -> list:
 
     Returns an array of datapoints
     """
-    opener = urllib.request.FancyURLopener()
-    firstpage = opener.open(URL)
-    soup = BeautifulSoup(firstpage, "html5lib")
+    firstpage = requests.get(URL)
+    soup = BeautifulSoup(firstpage.content, "html5lib")
     viewstate = soup.find_all("input", {"type": "hidden", "name": "__VIEWSTATE"})[0]['value']
     viewgenerator = soup.find_all("input", {"type": "hidden", "name": "__VIEWSTATEGENERATOR"})[0]['value']
     validation = soup.find_all("input", {"type": "hidden", "name": "__EVENTVALIDATION"})[0]['value']
@@ -67,8 +68,12 @@ def scraper() -> list:
 
     #parse json and fetch our specific bits of data
     jsonObj = json.loads(responseTxt)
+    #table data
     data = jsonObj['PaneContent'][0]['ItemData']['DataStorageDTO']['Slices'][1]['Data']
-    
+    #current day
+    currentDay = jsonObj['DashboardParameters'][0]['Values'][0]['DisplayText']
+    currentDay = re.sub(" 12:00:00 a.m.", "", currentDay)
+
     #the data is weird...
     #[x, y, z]:{"0":data}
     #x is column
@@ -79,14 +84,18 @@ def scraper() -> list:
     #the table goes: ... interconnection, solar, thermal
     #the index goes: ... interconnection, thermal, solar
     columnIdentifier = ["Biomass", "Geothermal", "HydroElectric", "Interconnection", "Thermal", "Solar"]
+    listOfDatapoints = []
     for entry in data:
         column = int(re.search(r'\[(\d+),\d+,\d+\]', entry).group(1))
         row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
         value = data[entry]["0"]
-        print(entry,":\t", value)
-        print("\ttype:", columnIdentifier[column],"\n\thour:", str(row) + ":00", "\n\tvalue:", value, "MWh")
+        hour = str(row).zfill(2) + ":00"
+        date = arrow.get(currentDay + hour, 'DD/MM/YYYYHH:mm', locale="es", tzinfo="UTC-6").datetime
+        datapoint = formatter(columnIdentifier[column], date, value)
+        listOfDatapoints.append(datapoint)
+    return listOfDatapoints
 
-def formatter(columnName: str, hour: int, value: float) -> dict:
+def formatter(columnName: str, dateTime: datetime.date, value: float) -> dict:
     """
     Takes column, hour, and value from the scraper and prepares it as a datapoint
 
@@ -105,12 +114,26 @@ def formatter(columnName: str, hour: int, value: float) -> dict:
 
     value -- a decimal value that represents the electricty produced in MWh
     """
-    
+    #datapoint1 = 
+    #{
+    #    'ts': <timezone aware datetime object>,
+    #    'value': <value of grid parameter (type float or int)>,
+    #    'ba': <string specifying balancing authority or subregion eg 'PJM_WEST', 'NL' for Netherlands, 'ISONE_VERMONT'>,
+    #    'meta': <optional field specifying fuel type (if generation) or other information needed to make sense of the particular data point>
+    #}
+    # So the returned data looks something like: [datapoint1, datapoint2, datapoint3 ....]
+    # Our BA is: Unidad de Transacciones (UT)
+    # Transactions Unit (Unidad de Transacciones)
 
-    pass
+    datapoint = {}
+    datapoint['ts'] = dateTime
+    datapoint['value'] = value
+    datapoint['ba'] = "Unidad de Transacciones"
+    datapoint['meta'] = columnName + " (MWh)"
+    return datapoint
 
 def main():
-    scraper()
+    print(scraper())
 
 if __name__ == "__main__":
     main()
