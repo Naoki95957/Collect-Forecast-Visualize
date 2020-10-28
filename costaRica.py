@@ -12,17 +12,20 @@ URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 BA = 'Operación Sistema Eléctrico Nacional'
 
 def costaRicaScraper() -> list:
+    #set up a few options for selenium
     options = Options()
     options.headless = True
-    options.add_argument("--window-size=1920,1200")
 
+    #start up selenium
     driver = selenium.webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
     driver.get(URL)
 
-    #find the input field for date and enter today's date
+    #find the input field
     inputField = driver.find_element_by_name("formPosdespacho:txtFechaInicio_input")
+    #get today's date
     todaysDate = datetime.date.today()
     fieldInput = str(todaysDate.day).zfill(2) + "/" + str(todaysDate.month).zfill(2) + "/" + str(todaysDate.year).zfill(4)
+    #clear the field and put in today's date
     inputField.clear()
     inputField.send_keys(fieldInput + Keys.RETURN)
 
@@ -51,6 +54,7 @@ def formatter(todaysDate: str, data: BeautifulSoup) -> dict:
 
     data -- should be a soupy object. Specifically the cell entry
     """
+    #parse out the location and hour of each cell
     location = re.search(r'(.*?),(.*)', data['title']).group(1)
     time = re.search(r'(.*?),(.*)', data['title']).group(2)
 
