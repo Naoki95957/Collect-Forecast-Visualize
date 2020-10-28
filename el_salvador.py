@@ -1,5 +1,6 @@
 import urllib
 import requests
+import dateutil
 import json
 import datetime
 import arrow
@@ -90,7 +91,7 @@ def scraper() -> list:
         row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
         value = data[entry]["0"]
         hour = str(row).zfill(2) + ":00"
-        date = arrow.get(currentDay + hour, 'DD/MM/YYYYHH:mm', locale="es", tzinfo="UTC-6").datetime
+        date = arrow.get(currentDay + hour, 'DD/MM/YYYYHH:mm', locale="es", tzinfo=dateutil.tz.gettz('America/El_Salvador')).datetime
         datapoint = formatter(columnIdentifier[column], date, value)
         listOfDatapoints.append(datapoint)
     return listOfDatapoints
@@ -133,7 +134,8 @@ def formatter(columnName: str, dateTime: datetime.date, value: float) -> dict:
     return datapoint
 
 def main():
-    print(scraper())
+    for datapoint in scraper():
+        print(datapoint)
 
 if __name__ == "__main__":
     main()
