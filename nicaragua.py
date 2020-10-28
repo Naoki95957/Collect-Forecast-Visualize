@@ -21,6 +21,8 @@ def nicaraguaScraper() -> list:
     This required selenium and some waiting for pages to load
     
     After that it was somewhat straight forward
+
+    Will raise a timeout exception is timeout of 10s is surpased
     
     Returns a list of dictionaries as per WattTime spec
     """
@@ -34,11 +36,8 @@ def nicaraguaScraper() -> list:
 
     timeout = 10
     #the php script takes a second to load everything in
-    try:
-        #this waits the timeout period while waiting for table to load
-        WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.ID, "GeneracionXAgente")))
-    except TimeoutException:
-        print ("Loading took too much time!")
+    #this waits the timeout period while waiting for table to load
+    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.ID, "GeneracionXAgente")))
 
     #find date box
     tableDate = driver.find_element_by_id('dtpFechaConsulta').get_attribute('value')
@@ -67,7 +66,7 @@ def nicaraguaScraper() -> list:
             hour = rowEntry[0].getText()
             #if value is empty, put a 0
             if not bool(value):
-                value = 0
+                value = '0'
             outputList.append(formatter(header, tableDate, hour, value))
         
     driver.quit()
