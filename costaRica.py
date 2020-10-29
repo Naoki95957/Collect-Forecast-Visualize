@@ -12,6 +12,13 @@ URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 BA = 'Operación Sistema Eléctrico Nacional'
 
 def costaRicaScraper() -> list:
+    """
+    Scrapes data for Costa Rica
+
+    Uses selenium, sets date and triggers it
+
+    Returns a list of dictionaries in the format of WattTime spec
+    """
     #set up a few options for selenium
     options = Options()
     options.headless = True
@@ -32,7 +39,7 @@ def costaRicaScraper() -> list:
     #soup time
     soup = BeautifulSoup(driver.page_source, "html5lib")
     cells = soup.find('tbody', {'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
-    #print(soup.prettify())
+
     outputList = []
     for cell in cells:
         if cell.has_attr('title') and bool(cell.getText()):
