@@ -10,10 +10,10 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 
 DRIVER_PATH = './driver/chromedriver86.exe'
-URL = 'http://www.cndc.org.ni/consultas/reportesDiarios/postDespachoEnergia.php?fecha=tr&d=1'
+URL = 'http://www.cndc.org.ni/consultas/reportesDiarios/postDespachoEnergia.php?fecha='
 BA = 'Centro Nacional de Despacho de Carga'
 
-def nicaraguaScraper() -> list:
+def nicaraguaScraper(date="tr") -> list:
     """
     Scraper for Nicaragua
     
@@ -24,14 +24,22 @@ def nicaraguaScraper() -> list:
     Will raise a timeout exception is timeout of 10s is surpased
     
     Returns a list of dictionaries as per WattTime spec
+
+    Parameters:
+
+    date -- str by default grabs the most recent date nicaragua reports (This isn't always avaible on their own website)
+    You can change this to what ever previous date you wanna look at in the form DD/MM/YYYY as a string 
     """
+    #set up URL
+    url = URL + date + "&d=1"
+
     #set up a few options for selenium
     options = Options()
     options.headless = True
 
     #start up selenium
     driver = selenium.webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
-    driver.get(URL)
+    driver.get(url)
 
     timeout = 10
     #the php script takes a second to load everything in
