@@ -13,13 +13,18 @@ DRIVER_PATH = './driver/chromedriver86.exe'
 URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 BA = 'Operación Sistema Eléctrico Nacional'
 
-def costaRicaScraper() -> list:
+def costaRicaScraper(date="") -> list:
     """
     Scrapes data for Costa Rica
 
     Uses selenium, sets date and triggers it
 
     Returns a list of dictionaries in the format of WattTime spec
+
+    Parameters:
+
+    date -- str, by default empty and if empty, will grab today's data. 
+    You can change this to a previous date in the form DD/MM/YYYY
     """
     #set up a few options for selenium
     options = Options()
@@ -31,12 +36,13 @@ def costaRicaScraper() -> list:
 
     #find the input field
     inputField = driver.find_element_by_name("formPosdespacho:txtFechaInicio_input")
-    #get today's date
-    todaysDate = datetime.date.today()
-    fieldInput = str(todaysDate.day).zfill(2) + "/" + str(todaysDate.month).zfill(2) + "/" + str(todaysDate.year).zfill(4)
+    if not bool(date):
+        #get today's date
+        todaysDate = datetime.date.today()
+        date = str(todaysDate.day).zfill(2) + "/" + str(todaysDate.month).zfill(2) + "/" + str(todaysDate.year).zfill(4)
     #clear the field and put in today's date
     inputField.clear()
-    inputField.send_keys(fieldInput + Keys.RETURN)
+    inputField.send_keys(date + Keys.RETURN)
 
     #soup time
     soup = BeautifulSoup(driver.page_source, "html5lib")
@@ -46,7 +52,7 @@ def costaRicaScraper() -> list:
     for cell in cells:
         if cell.has_attr('title') and bool(cell.getText()):
             if 'Total' not in cell['title']:
-                outputList.append(formatter(fieldInput, cell))
+                outputList.append(formatter(date, cell))
     driver.quit()
 
     return outputList
