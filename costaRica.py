@@ -36,6 +36,7 @@ def costaRicaScraper(date="") -> list:
 
     #find the input field
     inputField = driver.find_element_by_name("formPosdespacho:txtFechaInicio_input")
+    #if date is not manually requested
     if not bool(date):
         #get today's date
         todaysDate = datetime.date.today()
