@@ -44,13 +44,17 @@ def formatter(todaysDate: str, data: BeautifulSoup) -> dict:
     # parse out the location and hour of each cell
     location = re.search(r'(.*?),(.*)', data['title']).group(1)
     time = re.search(r'(.*?),(.*)', data['title']).group(2)
-    return {'ts': arrow.get(todaysDate + time, 'DD/MM/YYYY HH:mm', locale="es",
-                            tzinfo=dateutil.tz.gettz('America/Costa_Rica')).datetime,
+    return {'ts': arrow.get(todaysDate + time, 'DD/MM/YYYY HH:mm').datetime,
             'value': data.getText(),
-            'ba': BA, 'meta': location + " (MWh)"}
-
+            'ba': BA,
+            'meta': location + " (MWh)"}
 
 """
+    spanish_time = soup.find('div', {'class': 'sitr-update'}).find_all('span')[0].get_text()
+    time_stamp_sp = arrow.get(spanish_time, 'DD-MMMM-YYYY H:mm:ss', locale="es", tzinfo="America/Panama")
+    time_stamp_en = time_stamp_sp.datetime.strftime("%Y-%-m-%-d %H:%M:%S")
+
+
 datapoint1 = \
  {'ts': <timezone aware datetime object>,
   'value': <value of grid parameter (type float or int)>,
