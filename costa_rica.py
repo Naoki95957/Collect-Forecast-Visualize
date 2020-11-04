@@ -7,82 +7,62 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 
-#This script was designed on a windows machine with chrome 86
-#in order to run this on another machine, you may need another driver
+# change driver depending on OS and Web Browser (Mac and Chrome default)
 DRIVER_PATH = './drivers/chromedriver'
 URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 BA = 'Operación Sistema Eléctrico Nacional'
 
+options = Options()
+options.headless = True
+driver = selenium.webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
+driver.get(URL)
+
+
 def costaRicaScraper(date="") -> list:
-    """
-    Scrapes data for Costa Rica
-
-    Uses selenium, sets date and triggers it
-
-    Returns a list of dictionaries in the format of WattTime spec
-
-    Parameters:
-
-    date -- str, by default empty and if empty, will grab today's data.
-    You can change this to a previous date in the form DD/MM/YYYY
-    """
-    #set up a few options for selenium
-    options = Options()
-    options.headless = True
-
-    #start up selenium
-    driver = selenium.webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
-    driver.get(URL)
-
-    #find the input field
-    inputField = driver.find_element_by_name("formPosdespacho:txtFechaInicio_input")
     if not bool(date):
-        #get today's date
-        todaysDate = datetime.date.today()
-        date = str(todaysDate.day).zfill(2) + "/" + str(todaysDate.month).zfill(2) + "/" + str(todaysDate.year).zfill(4)
-    #clear the field and put in today's date
-    inputField.clear()
-    inputField.send_keys(date + Keys.RETURN)
+        todays_date = datetime.date.today()
+        date = str(todays_date.day).zfill(2) + "/" + str(todays_date.month).zfill(2) + "/" + str(
+            todays_date.year).zfill(4)
+    # clear the field and put in today's date
+    input_field = driver.find_element_by_name("formPosdespacho:txtFechaInicio_input")
+    input_field.clear()
+    input_field.send_keys(date + Keys.RETURN)
 
-    # replaced html5lib with html.parser because it gave error in pycharm
     soup = BeautifulSoup(driver.page_source, "html.parser")
     cells = soup.find('tbody', {'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
 
-    outputList = []
+    output_list = []
     for cell in cells:
         if cell.has_attr('title') and bool(cell.getText()):
             if 'Total' not in cell['title']:
-                outputList.append(formatter(date, cell))
+                output_list.append(formatter(date, cell))
     driver.quit()
+    return output_list
 
-    return outputList
 
 def formatter(todaysDate: str, data: BeautifulSoup) -> dict:
-    """
-    Helper function to format the data from soup
-
-    returns a dictionary in WattTime spec
-
-    parameters:
-
-    todaysDate -- should be a dateTime obj with todays date. hour doesn't matter
-
-    data -- should be a soupy object. Specifically the cell entry
-    """
-    #parse out the location and hour of each cell
+    # parse out the location and hour of each cell
     location = re.search(r'(.*?),(.*)', data['title']).group(1)
     time = re.search(r'(.*?),(.*)', data['title']).group(2)
+    return {'ts': arrow.get(todaysDate + time, 'DD/MM/YYYY HH:mm', locale="es",
+                            tzinfo=dateutil.tz.gettz('America/Costa_Rica')).datetime,
+            'value': data.getText(),
+            'ba': BA, 'meta': location + " (MWh)"}
 
-    datapoint = {}
-    datapoint['ts'] = arrow.get(todaysDate + time, 'DD/MM/YYYY HH:mm', locale="es", tzinfo=dateutil.tz.gettz('America/Costa_Rica')).datetime
-    datapoint['value'] = data.getText()
-    datapoint['ba'] = BA
-    datapoint['meta'] = location + " (MWh)"
-    return datapoint
+
+"""
+datapoint1 = \
+ {'ts': <timezone aware datetime object>,
+  'value': <value of grid parameter (type float or int)>,
+  'ba': <string specifying balancing authority or subregion eg 'PJM_WEST', 'NL' for Netherlands, 'ISONE_VERMONT'>,
+  'meta': <optional field specifying fuel type (if generation) or other information
+"""
+
 
 def main():
     for datapoint in costaRicaScraper():
         print(datapoint)
+
 
 if __name__ == "__main__":
     main()
