@@ -44,7 +44,8 @@ def nicaraguaScraper(date="tr") -> list:
     timeout = 10
     #the php script takes a second to load everything in
     #this waits the timeout period while waiting for table to load
-    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.ID, "GeneracionXAgente")))
+    #updated to a more explicit location
+    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, '//div[@id="Postdespacho"]//table[@id="GeneracionXAgente"]')))
 
     #find date box
     tableDate = driver.find_element_by_id('dtpFechaConsulta').get_attribute('value')
@@ -56,7 +57,9 @@ def nicaraguaScraper(date="tr") -> list:
 
     #soup time
     soup = BeautifulSoup(driver.page_source, "html5lib")
-    table = soup.find('table', {'id': 'GeneracionXAgente'}).findAll('tr')
+    #ensures we grab the right tab
+    tab = soup.find('div', {'id': 'Postdespacho'})
+    table = tab.find('table', {'id': 'GeneracionXAgente'}).findAll('tr')
 
     outputList = []
     #just header info on row 0 and 1
