@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 
-# change driver depending on OS and Web Browser (Mac and Chrome default)
+# change drivers depending on OS and Web Browser (Mac and Chrome default)
 DRIVER_PATH = './drivers/chromedriver'
 URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 BA = 'Operación Sistema Eléctrico Nacional'
