@@ -6,6 +6,7 @@ import datetime
 from datetime import timedelta
 import arrow
 from bs4 import BeautifulSoup
+import platform
 
 """
 Retrives emission data as a list of dictionaries from Costa Rica by hours
@@ -21,17 +22,31 @@ To maintain, update drivers in the future:
 https://selenium-python.readthedocs.io/installation.html
 """
 
-SELECT_OS_CHROME_DRIVER = './drivers/win_chromedriver86.exe'
-options = Options()
-options.headless = True
-driver = selenium.webdriver.Chrome(
-    options=options,
-    executable_path=SELECT_OS_CHROME_DRIVER)
 URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
-driver.get(URL)
 
 
-def search_date(date=""):
+def initialize_driver() -> selenium.webdriver.Chrome:
+    """
+    Sets up driver to matching os
+    """
+    options = Options()
+    options.headless = True
+    operatingSystem = platform.system()
+    SELECT_OS_CHROME_DRIVER = './drivers/mac_chromedriver86'
+    if (operatingSystem == "Linux"):
+        SELECT_OS_CHROME_DRIVER = './drivers/linux_chromedriver86'
+    elif (operatingSystem == "Darwin"):
+        SELECT_OS_CHROME_DRIVER = './drivers/mac_chromedriver86'
+    elif (operatingSystem == "Windows"):
+        SELECT_OS_CHROME_DRIVER = './drivers/win_chromedriver86.exe'
+    driver = selenium.webdriver.Chrome(
+        options=options,
+        executable_path=SELECT_OS_CHROME_DRIVER)
+    driver.get(URL)
+    return driver
+
+
+def search_date(driver: selenium.webdriver.Chrome, date=""):
     """
     :param date: Enter 'DD/MM/YYYY' to retrieve data from other dates.
         If empty, yesterday is default
@@ -52,7 +67,7 @@ def search_date(date=""):
     return date
 
 
-def scrape_data(date) -> list:
+def scrape_data(driver: selenium.webdriver.Chrome, date: datetime) -> list:
     soup = BeautifulSoup(driver.page_source, "html.parser")
     driver.quit()
     plants_hours = soup.find('tbody', {
@@ -79,10 +94,12 @@ def data_point(date, plant_hour) -> dict:
 
 
 def main():
-    date = search_date()
-    data_points = scrape_data(date)
+    driver = initialize_driver()
+    date = search_date(driver)
+    data_points = scrape_data(driver, date)
     for datapoint in data_points:
         print(datapoint)
+    driver.quit()
 
 
 if __name__ == "__main__":
