@@ -40,9 +40,11 @@ def search_date(date=""):
     """
     if not bool(date):
         yesterday = datetime.date.today() - timedelta(days=1)
-        date = str(yesterday.day).zfill(2) + "/"
-        + str(yesterday.month).zfill(2) + "/"
-        + str(yesterday.year).zfill(4)
+        date = (str(yesterday.day).zfill(2)
+                + "/"
+                + str(yesterday.month).zfill(2)
+                + "/"
+                + str(yesterday.year).zfill(4))
     search_date_field = driver.find_element_by_name(
         "formPosdespacho:txtFechaInicio_input")
     search_date_field.clear()
