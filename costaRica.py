@@ -15,9 +15,11 @@ IMPORTANT: Before running, select chromedriver for your OS.
 For MAC, you may get a warning:
     “mac_chromedriver86” can’t be opened because the identity of the developer cannot be confirmed."
     Go to Apple > System Preferences > Security & Privacy and click the 'Open Anyway' button.
+To maintain, update drivers in the future https://selenium-python.readthedocs.io/installation.html
 """
 
 SELECT_OS_CHROME_DRIVER = './drivers/mac_chromedriver86'
+
 options = Options()
 options.headless = True
 driver = selenium.webdriver.Chrome(options=options, executable_path=SELECT_OS_CHROME_DRIVER)
@@ -40,17 +42,14 @@ def search_date(date=""):
 
 
 def scrape_data(date) -> list:
-    """
-    :return: A list of data_points dictionaries
-    """
     soup = BeautifulSoup(driver.page_source, "html.parser")
     driver.quit()
     plants_hours = soup.find('tbody', {'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
-    data_points = []
+    data_points_list = []
     for plant_hour in plants_hours:
         if plant_hour.has_attr('title') and bool(plant_hour.getText()) and 'Total' not in plant_hour['title']:
-            data_points.append(data_point(date, plant_hour))
-    return data_points
+            data_points_list.append(data_point(date, plant_hour))
+    return data_points_list
 
 
 def data_point(date, plant_hour) -> dict:
