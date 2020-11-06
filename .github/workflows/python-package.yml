@@ -24,13 +24,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: install dependancies (windows)
-      if: matrix.os == windows-latest
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        pip install pytest-custom-exit-code
-        if (-f requirements.txt); pip install -r requirements.txt;
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
