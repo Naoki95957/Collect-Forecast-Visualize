@@ -5,9 +5,9 @@ name: Python package
 
 on:
   push:
-    branches: [ Costa-Rica ]
+    branches: [ master ]
   pull_request:
-    branches: [ Costa-Rica ]
+    branches: [ master, Costa-Rica, El-Salvador, Nicaragua]
 
 jobs:
   build:
