@@ -1,7 +1,8 @@
-import selenium
 import datetime
 import dateutil
 import arrow
+import platform
+import selenium
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,11 +10,30 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 
-DRIVER_PATH = './driver/chromedriver86.exe'
 URL = 'http://www.cndc.org.ni/consultas/reportesDiarios/postDespachoEnergia.php?fecha='
 BA = 'Centro Nacional de Despacho de Carga'
 
-def nicaraguaScraper(date="tr") -> list:
+def initialize_driver() -> selenium.webdriver.Chrome:
+    """
+    Sets up driver to matching os
+    """
+    options = Options()
+    options.headless = True
+    operating_system = platform.system()
+    chrome_driver = './drivers/mac_chromedriver86'
+    if (operating_system == "Linux"):
+        chrome_driver = './drivers/linux_chromedriver86'
+    elif (operating_system == "Darwin"):
+        chrome_driver = './drivers/mac_chromedriver86'
+    elif (operating_system == "Windows"):
+        chrome_driver = './drivers/win_chromedriver86.exe'
+    driver = selenium.webdriver.Chrome(
+        options=options,
+        executable_path=chrome_driver)
+    return driver
+
+
+def nicaraguaScraper(driver: selenium.webdriver.Chrome, date="tr") -> list:
     """
     Scraper for Nicaragua
     
@@ -33,12 +53,7 @@ def nicaraguaScraper(date="tr") -> list:
     #set up URL
     url = URL + date + "&d=1"
 
-    #set up a few options for selenium
-    options = Options()
-    options.headless = True
-
     #start up selenium
-    driver = selenium.webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
     driver.get(url)
 
     timeout = 10
@@ -103,7 +118,8 @@ def formatter(location: str, todaysDate: str, hour: int, value: float) -> dict:
     return datapoint
 
 def main():
-    for datapoint in nicaraguaScraper():
+    driver = initialize_driver()
+    for datapoint in nicaraguaScraper(driver):
         print(datapoint)
 
 if __name__ == "__main__":
