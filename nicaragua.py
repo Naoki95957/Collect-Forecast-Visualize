@@ -93,9 +93,6 @@ def nicaraguaScraper(driver: selenium.webdriver.Chrome, date="tr") -> list:
             if not bool(value):
                 value = '0'
             outputList.append(formatter(header, tableDate, hour, value))
-        
-    driver.quit()
-
     return outputList
 
 def formatter(location: str, todaysDate: str, hour: int, value: float) -> dict:
@@ -121,6 +118,7 @@ def main():
     driver = initialize_driver()
     for datapoint in nicaraguaScraper(driver):
         print(datapoint)
+    driver.quit()
 
 if __name__ == "__main__":
     main()
