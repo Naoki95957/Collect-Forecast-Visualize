@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 #This script was designed on a windows machine with chrome 86
 #in order to run this on another machine, you may need another driver
-DRIVER_PATH = './driver/chromedriver86.exe'
+DRIVER_PATH = './drivers/win_chromedriver86.exe'
 URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 BA = 'Operación Sistema Eléctrico Nacional'
 
