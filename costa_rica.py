@@ -31,17 +31,17 @@ def initialize_driver() -> selenium.webdriver.Chrome:
     """
     options = Options()
     options.headless = True
-    operatingSystem = platform.system()
-    SELECT_OS_CHROME_DRIVER = './drivers/mac_chromedriver86'
-    if (operatingSystem == "Linux"):
-        SELECT_OS_CHROME_DRIVER = './drivers/linux_chromedriver86'
-    elif (operatingSystem == "Darwin"):
-        SELECT_OS_CHROME_DRIVER = './drivers/mac_chromedriver86'
-    elif (operatingSystem == "Windows"):
-        SELECT_OS_CHROME_DRIVER = './drivers/win_chromedriver86.exe'
+    operating_system = platform.system()
+    chrome_driver = './drivers/mac_chromedriver86'
+    if (operating_system == "Linux"):
+        chrome_driver = './drivers/linux_chromedriver86'
+    elif (operating_system == "Darwin"):
+        chrome_driver = './drivers/mac_chromedriver86'
+    elif (operating_system == "Windows"):
+        chrome_driver = './drivers/win_chromedriver86.exe'
     driver = selenium.webdriver.Chrome(
         options=options,
-        executable_path=SELECT_OS_CHROME_DRIVER)
+        executable_path=chrome_driver)
     driver.get(URL)
     return driver
 
