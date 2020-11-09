@@ -22,7 +22,7 @@ To update drivers:
 https://selenium-python.readthedocs.io/installation.html
 """
 
-costa_rica_url = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
+URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 
 
 def initialize_OS_driver() -> selenium.webdriver.Chrome:
@@ -39,11 +39,17 @@ def initialize_OS_driver() -> selenium.webdriver.Chrome:
     driver = selenium.webdriver.Chrome(
         options=options,
         executable_path=chrome_driver)
-    driver.get(costa_rica_url)
+    driver.get(URL)
     return driver
 
 
 def search_date(driver: selenium.webdriver.Chrome, date):
+    """
+    :param date: Enter 'DD/MM/YYYY' for date_query to retrieve data from other dates.
+         If empty, yesterday is default
+    :return: Reformatted datetime date to match costa ricas search date field
+        'DD/MM/YYYY' as a string
+    """
     if not bool(date):
         yesterday = datetime.date.today() - timedelta(days=1)
         date = (str(yesterday.day).zfill(2) + "/" +
@@ -53,16 +59,11 @@ def search_date(driver: selenium.webdriver.Chrome, date):
         "formPosdespacho:txtFechaInicio_input")
     search_date_field.clear()
     search_date_field.send_keys(date + Keys.RETURN)
-    """
-    :return: Reformatted datetime date to match costa ricas search date field
-        'DD/MM/YYYY' as a string
-    """
     return date
 
 
 def scrape_data(driver: selenium.webdriver.Chrome, date: datetime) -> list:
     soup = BeautifulSoup(driver.page_source, "html.parser")
-    driver.quit()
     plants_hours = soup.find('tbody', {
         'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
     data_points_list = []
@@ -88,17 +89,13 @@ def data_point(date, plant_hour) -> dict:
 
 
 def main():
-    """
-    Enter 'DD/MM/YYYY' for date_query to retrieve data from other dates.
-        If empty, yesterday is default
-    """
     date_query = ''
-
     driver = initialize_OS_driver()
     data = search_date(driver, date_query)
     data_points = scrape_data(driver, data)
     for datapoint in data_points:
         print(datapoint)
+    driver.quit()
 
 
 if __name__ == "__main__":
