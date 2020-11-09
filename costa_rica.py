@@ -25,12 +25,17 @@ https://selenium-python.readthedocs.io/installation.html
 
 class CostaRica:
     """
-    Use only the public method search_date() to retrive date.
+    This class uses only the public method search_date() to retrive data.
     Other methods are private helpers and are not called from client.
     """
-
     URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
     driver = None
+
+    def __init__(self):
+        self.__initialize_OS_driver()
+
+    def __del__(self):
+        self.driver.quit()
 
     def __initialize_OS_driver(self) -> selenium.webdriver.Chrome:
         options = Options()
@@ -105,16 +110,14 @@ class CostaRica:
 
 def main():
     costa_rica = CostaRica()
+
     yesterday_data = costa_rica.search_date()
-    other_date_data = costa_rica.search_date('03/11/2020')
     for datapoint in yesterday_data:
         print(datapoint)
 
+    other_date_data = costa_rica.search_date('03/11/2020')
     for datapoint in other_date_data:
         print(datapoint)
-
-    # client won't know to do this!
-    costa_rica.driver.quit()
 
 
 if __name__ == "__main__":
