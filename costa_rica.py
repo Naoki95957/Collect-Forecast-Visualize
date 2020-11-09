@@ -12,7 +12,7 @@ import platform
 Retrives emission data as a list of dictionaries from Costa Rica by hours
 for each plant and balance authority name.
 
-If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder.
+If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder
 If you get a warning:
     “mac_chromedriver86” can’t be opened because the identity of the developer
     cannot be confirmed."
@@ -22,7 +22,7 @@ To update drivers:
 https://selenium-python.readthedocs.io/installation.html
 """
 
-costa_rica_url = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
+costa_rica = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
 
 
 def initialize_OS_driver() -> selenium.webdriver.Chrome:
@@ -39,7 +39,7 @@ def initialize_OS_driver() -> selenium.webdriver.Chrome:
     driver = selenium.webdriver.Chrome(
         options=options,
         executable_path=chrome_driver)
-    driver.get(costa_rica_url)
+    driver.get(costa_rica)
     return driver
 
 
