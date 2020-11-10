@@ -27,6 +27,7 @@ class CostaRica:
     """
     This class uses only the public method search_date() to retrive data.
     Other methods are private helpers and are not called from client.
+    Automattically initalizes web driver based on users OS
     """
     URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
     driver = None
@@ -54,19 +55,14 @@ class CostaRica:
         """
         :param date: If empty, yesterday is default
             Enter 'DD/MM/YYYY' for date to retrieve data from other dates.
-        :return: Reformatted date to match costa ricas search 'DD/MM/YYYY'
+        :return: a list of dictoinaries.
         """
         if not bool(date):
             yesterday = datetime.date.today() - timedelta(days=1)
+            # reformatted date to match costa ricas search 'DD/MM/YYYY'
             date = (str(yesterday.day).zfill(2) + "/" +
                     str(yesterday.month).zfill(2) + "/" +
                     str(yesterday.year).zfill(4))
-        else:
-            try:  # checks valid date entered
-                arrow.get(date, 'DD/MM/YYYY')
-            except Exception as e:
-                self.driver.quit()
-                raise e
 
         search_date_field = self.driver.find_element_by_name(
             "formPosdespacho:txtFechaInicio_input")
