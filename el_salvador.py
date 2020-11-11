@@ -1,15 +1,26 @@
-import urllib
 import requests
 import dateutil
 import json
 import datetime
 import arrow
 import re
+from urllib.parse import urlencode
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
 class ElSalvador:
 
     URL = "http://estadistico.ut.com.sv/OperacionDiaria.aspx"
+    TIME_ZONE = dateutil.tz.gettz('America/El_Salvador')
+    BA = "Unidad de Transacciones"
+    META = [
+        "Biomass", 
+        "Geothermal", 
+        "HydroElectric", 
+        "Interconnection", 
+        "Thermal", 
+        "Solar"
+    ]
 
     def scrape(self) -> list:
         """
@@ -24,50 +35,24 @@ class ElSalvador:
         """
         firstpage = requests.get(self.URL)
         soup = BeautifulSoup(firstpage.content, "html5lib")
-        viewstate = soup.find_all("input", {"type": "hidden", "name": "__VIEWSTATE"})[0]['value']
-        viewgenerator = soup.find_all("input", {"type": "hidden", "name": "__VIEWSTATEGENERATOR"})[0]['value']
-        validation = soup.find_all("input", {"type": "hidden", "name": "__EVENTVALIDATION"})[0]['value']
+        formData = self.getFormData(soup)
 
-        #this is our form data, largely observed by copying what the browser is doing via a packet sniffer
-        formData = {
-            '__EVENTTARGET': '',
-            '__EVENTARGUMENT': '',
-            '__VIEWSTATE': str(viewstate),
-            '__VIEWSTATEGENERATOR': str(viewgenerator),
-            'DXScript': '1_247,1_138,1_241,1_164,1_141,1_135,1_181,24_392,24_391,24_393,24_394,24_397,24_398,24_399,24_395,24_396,15_16,24_379,15_14,15_10,15_11,15_13',
-            'DXCss': '1_28,1_29,24_359,24_364,24_360,15_0,15_4',
-            '__CALLBACKID': 'ASPxDashboardViewer1',
-            '__CALLBACKPARAM': 'c0:{"Task":"Initialize","DashboardId":"OperacionDiaria","Settings":{"calculateHiddenTotals":false},"RequestMarker":0,"ClientState":{}}',
-            '__EVENTVALIDATION': str(validation),
-        }
-
-        #encode parameters to the URL
-        encodedData = urllib.parse.urlencode(formData)
-        encodedData = encodedData.encode('ascii')
-        response = urllib.request.urlopen(self.URL, encodedData)
-        
-        #decode response
-        responseContent = response.read()
-        encoding = response.headers.get_content_charset('utf-8')
-        responseTxt = responseContent.decode(encoding)
+        encodedData = urlencode(formData).encode('ascii')
+        response = urlopen(self.URL, encodedData)
+        decoding = response.headers.get_content_charset('utf-8')
+        responseTxt = response.read().decode(decoding)
 
         #had to do manual replacing since decoding it doesn't completely work ^^
         responseTxt = responseTxt.replace("\\t", "\t")
         responseTxt = responseTxt.replace("\\n", "\n")
         responseTxt = responseTxt.replace("\\'", "'")
         responseTxt = responseTxt.replace("\'", "\"")
-
         #cleans up the junk in the response to get just the JSON part
         responseTxt = responseTxt.split('\n', 1)[1]
         responseTxt = responseTxt[:responseTxt.rfind('\n')]
         responseTxt = "{" + responseTxt + "}"
         #yes, this monster is back but because python can't perfectly parse JSON. So 'new Date' is now instead a string
         responseTxt = re.sub(r'(new Date\((\d+,)+\d\))', '\"some date\"', responseTxt)
-
-        #writing file to see it for now
-        #file = open("output.txt", "w")
-        #file.write(responseTxt)
-        #file.close()
 
         #parse json and fetch our specific bits of data
         jsonObj = json.loads(responseTxt)
@@ -86,17 +71,48 @@ class ElSalvador:
         #they don't even have their indexing correct!!!! :( 
         #the table goes: ... interconnection, solar, thermal
         #the index goes: ... interconnection, thermal, solar
-        columnIdentifier = ["Biomass", "Geothermal", "HydroElectric", "Interconnection", "Thermal", "Solar"]
         listOfDatapoints = []
         for entry in data:
             column = int(re.search(r'\[(\d+),\d+,\d+\]', entry).group(1))
-            row = int(re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1))
+            row = re.search(r'\[\d+,\d+,(\d+)\]', entry).group(1)
             value = data[entry]["0"]
-            hour = str(row).zfill(2) + ":00"
-            date = arrow.get(currentDay + hour, 'DD/MM/YYYYHH:mm', locale="es", tzinfo=dateutil.tz.gettz('America/El_Salvador')).datetime
-            datapoint = self.formatter(columnIdentifier[column], date, value)
+            hour = row.zfill(2) + ":00"
+            date = arrow.get(currentDay + hour, 'DD/MM/YYYYHH:mm', locale="es", tzinfo=self.TIME_ZONE).datetime
+            datapoint = self.formatter(self.META[column], date, value)
             listOfDatapoints.append(datapoint)
         return listOfDatapoints
+
+    def getFormData(self, soup: BeautifulSoup) -> dict:
+        hiddenFields = soup.find_all("input", type="hidden")
+
+        viewState = hiddenFields[0]['value']
+        viewStateGenerator = hiddenFields[1]['value']
+        dxScript = (
+            '1_247,1_138,1_241,1_164,1_141,1_135,1_181,24_392,'
+            '24_391,24_393,24_394,24_397,24_398,24_399,24_395,'
+            '24_396,15_16,24_379,15_14,15_10,15_11,15_13'
+        )
+        dxCss = '1_28,1_29,24_359,24_364,24_360,15_0,15_4'
+        callBackId = 'ASPxDashboardViewer1'
+        callBackParam = (
+            'c0:{"Task":"Initialize","DashboardId":"OperacionDiaria",'
+            '"Settings":{"calculateHiddenTotals":false},"RequestMarker":0,'
+            '"ClientState":{}}'
+        )
+        eventValidation = hiddenFields[2]['value']
+
+        # this is our form data, largely observed by copying what the browser is doing via a packet sniffer
+        return {
+            '__EVENTTARGET': '',
+            '__EVENTARGUMENT': '',
+            '__VIEWSTATE': viewState,
+            '__VIEWSTATEGENERATOR': viewStateGenerator,
+            'DXScript': dxScript,
+            'DXCss': dxCss,
+            '__CALLBACKID': callBackId,
+            '__CALLBACKPARAM': callBackParam,
+            '__EVENTVALIDATION': eventValidation
+        }
 
     def formatter(self, columnName: str, dateTime: datetime.date, value: float) -> dict:
         """
@@ -131,7 +147,7 @@ class ElSalvador:
         datapoint = {}
         datapoint['ts'] = dateTime
         datapoint['value'] = value
-        datapoint['ba'] = "Unidad de Transacciones"
+        datapoint['ba'] = self.BA
         datapoint['meta'] = columnName + " (MWh)"
         return datapoint
 
