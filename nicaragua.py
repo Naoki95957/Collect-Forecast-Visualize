@@ -97,7 +97,7 @@ class Nicaragua:
                                     'DD/MM/YYYYHH:mm',
                                     locale="es",
                                     tzinfo='America/Managua').datetime
-        datapoint['value'] = value
+        datapoint['value'] = float(value)
         datapoint['ba'] = Nicaragua.BA
         datapoint['meta'] = location + " (MWh)"
         return datapoint
