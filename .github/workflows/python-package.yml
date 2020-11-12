@@ -63,4 +63,7 @@ jobs:
         # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
-      run: pytest tests --suppress-no-test-exit-code
+      run: |
+        sudo chmod +x ./scrapers/drivers/linux_chromedriver86
+        sudo chmod +x ./scrapers/drivers/mac_chromedriver86
+        pytest tests --suppress-no-test-exit-code
