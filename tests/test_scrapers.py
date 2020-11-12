@@ -1,7 +1,7 @@
 from scrapers.costa_rica import CostaRica
 
 
-def general_test_costa_rica():
+def test_general_costa_rica():
     try:
         cr = CostaRica()
         data = cr.search_date()

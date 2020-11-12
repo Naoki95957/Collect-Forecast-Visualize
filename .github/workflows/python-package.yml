@@ -36,7 +36,7 @@ jobs:
         # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
-      run: pytest tests/ --suppress-no-test-exit-code
+      run: pytest tests --suppress-no-test-exit-code
   buildMacLinux:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -63,4 +63,4 @@ jobs:
         # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
-      run: pytest tests/ --suppress-no-test-exit-code
+      run: pytest tests --suppress-no-test-exit-code
