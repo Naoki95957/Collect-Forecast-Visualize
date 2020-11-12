@@ -1,17 +1,46 @@
-import requests
-import json
+import datetime
 import arrow
-import re
-from urllib.parse import urlencode
-from urllib.request import urlopen
+import platform
 from bs4 import BeautifulSoup
+import selenium
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.by import By
 
 
 class ElSalvador:
 
     URL = 'http://estadistico.ut.com.sv/OperacionDiaria.aspx'
-    FREQUENCY = 'hourly'
     BA = 'Unidad de Transacciones'
+    driver = None
+    TRANSLATION_DICT = {
+        'Biomasa': 'Biomass',
+        'Geotérmico': 'Geothermal',
+        'Hidroeléctrico': 'HydroElectric',
+        'Interconexión': 'Interconnection',
+        'Solar': 'Solar',
+        'Térmico': 'Thermal'
+    }
+
+    def __init__(self):
+        options = Options()
+        options.headless = True
+        operating_system = platform.system()
+        chrome_driver = './scrapers/drivers/mac_chromedriver86'
+        if operating_system == "Linux":
+            chrome_driver = './scrapers/drivers/linux_chromedriver86'
+        elif operating_system == "Darwin":
+            chrome_driver = './scrapers/drivers/mac_chromedriver86'
+        elif operating_system == "Windows":
+            chrome_driver = './scrapers/drivers/win_chromedriver86.exe'
+        self.driver = selenium.webdriver.Chrome(
+            options=options,
+            executable_path=chrome_driver)
+        self.driver.get(ElSalvador.URL)
+
+    def __del__(self):
+        self.driver.quit()
 
     def scrape_data(self) -> list:
         """
@@ -19,86 +48,59 @@ class ElSalvador:
 
         Return: list of datapoints
         """
-        page = self.__get_data_page()
-        json_obj = json.loads(page)
-        table = json_obj['PaneContent'][0]['ItemData']
-        table = table['DataStorageDTO']['Slices'][1]['Data']
-        current_day = json_obj['DashboardParameters'][0]
-        current_day = current_day['Values'][0]['DisplayText']
-        current_day = re.sub(' 12:00:00 a.m.', '', current_day)
+        self.driver
+        timeout = 10
+        WebDriverWait(self.driver, timeout).until(
+            ec.presence_of_element_located((
+                By.CLASS_NAME, 'dx-word-wrap')))
+        soup = BeautifulSoup(self.driver.page_source, "html.parser")
+        generation_table = soup.find('table', {'class': 'dx-word-wrap'})
+        table_headers = generation_table.find(
+            'td',
+            {'class': 'dx-area-column-cell'})
+        columns = table_headers.find('table').find_all('span')
+        columns = columns[0:-1]
+        for i in range(0, len(columns)):
+            columns[i] = columns[i].text
 
-        column_labels = [
-            'Biomass',
-            'Geothermal',
-            'HydroElectric',
-            'Interconnection',
-            'Thermal',
-            'Solar']
-        data = []
-        for i in table:
-            hour = re.search(r'\[\d+,\d+,(\d+)\]', i).group(1)
-            date = arrow.get(
-                current_day + hour.zfill(2) + ':00',
-                'DD/MM/YYYYHH:mm',
-                locale='es',
-                tzinfo='America/El_Salvador').datetime
-            value = table[i]['0']
-            column_index = int(re.search(r'\[(\d+),\d+,\d+\]', i).group(1))
-            production_type = column_labels[column_index]
-            data_point = self.__data_point(date, value, production_type)
-            data.append(data_point)
-        return data
+        data_table = generation_table.find('tr', {'class': 'dx-bottom-row'})
+        times = data_table.find(
+            'td',
+            {'class': 'dx-area-row-cell'}).find_all('span')
+        data = data_table.find(
+            'td',
+            {'class': 'dx-area-data-cell'}).find('table')
+        scrape_date = times[1].text
+        hours = times[2:-1]
+        for i in range(0, len(hours)):
+            hours[i] = hours[i].text
+        datapoints = []
+        entries = data.find_all('tr')
+        entries = entries[0:-1]
+        for row in range(0, len(entries)):
+            cells = entries[row].find_all('td')
+            cells = cells[0:-1]
+            for i in range(0, len(cells)):
+                production_type = ElSalvador.TRANSLATION_DICT[columns[i]]
+                date = arrow.get(
+                    scrape_date + hours[row],
+                    'DD/MM/YYYYHH:mm',
+                    locale='es',
+                    tzinfo='America/El_Salvador').datetime
+                value = cells[i].text
+                value = value.replace(',', '')
+                if not bool(value):
+                    value = "0"
+                datapoints.append(
+                    self.__data_point(date, value, production_type))
+        return datapoints
 
-    def __get_data_page(self) -> str:
-        """
-        Grabs the data page. To do this it must first send an initial
-        request for the page. Then it retrieves the form data and uses
-        it to send a second request. Finally it decodes the page and
-        reformats it for parsing.
-
-        Return: decoded data page in .json format
-        """
-        initial_page = requests.get(self.URL)
-        soup = BeautifulSoup(initial_page.content, 'html.parser')
-
-        form_data = self.__get_form_data(soup)
-        encoded_data = urlencode(form_data).encode('ascii')
-        response = urlopen(self.URL, encoded_data)
-
-        encoding = response.headers.get_content_charset('utf-8')
-        page = response.read().decode(encoding)
-        page = page.replace("\\t", "\t")
-        page = page.replace("\\n", "\n")
-        page = page.replace("\\'", "'")
-        page = page.replace("\'", "\"")
-        page = re.sub(r'\\\\\"', '\\\",', page)
-        page = page.split('\n', 1)[1]
-        page = page[:page.rfind('\n')]
-        page = "{" + page + "}"
-        page = re.sub(r'(new Date\((\d+,)+\d\))', '\"some date\"', page)
-        return page
-
-    def __get_form_data(self, soup: BeautifulSoup) -> dict:
-        hidden_fields = soup.find_all('input', type='hidden')
-        return {
-            '__EVENTTARGET': '',
-            '__EVENTARGUMENT': '',
-            '__VIEWSTATE': hidden_fields[0]['value'],
-            '__VIEWSTATEGENERATOR': hidden_fields[1]['value'],
-            'DXScript': (
-                '1_247,1_138,1_241,1_164,1_141,1_135,1_181,24_392,'
-                '24_391,24_393,24_394,24_397,24_398,24_399,24_395,'
-                '24_396,15_16,24_379,15_14,15_10,15_11,15_13'),
-            'DXCss': '1_28,1_29,24_359,24_364,24_360,15_0,15_4',
-            '__CALLBACKID': 'ASPxDashboardViewer1',
-            '__CALLBACKPARAM': (
-                'c0:{"Task":"Initialize","DashboardId":"OperacionDiaria",'
-                '"Settings":{"calculateHiddenTotals":false},"RequestMarker":0,'
-                '"ClientState":{}}'),
-            '__EVENTVALIDATION': hidden_fields[2]['value']
-        }
-
-    def __data_point(self, date, value, production_type) -> dict:
+    def __data_point(
+        self,
+        date: datetime,
+        value: str,
+        production_type: str
+    ) -> dict:
         """
         Parameters:
             date -- datetime object for datapoint (realative timezone)
@@ -109,7 +111,7 @@ class ElSalvador:
         """
         return {
             'ts': date,
-            'value': value,
+            'value': float(value),
             'ba': self.BA,
             'meta': production_type + ' (MWh)'
         }
@@ -117,8 +119,8 @@ class ElSalvador:
 
 def main():
     scraper = ElSalvador()
-    for datapoint in scraper.scrape_data():
-        print(datapoint)
+    for data in scraper.scrape_data():
+        print(data)
 
 
 if __name__ == "__main__":
