@@ -37,19 +37,15 @@ class ElSalvador:
             'Thermal',
             'Solar']
         data = []
-        for entry in table:
-            hour = re.search(
-                r'\[\d+,\d+,(\d+)\]',
-                entry).group(1)
+        for i in table:
+            hour = re.search(r'\[\d+,\d+,(\d+)\]', i).group(1)
             date = arrow.get(
                 current_day + hour.zfill(2) + ':00',
                 'DD/MM/YYYYHH:mm',
                 locale='es',
                 tzinfo=dateutil.tz.gettz('America/El_Salvador')).datetime
-            value = table[entry]['0']
-            column_index = int(re.search(
-                r'\[(\d+),\d+,\d+\]',
-                entry).group(1))
+            value = table[i]['0']
+            column_index = int(re.search(r'\[(\d+),\d+,\d+\]', i).group(1))
             data_point = self.__data_point(
                 date,
                 value,
@@ -67,7 +63,7 @@ class ElSalvador:
         Return: decoded data page in .json format
         """
         initial_page = requests.get(self.URL)
-        soup = BeautifulSoup(initial_page.content, 'html5lib')
+        soup = BeautifulSoup(initial_page.content, 'html.parser')
 
         form_data = self.__get_form_data(soup)
         encoded_data = urlencode(form_data).encode('ascii')
@@ -105,16 +101,11 @@ class ElSalvador:
             '__EVENTVALIDATION': hidden_fields[2]['value']
         }
 
-    def __data_point(
-        self,
-        date: datetime.date,
-        value: float,
-        production_type: str
-    ) -> dict:
+    def __data_point(self, date, value, production_type) -> dict:
         """
         Parameters:
-            date -- timestamp for datapoint (realative timezone)
-            value -- decimal value of electricity production in MWh
+            date -- datetime object for datapoint (realative timezone)
+            value -- float value of electricity production in MWh
             production_type -- string that contains the production type
 
         Return: dictionary (format defined by WattTime)
