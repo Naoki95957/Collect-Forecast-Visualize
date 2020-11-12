@@ -1,7 +1,6 @@
 arrow
 bs4
 datetime
-dateutil
 platform
 re
 selenium
