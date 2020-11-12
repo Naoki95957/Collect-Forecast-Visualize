@@ -31,9 +31,9 @@ jobs:
         if (Test-Path requirements.txt){pip install -r requirements.txt}
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
+        # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
         flake8 . --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
       run: pytest --suppress-no-test-exit-code
@@ -58,9 +58,9 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
+        # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
         flake8 . --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
       run: pytest --suppress-no-test-exit-code
