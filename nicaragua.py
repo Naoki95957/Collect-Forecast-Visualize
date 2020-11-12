@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import selenium
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 
 
@@ -55,7 +55,7 @@ class Nicaragua:
 
         timeout = 10
         WebDriverWait(self.driver, timeout).until(
-            EC.presence_of_element_located((
+            ec.presence_of_element_located((
                 By.XPATH, ('//div[@id="Postdespacho"]/'
                            '/table[@id="GeneracionXAgente"]'))))
 
@@ -73,17 +73,16 @@ class Nicaragua:
         tab = soup.find('div', {'id': 'Postdespacho'})
         plants_hours = tab.find(
             'table', {'id': 'GeneracionXAgente'}).findAll('tr')
-        headerCells = plants_hours[1].findAll('td')
+        header_cells = plants_hours[1].findAll('td')
 
         data_points_list = []
         for row in range(2, len(plants_hours)):
-            rowEntry = plants_hours[row].findAll('td')
+            row_entry = plants_hours[row].findAll('td')
 
-            for column in range(1, len(rowEntry) - 1):
-                value = rowEntry[column].getText()
-                header = headerCells[column - 1].getText()
-                hour = rowEntry[0].getText()
-                # if value is empty, put a 0
+            for column in range(1, len(row_entry) - 1):
+                value = row_entry[column].getText()
+                header = header_cells[column - 1].getText()
+                hour = row_entry[0].getText()
                 if not bool(value):
                     value = '0'
                 data_points_list.append(
@@ -91,15 +90,14 @@ class Nicaragua:
 
         return data_points_list
 
-    def __data_point(self, location, todaysDate, hour, value) -> dict:
-        datapoint = {}
-        datapoint['ts'] = arrow.get(todaysDate + str(hour).zfill(2) + ":00",
-                                    'DD/MM/YYYYHH:mm',
-                                    locale="es",
-                                    tzinfo='America/Managua').datetime
-        datapoint['value'] = float(value)
-        datapoint['ba'] = Nicaragua.BA
-        datapoint['meta'] = location + " (MWh)"
+    def __data_point(self, location, todays_date, hour, value) -> dict:
+        datapoint = {'ts': arrow.get(todays_date + str(hour).zfill(2) + ":00",
+                                     'DD/MM/YYYYHH:mm',
+                                     locale="es",
+                                     tzinfo='America/Managua').datetime,
+                     'value': float(value),
+                     'ba': Nicaragua.BA,
+                     'meta': location + " (MWh)"}
         return datapoint
 
 
