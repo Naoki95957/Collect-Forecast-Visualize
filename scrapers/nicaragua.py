@@ -22,13 +22,13 @@ class Nicaragua:
         options = Options()
         options.headless = True
         operating_system = platform.system()
-        chrome_driver = './drivers/mac_chromedriver86'
+        chrome_driver = './scrapers/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = './drivers/linux_chromedriver86'
+            chrome_driver = './scrapers/drivers/linux_chromedriver86'
         elif operating_system == "Darwin":
-            chrome_driver = './drivers/mac_chromedriver86'
+            chrome_driver = './scrapers/drivers/mac_chromedriver86'
         elif operating_system == "Windows":
-            chrome_driver = './drivers/win_chromedriver86.exe'
+            chrome_driver = './scrapers/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=chrome_driver)
