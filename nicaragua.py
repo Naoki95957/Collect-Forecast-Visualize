@@ -1,7 +1,7 @@
 import datetime
 from datetime import timedelta
-import dateutil
 import arrow
+import dateutil
 import platform
 from bs4 import BeautifulSoup
 import selenium
@@ -66,9 +66,9 @@ class Nicaragua:
             'tabs').find_elements_by_tag_name('table')
         tabs[1].click()
 
-        return self.__scrape_data(self.driver, date, tableDate)
+        return self.__scrape_data(self.driver, tableDate)
 
-    def __scrape_data(self, driver, date, tableDate) -> list:
+    def __scrape_data(self, driver, tableDate) -> list:
         soup = BeautifulSoup(driver.page_source, "html5lib")
 
         tab = soup.find('div', {'id': 'Postdespacho'})
@@ -80,15 +80,15 @@ class Nicaragua:
         for row in range(2, len(plants_hours)):
             rowEntry = plants_hours[row].findAll('td')
 
-        for column in range(1, len(rowEntry) - 1):
-            value = rowEntry[column].getText()
-            header = headerCells[column - 1].getText()
-            hour = rowEntry[0].getText()
-            # if value is empty, put a 0
-            if not bool(value):
-                value = '0'
-            data_points_list.append(
-                self.__data_point(header, tableDate, hour, value))
+            for column in range(1, len(rowEntry) - 1):
+                value = rowEntry[column].getText()
+                header = headerCells[column - 1].getText()
+                hour = rowEntry[0].getText()
+                # if value is empty, put a 0
+                if not bool(value):
+                    value = '0'
+                data_points_list.append(
+                    self.__data_point(header, tableDate, hour, value))
 
         return data_points_list
 
