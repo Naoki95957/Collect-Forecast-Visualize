@@ -69,7 +69,7 @@ class ElSalvador:
         initial_page = requests.get(self.URL)
         soup = BeautifulSoup(initial_page.content, 'html5lib')
 
-        form_data = self.__getFormData(soup)
+        form_data = self.__get_form_data(soup)
         encoded_data = urlencode(form_data).encode('ascii')
         response = urlopen(self.URL, encoded_data)
 
@@ -85,7 +85,7 @@ class ElSalvador:
         page = re.sub(r'(new Date\((\d+,)+\d\))', '\"some date\"', page)
         return page
 
-    def __getFormData(self, soup: BeautifulSoup) -> dict:
+    def __get_form_data(self, soup: BeautifulSoup) -> dict:
         hidden_fields = soup.find_all('input', type='hidden')
         return {
             '__EVENTTARGET': '',
