@@ -1,5 +1,4 @@
 import requests
-import dateutil
 import json
 import datetime
 import arrow
@@ -43,13 +42,11 @@ class ElSalvador:
                 current_day + hour.zfill(2) + ':00',
                 'DD/MM/YYYYHH:mm',
                 locale='es',
-                tzinfo=dateutil.tz.gettz('America/El_Salvador')).datetime
+                tzinfo='America/El_Salvador').datetime
             value = table[i]['0']
             column_index = int(re.search(r'\[(\d+),\d+,\d+\]', i).group(1))
-            data_point = self.__data_point(
-                date,
-                value,
-                column_labels[column_index])
+            production_type = column_labels[column_index]
+            data_point = self.__data_point(date, value, production_type)
             data.append(data_point)
         return data
 
