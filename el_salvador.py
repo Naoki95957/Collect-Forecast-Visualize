@@ -1,6 +1,5 @@
 import requests
 import json
-import datetime
 import arrow
 import re
 from urllib.parse import urlencode
