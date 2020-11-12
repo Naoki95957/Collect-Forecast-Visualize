@@ -1,7 +1,6 @@
 import datetime
 from datetime import timedelta
 import arrow
-import dateutil
 import platform
 from bs4 import BeautifulSoup
 import selenium
@@ -46,7 +45,7 @@ class Nicaragua:
 
         if not bool(date):
             yesterday = datetime.date.today() - timedelta(days=1)
-            # reformatted date to match costa ricas search 'DD/MM/YYYY'
+            # reformatted date to match nicaragua search 'DD/MM/YYYY'
             date = (str(yesterday.day).zfill(2) + "/" +
                     str(yesterday.month).zfill(2) + "/" +
                     str(yesterday.year).zfill(4))
@@ -60,15 +59,15 @@ class Nicaragua:
                 By.XPATH, ('//div[@id="Postdespacho"]/'
                            '/table[@id="GeneracionXAgente"]'))))
 
-        tableDate = self.driver.find_element_by_id(
+        table_date = self.driver.find_element_by_id(
             'dtpFechaConsulta').get_attribute('value')
         tabs = self.driver.find_element_by_class_name(
             'tabs').find_elements_by_tag_name('table')
         tabs[1].click()
 
-        return self.__scrape_data(self.driver, tableDate)
+        return self.__scrape_data(self.driver, table_date)
 
-    def __scrape_data(self, driver, tableDate) -> list:
+    def __scrape_data(self, driver, table_date) -> list:
         soup = BeautifulSoup(driver.page_source, "html5lib")
 
         tab = soup.find('div', {'id': 'Postdespacho'})
@@ -88,7 +87,7 @@ class Nicaragua:
                 if not bool(value):
                     value = '0'
                 data_points_list.append(
-                    self.__data_point(header, tableDate, hour, value))
+                    self.__data_point(header, table_date, hour, value))
 
         return data_points_list
 
@@ -97,8 +96,7 @@ class Nicaragua:
         datapoint['ts'] = arrow.get(todaysDate + str(hour).zfill(2) + ":00",
                                     'DD/MM/YYYYHH:mm',
                                     locale="es",
-                                    tzinfo=dateutil.tz.gettz(
-                                        'America/Managua')).datetime
+                                    tzinfo='America/Managua').datetime
         datapoint['value'] = value
         datapoint['ba'] = Nicaragua.BA
         datapoint['meta'] = location + " (MWh)"
