@@ -1,4 +1,5 @@
 arrow
 bs4
 datetime
+requests
 selenium
