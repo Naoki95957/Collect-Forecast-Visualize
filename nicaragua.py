@@ -79,6 +79,7 @@ class Nicaragua:
         data_points_list = []
         for row in range(2, len(plants_hours)):
             rowEntry = plants_hours[row].findAll('td')
+
         for column in range(1, len(rowEntry) - 1):
             value = rowEntry[column].getText()
             header = headerCells[column - 1].getText()
