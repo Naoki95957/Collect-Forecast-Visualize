@@ -68,7 +68,7 @@ class Nicaragua:
         return self.__scrape_data(self.driver, table_date)
 
     def __scrape_data(self, driver, table_date) -> list:
-        soup = BeautifulSoup(driver.page_source, "html5lib")
+        soup = BeautifulSoup(driver.page_source, "html.parser")
 
         tab = soup.find('div', {'id': 'Postdespacho'})
         plants_hours = tab.find(
