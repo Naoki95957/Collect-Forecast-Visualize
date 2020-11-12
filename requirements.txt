@@ -1,6 +1,5 @@
 arrow
 bs4
 datetime
-platform
 selenium
 urllib
