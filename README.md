@@ -38,6 +38,7 @@ Students will be working within a framework provided by WattTime which already i
   - arrow
   - bs4
   - datetime
+  - requests
   - selenium
   
 ## APIs:
