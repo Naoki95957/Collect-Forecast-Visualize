@@ -3,6 +3,17 @@ from scrapers.nicaragua import Nicaragua
 from scrapers.el_salvador import ElSalvador
 
 
+def test_general_El_Salvador():
+    try:
+        es = ElSalvador()
+        data = es.scrape_data()
+        for datapoint in data:
+            print(datapoint)
+        assert True
+    except Exception:
+        assert False
+
+
 def test_general_costa_rica():
     try:
         cr = CostaRica()
@@ -18,17 +29,6 @@ def test_general_Nicaragua():
     try:
         nic = Nicaragua()
         data = nic.search_date()
-        for datapoint in data:
-            print(datapoint)
-        assert True
-    except Exception:
-        assert False
-
-
-def test_general_El_Salvador():
-    try:
-        es = ElSalvador()
-        data = es.scrape_data()
         for datapoint in data:
             print(datapoint)
         assert True
