@@ -30,13 +30,13 @@ class ElSalvador:
         operating_system = platform.system()
         full_path = str(__file__)
         full_path = str(Path(full_path).parents[0])
-        chrome_driver = '\\drivers\\mac_chromedriver86'
+        chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = '\\drivers\\linux_chromedriver86'
+            chrome_driver = '/drivers/linux_chromedriver86'
         elif operating_system == "Darwin":
-            chrome_driver = '\\drivers\\mac_chromedriver86'
+            chrome_driver = '/drivers/mac_chromedriver86'
         elif operating_system == "Windows":
-            chrome_driver = '\\drivers\\win_chromedriver86.exe'
+            chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(full_path + chrome_driver))
