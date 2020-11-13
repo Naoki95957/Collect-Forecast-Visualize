@@ -1,7 +1,7 @@
 from scrapers.costa_rica import CostaRica
 from scrapers.nicaragua import Nicaragua
 from scrapers.el_salvador import ElSalvador
-from scrapers.el_salvador_legacy import ElSalvador as ESL
+from scrapers.el_salvador_legacy import ElSalvador as esl
 
 
 def test_general_El_Salvador():
@@ -17,7 +17,7 @@ def test_general_El_Salvador():
 
 def test_general_ESL():
     try:
-        es = ESL()
+        es = esl()
         data = es.scrape_data()
         for datapoint in data:
             print(datapoint)
