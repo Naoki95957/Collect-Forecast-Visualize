@@ -71,6 +71,7 @@ class ElSalvador:
         page = page.replace("\\n", "\n")
         page = page.replace("\\'", "'")
         page = page.replace("\'", "\"")
+        page = re.sub(r'\\\\\"', '\\\",', page)
         page = page.split('\n', 1)[1]
         page = page[:page.rfind('\n')]
         page = "{" + page + "}"

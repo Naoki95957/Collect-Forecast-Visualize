@@ -4,6 +4,7 @@ import arrow
 import platform
 from bs4 import BeautifulSoup
 import selenium
+from pathlib import Path
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -22,16 +23,18 @@ class Nicaragua:
         options = Options()
         options.headless = True
         operating_system = platform.system()
-        chrome_driver = './drivers/mac_chromedriver86'
+        full_path = str(__file__)
+        full_path = str(Path(full_path).parents[0])
+        chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = './drivers/linux_chromedriver86'
+            chrome_driver = '/drivers/linux_chromedriver86'
         elif operating_system == "Darwin":
-            chrome_driver = './drivers/mac_chromedriver86'
+            chrome_driver = '/drivers/mac_chromedriver86'
         elif operating_system == "Windows":
-            chrome_driver = './drivers/win_chromedriver86.exe'
+            chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
-            executable_path=chrome_driver)
+            executable_path=(full_path + chrome_driver))
 
     def __del__(self):
         self.driver.quit()

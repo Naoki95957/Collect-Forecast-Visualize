@@ -35,8 +35,13 @@ Students will be working within a framework provided by WattTime which already i
 
 ### Technologies:
    [Python 3](https://www.python.org/downloads/)  
-  - Any neccessary libraries TBD
-  - Unit analysis
+  - arrow
+  - bs4
+  - datetime
+  - requests
+  - selenium
+  
+  You can install all required python modules with `pip install -r requirments.txt`
   
 ## APIs:
  - [Watttime.org](https://www.watttime.org/api-documentation/#introduction)
