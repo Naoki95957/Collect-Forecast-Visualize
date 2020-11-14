@@ -54,7 +54,28 @@ class CostaRica:
     def __del__(self):
         self.driver.quit()
 
-    def search_date(self, date='') -> list:
+    def today(self):
+        return self.yesterday(0)
+
+    def yesterday(self, day=1):
+        yesterday = datetime.date.today() - timedelta(days=day)
+        # reformatted date to match costa ricas search 'DD/MM/YYYY'
+        date = (str(yesterday.day).zfill(2) + "/" +
+                str(yesterday.month).zfill(2) + "/" +
+                str(yesterday.year).zfill(4))
+
+        search_date_field = self.driver.find_element_by_name(
+            "formPosdespacho:txtFechaInicio_input")
+        search_date_field.clear()
+        search_date_field.send_keys(date + Keys.RETURN)
+        return self.__scrape_data(self.driver, date)
+
+
+    def last_number_of_days(self, days):
+        for day in range(days):
+            self.yesterday(day)
+
+    def date(self, date='') -> list:
         """
         :param date: If empty, yesterday is default
             Enter 'DD/MM/YYYY' for date to retrieve data from other dates.
@@ -72,6 +93,13 @@ class CostaRica:
         search_date_field.clear()
         search_date_field.send_keys(date + Keys.RETURN)
         return self.__scrape_data(self.driver, date)
+
+    def date_range(self):
+        pass
+
+    def year(self):
+        pass
+
 
     def __scrape_data(self, driver, date) -> list:
         soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -101,16 +129,29 @@ class CostaRica:
 def main():
     print("Initializing driver...")
     costa_rica = CostaRica()
+    #today = costa_rica.today()
+    #for datapoint in today:
+    #    print(datapoint)
 
-    print("Loading yesterday...")
-    yesterday_data = costa_rica.search_date()
-    for datapoint in yesterday_data:
-        print(datapoint)
+    #yesterday = costa_rica.yesterday()
+    #for datapoint in yesterday:
+    #    print(datapoint)
 
-    print("Loading other date...")
-    other_date_data = costa_rica.search_date('03/11/2020')
-    for datapoint in other_date_data:
-        print(datapoint)
+    for days in range(10):
+        for datapoint in costa_rica.yesterday(days):
+            print(datapoint)
+
+    #print("Loading yesterday...")
+    #yesterday_data = costa_rica.date()
+    #for datapoint in yesterday_data:
+    #    print(datapoint)
+
+    #print("Loading other date...")
+    #other_date_data = costa_rica.date('14/11/2020')
+    #for datapoint in other_date_data:
+    #    print(datapoint)
+
+
 
 
 if __name__ == "__main__":
