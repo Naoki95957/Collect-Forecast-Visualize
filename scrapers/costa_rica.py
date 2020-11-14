@@ -1,38 +1,42 @@
-import selenium
-import re
+"""
+
+    This class retrives all emission data from Costa Rica.
+    Emissions are reporte by hour, MWh, BA, and includes power plant name.
+    Methods today, yesterday, date, and date range return a list of dictionaries.
+
+    This class dependency uses chrome webdrivers located in the drivers folder.
+    The class automatically detects OS and navigates an invisible browser.
+    Initilizing driver takes longer than retriving date.
+    Use date_range for multiple days instead of initilizing driver for each date.
+
+    If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder
+    If you get a warning:
+        “mac_chromedriver86” can’t be opened because the identity of the developer
+        cannot be confirmed."
+    Go to Apple > System Preferences > Security & Privacy and click the
+        'Open Anyway' button. Then rerun program.
+    To update drivers:
+    https://selenium-python.readthedocs.io/installation.html
+"""
+
+
 import datetime
-import arrow
 import platform
+import re
 from datetime import timedelta
+from pathlib import Path
+
+import arrow
+import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from pathlib import Path
-
-'''
-Retrives emission data as a list of dictionaries from Costa Rica by hours
-for each plant and balance authority name.
-
-If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder
-If you get a warning:
-    “mac_chromedriver86” can’t be opened because the identity of the developer
-    cannot be confirmed."
-Go to Apple > System Preferences > Security & Privacy and click the
-    'Open Anyway' button. Then rerun program.
-To update drivers:
-https://selenium-python.readthedocs.io/installation.html
-'''
 
 
 class CostaRica:
-    """
-    This class uses only the public method search_date() to retrive data.
-    Other methods are private helpers and are not called from client.
-    Automattically initalizes web driver based on users OS
-    """
     URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
     driver = None
-    data_points_list = []
+    data_points = []  # list of dictionaries
 
     def __init__(self):
         options = Options()
@@ -52,22 +56,22 @@ class CostaRica:
     def __del__(self):
         self.driver.quit()
 
-    def today(self):
+    def today(self) -> list:
         today = datetime.date.today()
         self.date(today.year, today.month, today.day)
-        return self.data_points_list
+        return self.data_points
 
-    def yesterday(self):
+    def yesterday(self) -> list:
         yesterday = datetime.date.today() - timedelta(days=1)
         self.date(yesterday.year, yesterday.month, yesterday.day)
-        return self.data_points_list
+        return self.data_points
 
-    def date(self, year, month, day):
+    def date(self, year, month, day) -> list:
         self.date_range(year, month, day, year, month, day)
-        return self.data_points_list
+        return self.data_points
 
     def date_range(self, start_year, start_month, start_day,
-                   end_year, end_month, end_day):
+                   end_year, end_month, end_day) -> list:
         start_date = datetime.date(start_year, start_month, start_day)
         end_date = datetime.date(end_year, end_month, end_day + 1)
         while start_date < end_date:
@@ -81,7 +85,7 @@ class CostaRica:
             search_date_field.send_keys(date + Keys.RETURN)
             self.__scrape_data(date)
             start_date += datetime.timedelta(days=1)
-        return self.data_points_list
+        return self.data_points
 
     def __scrape_data(self, date):
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
@@ -90,7 +94,7 @@ class CostaRica:
         for plant_hour in plants_hours:
             if (plant_hour.has_attr('title') and bool(plant_hour.getText())
                     and 'Total' not in plant_hour['title']):
-                self.data_points_list.append(self.__data_point(date, plant_hour))
+                self.data_points.append(self.__data_point(date, plant_hour))
 
     def __data_point(self, date, plant_hour) -> dict:
         plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)
@@ -113,7 +117,7 @@ def main():
     print("Loading Today...")
     today = costa_rica.today()
     for datapoint in today:
-            print(datapoint)
+        print(datapoint)
 
     print("Loading Yesterday...")
     yesterday = costa_rica.yesterday()

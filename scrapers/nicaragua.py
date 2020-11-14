@@ -1,18 +1,39 @@
+"""
+
+    This class retrives all emission data from Costa Rica.
+    Emissions are reporte by hour, MWh, BA, and includes power plant name.
+    Methods today, yesterday, date, and date range return a list of dictionaries.
+
+    This class dependency uses chrome webdrivers located in the drivers folder.
+    The class automatically detects OS and navigates an invisible browser.
+    Initilizing driver takes longer than retriving date.
+    Use date_range for multiple days instead of initilizing driver for each date.
+
+    If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder
+    If you get a warning:
+        “mac_chromedriver86” can’t be opened because the identity of the developer
+        cannot be confirmed."
+    Go to Apple > System Preferences > Security & Privacy and click the
+        'Open Anyway' button. Then rerun program.
+    To update drivers:
+    https://selenium-python.readthedocs.io/installation.html
+"""
+
 import datetime
-from datetime import timedelta
-import arrow
 import platform
-from bs4 import BeautifulSoup
-import selenium
+from datetime import timedelta
 from pathlib import Path
+
+import arrow
+import selenium
+from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class Nicaragua:
-
     URL = ('http://www.cndc.org.ni/'
            'consultas/reportesDiarios/'
            'postDespachoEnergia.php?fecha=')

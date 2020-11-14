@@ -1,13 +1,17 @@
+
+
+
 import datetime
-import arrow
 import platform
-from bs4 import BeautifulSoup
-import selenium
 from pathlib import Path
+
+import arrow
+import selenium
+from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class ElSalvador:
