@@ -58,17 +58,14 @@ class CostaRica:
 
     def today(self) -> list:
         today = datetime.date.today()
-        self.date(today.year, today.month, today.day)
-        return self.data_points
+        return self.date(today.year, today.month, today.day)
 
     def yesterday(self) -> list:
         yesterday = datetime.date.today() - timedelta(days=1)
-        self.date(yesterday.year, yesterday.month, yesterday.day)
-        return self.data_points
+        return self.date(yesterday.year, yesterday.month, yesterday.day)
 
     def date(self, year, month, day) -> list:
-        self.date_range(year, month, day, year, month, day)
-        return self.data_points
+        return self.date_range(year, month, day, year, month, day)
 
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
