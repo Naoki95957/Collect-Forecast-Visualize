@@ -32,85 +32,89 @@ class CostaRica:
     """
     URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
     driver = None
+    data_points_list = []
 
     def __init__(self):
         options = Options()
         options.headless = True
         operating_system = platform.system()
-        full_path = str(__file__)
-        full_path = str(Path(full_path).parents[0])
+        full_path = str(Path(str(__file__)).parents[0])
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
             chrome_driver = '/drivers/linux_chromedriver86'
-        elif operating_system == "Darwin":
-            chrome_driver = '/drivers/mac_chromedriver86'
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(full_path + chrome_driver))
-        self.driver.get(CostaRica.URL)
+        self.driver.get(self.URL)
 
     def __del__(self):
         self.driver.quit()
 
     def today(self):
-        return self.yesterday(0)
+        self.search(0)
+        return self.data_points_list
 
-    def yesterday(self, day=1):
-        yesterday = datetime.date.today() - timedelta(days=day)
-        # reformatted date to match costa ricas search 'DD/MM/YYYY'
-        date = (str(yesterday.day).zfill(2) + "/" +
-                str(yesterday.month).zfill(2) + "/" +
-                str(yesterday.year).zfill(4))
+    def yesterday(self):
+        self.search(1)
+        return self.data_points_list
 
+    def search(self, date):
+        if type(date) is int:
+            search_day = datetime.date.today() - timedelta(days=date)
+            # reformatted date to match costa ricas search 'DD/MM/YYYY'
+            date = (str(search_day.day).zfill(2) + "/" +
+                    str(search_day.month).zfill(2) + "/" +
+                    str(search_day.year).zfill(4))
         search_date_field = self.driver.find_element_by_name(
             "formPosdespacho:txtFechaInicio_input")
         search_date_field.clear()
         search_date_field.send_keys(date + Keys.RETURN)
-        return self.__scrape_data(self.driver, date)
-
+        return self.__filter_data(date)
 
     def last_number_of_days(self, days):
+        '''
+        :param days: Excludes today
+        :return:
+        '''
         for day in range(days):
-            self.yesterday(day)
+            self.data_points_list.append(self.search(day + 1))
+        return self.data_points_list
 
-    def date(self, date='') -> list:
+    def date(self, date):
         """
         :param date: If empty, yesterday is default
             Enter 'DD/MM/YYYY' for date to retrieve data from other dates.
         :return: a list of dictoinaries.
         """
-        if not bool(date):
-            yesterday = datetime.date.today() - timedelta(days=1)
-            # reformatted date to match costa ricas search 'DD/MM/YYYY'
-            date = (str(yesterday.day).zfill(2) + "/" +
-                    str(yesterday.month).zfill(2) + "/" +
-                    str(yesterday.year).zfill(4))
+        self.search(date)
+        return self.data_points_list
 
-        search_date_field = self.driver.find_element_by_name(
-            "formPosdespacho:txtFechaInicio_input")
-        search_date_field.clear()
-        search_date_field.send_keys(date + Keys.RETURN)
-        return self.__scrape_data(self.driver, date)
 
-    def date_range(self):
+    def date_range(self, start, end):
+        '''
+
+        :param start:
+        :param end:
+        :return:
+        '''
+        # how do i go from 2/11/2020 to 5/22/2020
+        # user can enter as datetime object?
         pass
 
     def year(self):
         pass
 
 
-    def __scrape_data(self, driver, date) -> list:
-        soup = BeautifulSoup(driver.page_source, "html.parser")
+    def __filter_data(self, date):
+        soup = BeautifulSoup(self.driver.page_source, "html.parser")
         plants_hours = soup.find('tbody', {
             'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
-        data_points_list = []
         for plant_hour in plants_hours:
             if (plant_hour.has_attr('title') and bool(plant_hour.getText())
                     and 'Total'not in plant_hour['title']):
-                data_points_list.append(self.__data_point(date, plant_hour))
-        return data_points_list
+                self.data_points_list.append(self.__data_point(date, plant_hour))
 
     def __data_point(self, date, plant_hour) -> dict:
         plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)
@@ -137,9 +141,13 @@ def main():
     #for datapoint in yesterday:
     #    print(datapoint)
 
-    for days in range(10):
-        for datapoint in costa_rica.yesterday(days):
-            print(datapoint)
+    #days_of_data = costa_rica.last_number_of_days(2)
+    #for datapoint in days_of_data:
+    #    print(datapoint)
+
+
+
+    # so return one list but the datapoints contain more than one day!!!
 
     #print("Loading yesterday...")
     #yesterday_data = costa_rica.date()
