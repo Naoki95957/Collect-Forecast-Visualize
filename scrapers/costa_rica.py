@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from pathlib import Path
 
-"""
+'''
 Retrives emission data as a list of dictionaries from Costa Rica by hours
 for each plant and balance authority name.
 
@@ -21,7 +21,7 @@ Go to Apple > System Preferences > Security & Privacy and click the
     'Open Anyway' button. Then rerun program.
 To update drivers:
 https://selenium-python.readthedocs.io/installation.html
-"""
+'''
 
 
 class CostaRica:
@@ -53,67 +53,43 @@ class CostaRica:
         self.driver.quit()
 
     def today(self):
-        self.search(0)
+        today = datetime.date.today()
+        self.date(today.year, today.month, today.day)
         return self.data_points_list
 
     def yesterday(self):
-        self.search(1)
+        yesterday = datetime.date.today() - timedelta(days=1)
+        self.date(yesterday.year, yesterday.month, yesterday.day)
         return self.data_points_list
 
-    def search(self, date):
-        if type(date) is int:
-            search_day = datetime.date.today() - timedelta(days=date)
-            # reformatted date to match costa ricas search 'DD/MM/YYYY'
-            date = (str(search_day.day).zfill(2) + "/" +
-                    str(search_day.month).zfill(2) + "/" +
-                    str(search_day.year).zfill(4))
-        search_date_field = self.driver.find_element_by_name(
-            "formPosdespacho:txtFechaInicio_input")
-        search_date_field.clear()
-        search_date_field.send_keys(date + Keys.RETURN)
-        return self.__filter_data(date)
-
-    def last_number_of_days(self, days):
-        '''
-        :param days: Excludes today
-        :return:
-        '''
-        for day in range(days):
-            self.data_points_list.append(self.search(day + 1))
+    def date(self, year, month, day):
+        self.date_range(year, month, day, year, month, day)
         return self.data_points_list
 
-    def date(self, date):
-        """
-        :param date: If empty, yesterday is default
-            Enter 'DD/MM/YYYY' for date to retrieve data from other dates.
-        :return: a list of dictoinaries.
-        """
-        self.search(date)
+    def date_range(self, start_year, start_month, start_day,
+                   end_year, end_month, end_day):
+        start_date = datetime.date(start_year, start_month, start_day)
+        end_date = datetime.date(end_year, end_month, end_day + 1)
+        while start_date < end_date:
+            # Reformat date to match costa rica's search field
+            date = (str(start_date.day).zfill(2) + "/" +
+                    str(start_date.month).zfill(2) + "/" +
+                    str(start_date.year).zfill(4))
+            search_date_field = self.driver.find_element_by_name(
+                "formPosdespacho:txtFechaInicio_input")
+            search_date_field.clear()
+            search_date_field.send_keys(date + Keys.RETURN)
+            self.__scrape_data(date)
+            start_date += datetime.timedelta(days=1)
         return self.data_points_list
 
-
-    def date_range(self, start, end):
-        '''
-
-        :param start:
-        :param end:
-        :return:
-        '''
-        # how do i go from 2/11/2020 to 5/22/2020
-        # user can enter as datetime object?
-        pass
-
-    def year(self):
-        pass
-
-
-    def __filter_data(self, date):
+    def __scrape_data(self, date):
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         plants_hours = soup.find('tbody', {
             'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
         for plant_hour in plants_hours:
             if (plant_hour.has_attr('title') and bool(plant_hour.getText())
-                    and 'Total'not in plant_hour['title']):
+                    and 'Total' not in plant_hour['title']):
                 self.data_points_list.append(self.__data_point(date, plant_hour))
 
     def __data_point(self, date, plant_hour) -> dict:
@@ -133,33 +109,26 @@ class CostaRica:
 def main():
     print("Initializing driver...")
     costa_rica = CostaRica()
-    #today = costa_rica.today()
-    #for datapoint in today:
-    #    print(datapoint)
 
-    #yesterday = costa_rica.yesterday()
-    #for datapoint in yesterday:
-    #    print(datapoint)
+    print("Loading Today...")
+    today = costa_rica.today()
+    for datapoint in today:
+            print(datapoint)
 
-    #days_of_data = costa_rica.last_number_of_days(2)
-    #for datapoint in days_of_data:
-    #    print(datapoint)
+    print("Loading Yesterday...")
+    yesterday = costa_rica.yesterday()
+    for datapoint in yesterday:
+        print(datapoint)
 
+    print("Loading date...")
+    day = costa_rica.date(2020, 11, 10)
+    for datapoint in day:
+        print(datapoint)
 
-
-    # so return one list but the datapoints contain more than one day!!!
-
-    #print("Loading yesterday...")
-    #yesterday_data = costa_rica.date()
-    #for datapoint in yesterday_data:
-    #    print(datapoint)
-
-    #print("Loading other date...")
-    #other_date_data = costa_rica.date('14/11/2020')
-    #for datapoint in other_date_data:
-    #    print(datapoint)
-
-
+    print("Loading date range...")
+    days = costa_rica.date_range(2020, 11, 10, 2020, 11, 12)
+    for datapoint in days:
+        print(datapoint)
 
 
 if __name__ == "__main__":
