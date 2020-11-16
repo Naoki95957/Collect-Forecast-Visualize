@@ -1,5 +1,4 @@
 """
-
     This class retrives all emission data from Nicargua.
     Emissions are reporte by hour, MWh, BA, and includes power plant name.
     Methods yesterday, date, and date range return a list of dictionaries.
@@ -9,11 +8,15 @@
     This class dependency uses chrome webdrivers located in the drivers folder.
     The class automatically detects OS and navigates an invisible browser.
     Initilizing driver takes longer than retriving date.
-    Use date_range for multiple days instead of initilizing driver for each date.
+    Use date_range for multiple days instead of initilizing
+    driver for each date.
 
-    If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder
+    If program doesn't run in MAC, try opening
+    mac_chromedriver86 in drivers folder
+
     If you get a warning:
-        “mac_chromedriver86” can’t be opened because the identity of the developer
+        “mac_chromedriver86” can’t be opened
+        because the identity of the developer
         cannot be confirmed."
     Go to Apple > System Preferences > Security & Privacy and click the
         'Open Anyway' button. Then rerun program.
@@ -87,7 +90,7 @@ class Nicaragua:
             data_points.extend(self.__scrape_data(table_date))
             start_date += datetime.timedelta(days=1)
         return data_points
-        
+
     def __scrape_data(self, table_date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         tab = soup.find('div', {'id': 'Postdespacho'})
@@ -103,7 +106,8 @@ class Nicaragua:
                 hour = row_entry[0].getText()
                 if not bool(value):
                     value = '0'
-                data_points.append(self.__data_point(location, table_date, hour, value))
+                data_points.append(
+                    self.__data_point(location, table_date, hour, value))
         return data_points
 
     def __data_point(self, location, todays_date, hour, value) -> dict:

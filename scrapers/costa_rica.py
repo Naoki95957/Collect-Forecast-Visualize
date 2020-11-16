@@ -1,17 +1,21 @@
 """
-
     This class retrives all emission data from Costa Rica.
     Emissions are reporte by hour, MWh, BA, and includes power plant name.
-    Methods today, yesterday, date, and date range return a list of dictionaries.
+    Methods today, yesterday, date, and date range return
+    a list of dictionaries.
 
     This class dependency uses chrome webdrivers located in the drivers folder.
     The class automatically detects OS and navigates an invisible browser.
     Initilizing driver takes longer than retriving date.
-    Use date_range for multiple days instead of initilizing driver for each date.
+    Use date_range for multiple days instead of initilizing
+    driver for each date.
 
-    If program doesn't run in MAC, try opening mac_chromedriver86 in drivers folder
+    If program doesn't run in MAC, try opening
+    mac_chromedriver86 in drivers folder
+
     If you get a warning:
-        “mac_chromedriver86” can’t be opened because the identity of the developer
+        “mac_chromedriver86” can’t be opened
+        because the identity of the developer
         cannot be confirmed."
     Go to Apple > System Preferences > Security & Privacy and click the
         'Open Anyway' button. Then rerun program.

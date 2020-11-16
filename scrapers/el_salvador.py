@@ -65,7 +65,6 @@ class ElSalvador:
             self.__request_days_back(delta)
         return self.scrape_data()
 
-
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
         # I changed a few things, basically to work top-down.
@@ -88,22 +87,24 @@ class ElSalvador:
 
     def __request_days_back(self, days_back: int):
         """
-        Requests a date on the Daily Operation's page and reloads it 
+        Requests n days back on the Daily Operation's page and reloads it
         """
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-icon-dashboard-parameters')))
-        button = self.driver.find_element_by_class_name('dx-icon-dashboard-parameters')
+        button = self.driver.find_element_by_class_name(
+            'dx-icon-dashboard-parameters')
         action = selenium.webdriver.ActionChains(self.driver)
         action.move_to_element(button)
         action.click(on_element=button)
         action.perform()
         action.reset_actions()
-        
+
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-dropdowneditor-icon')))
-        dropdown = self.driver.find_element_by_class_name('dx-dropdowneditor-icon')
+        dropdown = self.driver.find_element_by_class_name(
+            'dx-dropdowneditor-icon')
         action.move_to_element(dropdown)
         action.click(on_element=dropdown)
         action.release()
@@ -159,7 +160,7 @@ class ElSalvador:
                                {'class': 'dx-area-data-cell'}).find('table')
         try:
             scrape_date = times[1].text
-        except Exception as e:
+        except Exception:
             # this occurs sometime around 10pm PDT
             print("There is no data for this day yet")
             return []
@@ -220,12 +221,12 @@ def main():
     print("Loading date...")
     day = el_salvador.date(2020, 11, 10)
     for datapoint in day:
-       print(datapoint)
+        print(datapoint)
 
     print("Loading date range...")
     days = el_salvador.date_range(2020, 11, 10, 2020, 11, 12)
     for datapoint in days:
-       print(datapoint)
+        print(datapoint)
 
 
 if __name__ == "__main__":
