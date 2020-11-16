@@ -36,7 +36,6 @@ from selenium.webdriver.common.keys import Keys
 class CostaRica:
     URL = 'https://apps.grupoice.com/CenceWeb/CencePosdespachoNacional.jsf'
     driver = None
-    data_points = []  # list of dictionaries
 
     def __init__(self):
         options = Options()
@@ -71,6 +70,7 @@ class CostaRica:
                    end_year, end_month, end_day) -> list:
         start_date = datetime.date(start_year, start_month, start_day)
         end_date = datetime.date(end_year, end_month, end_day + 1)
+        data_points = []
         while start_date < end_date:
             # Reformat date to match costa rica's search field
             date = (str(start_date.day).zfill(2) + "/" +
@@ -80,18 +80,20 @@ class CostaRica:
                 "formPosdespacho:txtFechaInicio_input")
             search_date_field.clear()
             search_date_field.send_keys(date + Keys.RETURN)
-            self.__scrape_data(date)
+            data_points.extend(self.__scrape_data(date))
             start_date += datetime.timedelta(days=1)
-        return self.data_points
+        return data_points
 
-    def __scrape_data(self, date):
+    def __scrape_data(self, date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         plants_hours = soup.find('tbody', {
             'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
+        data_points = []
         for plant_hour in plants_hours:
             if (plant_hour.has_attr('title') and bool(plant_hour.getText())
                     and 'Total' not in plant_hour['title']):
-                self.data_points.append(self.__data_point(date, plant_hour))
+                data_points.append(self.__data_point(date, plant_hour))
+        return data_points
 
     def __data_point(self, date, plant_hour) -> dict:
         plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)

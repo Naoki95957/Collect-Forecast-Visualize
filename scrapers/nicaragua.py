@@ -39,7 +39,6 @@ class Nicaragua:
     URL = ('http://www.cndc.org.ni/consultas/reportesDiarios/'
            'postDespachoEnergia.php?fecha=')
     driver = None
-    data_points = []
 
     def __init__(self):
         options = Options()
@@ -69,6 +68,7 @@ class Nicaragua:
                    end_year, end_month, end_day) -> list:
         start_date = datetime.date(start_year, start_month, start_day)
         end_date = datetime.date(end_year, end_month, end_day + 1)
+        data_points = []
         while start_date < end_date:
             # Reformat date to match search field
             date = (str(start_date.day).zfill(2) + "/" +
@@ -84,16 +84,17 @@ class Nicaragua:
             tabs = self.driver.find_element_by_class_name(
                 'tabs').find_elements_by_tag_name('table')
             tabs[1].click()
-            self.__scrape_data(table_date)
+            data_points.extend(self.__scrape_data(table_date))
             start_date += datetime.timedelta(days=1)
-        return self.data_points
-
-    def __scrape_data(self, table_date):
+        return data_points
+        
+    def __scrape_data(self, table_date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         tab = soup.find('div', {'id': 'Postdespacho'})
         plants_hours = tab.find(
             'table', {'id': 'GeneracionXAgente'}).findAll('tr')
         location_cells = plants_hours[1].findAll('td')
+        data_points = []
         for row in range(2, len(plants_hours)):
             row_entry = plants_hours[row].findAll('td')
             for column in range(1, len(row_entry) - 1):
@@ -102,7 +103,8 @@ class Nicaragua:
                 hour = row_entry[0].getText()
                 if not bool(value):
                     value = '0'
-                self.data_points.append(self.__data_point(location, table_date, hour, value))
+                data_points.append(self.__data_point(location, table_date, hour, value))
+        return data_points
 
     def __data_point(self, location, todays_date, hour, value) -> dict:
         return {'ts': arrow.get(todays_date + str(hour).zfill(2) + ":00",
