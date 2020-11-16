@@ -157,7 +157,12 @@ class ElSalvador:
                                 {'class': 'dx-area-row-cell'}).find_all('span')
         data = data_table.find('td',
                                {'class': 'dx-area-data-cell'}).find('table')
-        scrape_date = times[1].text
+        try:
+            scrape_date = times[1].text
+        except Exception as e:
+            # this occurs sometime around 10pm PDT
+            print("There is no data for this day yet")
+            return []
         # this needs to be here since the
         # website reports 1/8/2020 instead of 01/08/2020
         scrape_day = re.search(r'(\d+)/\d+/\d+', scrape_date).group(1)
@@ -212,12 +217,12 @@ def main():
     for datapoint in yesterday:
         print(datapoint)
 
-    print("Loading date...10/11/2020")
+    print("Loading date...")
     day = el_salvador.date(2020, 11, 10)
     for datapoint in day:
        print(datapoint)
 
-    print("Loading date range...12-10th")
+    print("Loading date range...")
     days = el_salvador.date_range(2020, 11, 10, 2020, 11, 12)
     for datapoint in days:
        print(datapoint)
