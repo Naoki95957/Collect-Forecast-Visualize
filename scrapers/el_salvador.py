@@ -2,7 +2,7 @@ import datetime
 from datetime import timedelta
 import platform
 from pathlib import Path
-
+import re
 import arrow
 import selenium
 from bs4 import BeautifulSoup
@@ -10,12 +10,15 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
 
 
 class ElSalvador:
+    # This is needed to track what the current date is
+    __current_days_back = 0
+    __initial_reqest = True
     URL = 'http://estadistico.ut.com.sv/OperacionDiaria.aspx'
     driver = None
-    data_points = []
     TRANSLATION_DICT = {
         'Biomasa': 'Biomass',
         'Geotérmico': 'Geothermal',
@@ -52,18 +55,82 @@ class ElSalvador:
         return self.date(yesterday.year, yesterday.month, yesterday.day)
 
     def date(self, year, month, day) -> list:
-        return self.date_range(year, month, day, year, month, day)
+        # I'm rewritting this becuase before it would be
+        # incredibly more efficient to scroll down all at once than
+        # to reload the page one day at a time
+        today = datetime.date.today()
+        delta = (today - datetime.date(year, month, day)).days
+        delta -= self.__current_days_back
+        if bool(delta):
+            self.__request_days_back(delta)
+        return self.scrape_data()
+
 
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
+        # I changed a few things, basically to work top-down.
+        # Working in this way due to how the website is structered.
+        # THIS IS MUCH BETTER THAN FOWRARD - TRUST ME
         start_date = datetime.date(start_year, start_month, start_day)
         end_date = datetime.date(end_year, end_month, end_day + 1)
-        while start_date < end_date:
-            # pass start_date into scrape_data?
-            # need scrape_data to select date
-            self.scrape_data()
+        delta = (datetime.date.today() - end_date).days
+        delta -= self.__current_days_back
+        data_points = []
+        if bool(delta):
+            self.__request_days_back(delta + 1)
+            data_points.extend(self.scrape_data())
             start_date += datetime.timedelta(days=1)
-        return self.data_points
+        while start_date < end_date:
+            self.__request_days_back(1)
+            data_points.extend(self.scrape_data())
+            start_date += datetime.timedelta(days=1)
+        return data_points
+
+    def __request_days_back(self, days_back: int):
+        """
+        Requests a date on the Daily Operation's page and reloads it 
+        """
+        WebDriverWait(self.driver, 10).until(
+            ec.presence_of_element_located((
+                By.CLASS_NAME, 'dx-icon-dashboard-parameters')))
+        button = self.driver.find_element_by_class_name('dx-icon-dashboard-parameters')
+        action = selenium.webdriver.ActionChains(self.driver)
+        action.move_to_element(button)
+        action.click(on_element=button)
+        action.perform()
+        action.reset_actions()
+        
+        WebDriverWait(self.driver, 10).until(
+            ec.presence_of_element_located((
+                By.CLASS_NAME, 'dx-dropdowneditor-icon')))
+        dropdown = self.driver.find_element_by_class_name('dx-dropdowneditor-icon')
+        action.move_to_element(dropdown)
+        action.click(on_element=dropdown)
+        action.release()
+        action.perform()
+        self.__key_down_element(days_back, dropdown)
+
+    def __key_down_element(self, times: int, element):
+        """
+        Helper function to focus on element and click the down arrow n times
+        """
+        action = selenium.webdriver.ActionChains(self.driver)
+        key_action = Keys.DOWN
+        self.__current_days_back += times
+        if (times < 0):
+            key_action = Keys.UP
+            times *= -1
+        if self.__initial_reqest:
+            self.__initial_reqest = False
+            action.send_keys(key_action)
+        for i in range(0, times):
+            action.send_keys(key_action)
+        action.send_keys(Keys.RETURN)
+        action.send_keys(Keys.TAB)
+        action.send_keys(Keys.TAB)
+        action.send_keys(Keys.TAB)
+        action.send_keys(Keys.RETURN)
+        action.perform()
 
     def scrape_data(self) -> list:
         """
@@ -73,7 +140,9 @@ class ElSalvador:
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-word-wrap')))
-
+        WebDriverWait(self.driver, 10).until(
+            ec.presence_of_element_located((
+                By.CLASS_NAME, 'dx-icon-dashboard-parameters')))
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         generation_table = soup.find('table', {'class': 'dx-word-wrap'})
         table_headers = generation_table.find('td',
@@ -89,7 +158,18 @@ class ElSalvador:
         data = data_table.find('td',
                                {'class': 'dx-area-data-cell'}).find('table')
         scrape_date = times[1].text
+        # this needs to be here since the
+        # website reports 1/8/2020 instead of 01/08/2020
+        scrape_day = re.search(r'(\d+)/\d+/\d+', scrape_date).group(1)
+        scrape_month = re.search(r'\d+/(\d+)/\d+', scrape_date).group(1)
+        scrape_year = re.search(r'\d+/\d+/(\d+)', scrape_date).group(1)
+        scrape_date = (
+            scrape_day.zfill(2) + '/'
+            + scrape_month.zfill(2) + '/'
+            + scrape_year.zfill(4)
+        )
         hours = times[2:-1]
+        data_points = []
         for i in range(len(hours)):
             hours[i] = hours[i].text
         entries = data.find_all('tr')
@@ -108,9 +188,9 @@ class ElSalvador:
                 value = value.replace(',', '')
                 if not bool(value):
                     value = "0"
-                self.data_points.append(
+                data_points.append(
                     self.__data_point(date, value, production_type))
-        return self.data_points
+        return data_points
 
     def __data_point(self, date, value, production_type) -> dict:
         return {'ts': date,
@@ -121,29 +201,26 @@ class ElSalvador:
 
 def main():
     el_salvador = ElSalvador()
-    today = el_salvador.scrape_data()
+
+    print("Loading Today...")
+    today = el_salvador.today()
     for datapoint in today:
         print(datapoint)
 
-    #print("Loading Today...")
-    #today = el_salvador.today()
-    #for datapoint in today:
-    #    print(datapoint)
+    print("Loading Yesterday...")
+    yesterday = el_salvador.yesterday()
+    for datapoint in yesterday:
+        print(datapoint)
 
-    # print("Loading Yesterday...")
-    # yesterday = el_salvador.yesterday()
-    # for datapoint in yesterday:
-    #    print(datapoint)
+    print("Loading date...10/11/2020")
+    day = el_salvador.date(2020, 11, 10)
+    for datapoint in day:
+       print(datapoint)
 
-    # print("Loading date...")
-    # day = el_salvador.date(2020, 11, 10)
-    # for datapoint in day:
-    #    print(datapoint)
-
-    # print("Loading date range...")
-    # days = el_salvador.date_range(2020, 11, 10, 2020, 11, 12)
-    # for datapoint in days:
-    #    print(datapoint)
+    print("Loading date range...12-10th")
+    days = el_salvador.date_range(2020, 11, 10, 2020, 11, 12)
+    for datapoint in days:
+       print(datapoint)
 
 
 if __name__ == "__main__":
