@@ -29,7 +29,7 @@ def test_general_ESL():
 def test_general_costa_rica():
     try:
         cr = CostaRica()
-        data = cr.search_date()
+        data = cr.date()
         for datapoint in data:
             print(datapoint)
         assert True
