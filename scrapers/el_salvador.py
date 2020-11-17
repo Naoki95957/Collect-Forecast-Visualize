@@ -62,6 +62,9 @@ class ElSalvador:
         today = datetime.date.today()
         delta = (today - datetime.date(year, month, day)).days
         delta -= self.__current_days_back
+        if -delta > self.__current_days_back:
+            print("date is in the future; loading present")
+            delta = -(self.__current_days_back)
         if bool(delta):
             self.__request_days_back(delta)
         return self.scrape_data()
@@ -75,6 +78,9 @@ class ElSalvador:
         end_date = datetime.date(end_year, end_month, end_day)
         delta = (datetime.date.today() - end_date).days
         delta -= self.__current_days_back
+        if -delta > self.__current_days_back:
+            print("date is in the future; loading present")
+            delta = -(self.__current_days_back)
         data_points = []
         if bool(delta):
             self.__request_days_back(delta + 1)
