@@ -1,24 +1,17 @@
 """
-    This class retrives all emission data from Costa Rica.
-    Emissions are reporte by hour, MWh, BA, and includes power plant name.
-    Methods today, yesterday, date, and date range return
-    a list of dictionaries.
+    This class retrives Real Generation, MWh from all Costa Rica's power
+    plants by hour. It uses chrome webdrivers to navigate the website.
+    Initilizing driver takes longer than retriving date. Use date_range for
+    multiple days instead of constructing class and initilizing driver for
+    each date.
 
-    This class dependency uses chrome webdrivers located in the drivers folder.
-    The class automatically detects OS and navigates an invisible browser.
-    Initilizing driver takes longer than retriving date.
-    Use date_range for multiple days instead of initilizing
-    driver for each date.
-
-    If program doesn't run in MAC, try opening
-    mac_chromedriver86 in drivers folder
-
+    If program doesn't run in MAC, open mac_chromedriver86 in drivers folder
     If you get a warning:
-        “mac_chromedriver86” can’t be opened
-        because the identity of the developer
-        cannot be confirmed."
+        “mac_chromedriver86” can’t be opened because the identity of the
+        developer cannot be confirmed."
     Go to Apple > System Preferences > Security & Privacy and click the
         'Open Anyway' button. Then rerun program.
+
     To update drivers:
     https://selenium-python.readthedocs.io/installation.html
 """
@@ -73,9 +66,9 @@ class CostaRica:
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
         start_date = datetime.date(start_year, start_month, start_day)
-        end_date = datetime.date(end_year, end_month, end_day + 1)
-        data_points = []
-        while start_date < end_date:
+        end_date = datetime.date(end_year, end_month, end_day)
+        all_data_points = []
+        while start_date <= end_date:
             # Reformat date to match costa rica's search field
             date = (str(start_date.day).zfill(2) + "/" +
                     str(start_date.month).zfill(2) + "/" +
@@ -84,20 +77,20 @@ class CostaRica:
                 "formPosdespacho:txtFechaInicio_input")
             search_date_field.clear()
             search_date_field.send_keys(date + Keys.RETURN)
-            data_points.extend(self.__scrape_data(date))
+            all_data_points.extend(self.__scrape_data(date))
             start_date += datetime.timedelta(days=1)
-        return data_points
+        return all_data_points
 
     def __scrape_data(self, date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         plants_hours = soup.find('tbody', {
             'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
-        data_points = []
+        date_data_points = []
         for plant_hour in plants_hours:
             if (plant_hour.has_attr('title') and bool(plant_hour.getText())
                     and 'Total' not in plant_hour['title']):
-                data_points.append(self.__data_point(date, plant_hour))
-        return data_points
+                date_data_points.append(self.__data_point(date, plant_hour))
+        return date_data_points
 
     def __data_point(self, date, plant_hour) -> dict:
         plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)
@@ -128,12 +121,12 @@ def main():
         print(datapoint)
 
     print("Loading date...")
-    day = costa_rica.date(2020, 11, 10)
+    day = costa_rica.date(2020, 9, 30)
     for datapoint in day:
         print(datapoint)
 
     print("Loading date range...")
-    days = costa_rica.date_range(2020, 11, 10, 2020, 11, 12)
+    days = costa_rica.date_range(2020, 10, 30, 2020, 11, 1)
     for datapoint in days:
         print(datapoint)
 

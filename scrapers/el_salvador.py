@@ -1,16 +1,17 @@
 import datetime
-from datetime import timedelta
 import platform
-from pathlib import Path
 import re
+from datetime import timedelta
+from pathlib import Path
+
 import arrow
 import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.keys import Keys
 
 
 class ElSalvador:
@@ -71,7 +72,7 @@ class ElSalvador:
         # Working in this way due to how the website is structered.
         # THIS IS MUCH BETTER THAN FOWRARD - TRUST ME
         start_date = datetime.date(start_year, start_month, start_day)
-        end_date = datetime.date(end_year, end_month, end_day + 1)
+        end_date = datetime.date(end_year, end_month, end_day)
         delta = (datetime.date.today() - end_date).days
         delta -= self.__current_days_back
         data_points = []
@@ -79,7 +80,7 @@ class ElSalvador:
             self.__request_days_back(delta + 1)
             data_points.extend(self.scrape_data())
             start_date += datetime.timedelta(days=1)
-        while start_date < end_date:
+        while start_date <= end_date:
             self.__request_days_back(1)
             data_points.extend(self.scrape_data())
             start_date += datetime.timedelta(days=1)
@@ -224,7 +225,7 @@ def main():
         print(datapoint)
 
     print("Loading date range...")
-    days = el_salvador.date_range(2020, 11, 10, 2020, 11, 12)
+    days = el_salvador.date_range(2020, 11, 8, 2020, 11, 9)
     for datapoint in days:
         print(datapoint)
 

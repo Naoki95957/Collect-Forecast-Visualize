@@ -1,25 +1,26 @@
 """
-    This class retrives all emission data from Nicargua.
-    Emissions are reporte by hour, MWh, BA, and includes power plant name.
-    Methods yesterday, date, and date range return a list of dictionaries.
-    Nicargua most recent data available is yesterday, today is not available.
+    This class retrives the post-dispatch of energy data by hour
+    from Nicaragua that includes:
+        AGC control
+        Out of Service and Available in Cold Standby
+        Forced generation
+        Non-dispatchable generation
+        Unavailability or Restriction of Generation Resource
+        Maintenance
+        Reduction for quality and safety
+        Reduction due to plant restriction
 
+    It uses chrome webdrivers to navigate the website. Initilizing driver
+    takes longer than retriving date. Use date_range for multiple days instead
+    of constructing class and initilizing driver for each date.
 
-    This class dependency uses chrome webdrivers located in the drivers folder.
-    The class automatically detects OS and navigates an invisible browser.
-    Initilizing driver takes longer than retriving date.
-    Use date_range for multiple days instead of initilizing
-    driver for each date.
-
-    If program doesn't run in MAC, try opening
-    mac_chromedriver86 in drivers folder
-
+    If program doesn't run in MAC, open mac_chromedriver86 in drivers folder
     If you get a warning:
-        “mac_chromedriver86” can’t be opened
-        because the identity of the developer
-        cannot be confirmed."
+        “mac_chromedriver86” can’t be opened because the identity of the
+        developer cannot be confirmed."
     Go to Apple > System Preferences > Security & Privacy and click the
         'Open Anyway' button. Then rerun program.
+
     To update drivers:
     https://selenium-python.readthedocs.io/installation.html
 """
@@ -70,13 +71,14 @@ class Nicaragua:
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
         start_date = datetime.date(start_year, start_month, start_day)
-        end_date = datetime.date(end_year, end_month, end_day + 1)
-        data_points = []
-        while start_date < end_date:
-            # Reformat date to match search field
+        end_date = datetime.date(end_year, end_month, end_day)
+        all_data_points = []
+        while start_date <= end_date:
+            # Reformat date to match nicaragua's search field
             date = (str(start_date.day).zfill(2) + "/" +
                     str(start_date.month).zfill(2) + "/" +
                     str(start_date.year).zfill(4))
+
             self.driver.get(self.URL + date + "&d=1")
             WebDriverWait(self.driver, 10).until(
                 ec.presence_of_element_located((
@@ -87,37 +89,39 @@ class Nicaragua:
             tabs = self.driver.find_element_by_class_name(
                 'tabs').find_elements_by_tag_name('table')
             tabs[1].click()
-            data_points.extend(self.__scrape_data(table_date))
+
+            all_data_points.extend(self.__scrape_data(table_date))
             start_date += datetime.timedelta(days=1)
-        return data_points
+        return all_data_points
 
     def __scrape_data(self, table_date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         tab = soup.find('div', {'id': 'Postdespacho'})
-        plants_hours = tab.find(
+        header_cells = tab.find(
             'table', {'id': 'GeneracionXAgente'}).findAll('tr')
-        location_cells = plants_hours[1].findAll('td')
-        data_points = []
-        for row in range(2, len(plants_hours)):
-            row_entry = plants_hours[row].findAll('td')
+        agents = header_cells[1].findAll('td')
+
+        date_data_points = []
+        for row in range(2, len(header_cells)):
+            row_entry = header_cells[row].findAll('td')
             for column in range(1, len(row_entry) - 1):
                 value = row_entry[column].getText()
-                location = location_cells[column - 1].getText()
+                agent = agents[column - 1].getText()
                 hour = row_entry[0].getText()
                 if not bool(value):
                     value = '0'
-                data_points.append(
-                    self.__data_point(location, table_date, hour, value))
-        return data_points
+                date_data_points.append(
+                    self.__data_point(agent, table_date, hour, value))
+        return date_data_points
 
-    def __data_point(self, location, todays_date, hour, value) -> dict:
+    def __data_point(self, agent, todays_date, hour, value) -> dict:
         return {'ts': arrow.get(todays_date + str(hour).zfill(2) + ":00",
                                 'DD/MM/YYYYHH:mm',
                                 locale="es",
                                 tzinfo='America/Managua').datetime,
                 'value': float(value),
                 'ba': 'Centro Nacional de Despacho de Carga',
-                'meta': location + " (MWh)"}
+                'meta': agent + " (MWh)"}
 
 
 def main():
@@ -130,12 +134,12 @@ def main():
         print(datapoint)
 
     print("Loading date...")
-    day = nicaragua.date(2020, 11, 10)
+    day = nicaragua.date(2020, 9, 30)
     for datapoint in day:
         print(datapoint)
 
     print("Loading date range...")
-    days = nicaragua.date_range(2020, 11, 10, 2020, 11, 12)
+    days = nicaragua.date_range(2020, 10, 31, 2020, 11, 1)
     for datapoint in days:
         print(datapoint)
 
