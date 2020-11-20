@@ -38,7 +38,7 @@ class ElSalvador:
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
             if architecture == '32bit':
-                chrome_driver = '/drivers/linux_chromedriver_65armhf.deb'
+                chrome_driver = '/drivers/linux_chromedriver_65_32bit'
             else:
                 chrome_driver = '/drivers/linux_chromedriver86'
         elif operating_system == "Windows":
