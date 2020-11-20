@@ -22,6 +22,4 @@ jobs:
         # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
-      run: |
-        chmod 777 ./_work
-        pytest --suppress-no-test-exit-code
+      run: pytest --suppress-no-test-exit-code
