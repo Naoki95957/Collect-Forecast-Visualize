@@ -54,7 +54,7 @@ class Nicaragua:
             architecture = platform.architecture()[0]
             if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit'
-                os.chown(full_path + chrome_driver, 0o777)
+                os.chmod(full_path + chrome_driver, 0o777)
             else:
                 chrome_driver = '/drivers/linux_chromedriver86_64bit'
         elif operating_system == "Windows":
