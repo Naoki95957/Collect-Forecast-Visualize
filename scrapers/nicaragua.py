@@ -55,7 +55,7 @@ class Nicaragua:
             if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit.deb'
             else:
-            chrome_driver = '/drivers/linux_chromedriver86'
+                chrome_driver = '/drivers/linux_chromedriver86'
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
