@@ -23,5 +23,5 @@ jobs:
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
       run: |
-        chmod 777 _work
+        chmod 777 ./_work
         pytest --suppress-no-test-exit-code
