@@ -15,7 +15,6 @@ jobs:
         pip install flake8 pytest
         pip install pytest-custom-exit-code
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        chmod 777 _work
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
@@ -23,4 +22,6 @@ jobs:
         # exit-zero treats all errors as warnings.
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
-      run: pytest --suppress-no-test-exit-code
+      run: |
+        chmod 777 _work
+        pytest --suppress-no-test-exit-code
