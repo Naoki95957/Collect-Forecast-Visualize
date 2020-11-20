@@ -7,7 +7,7 @@ from scrapers.el_salvador_legacy import ElSalvador as esl
 def test_general_El_Salvador():
     try:
         es = ElSalvador()
-        data = es.scrape_data()
+        data = es.today()
         for datapoint in data:
             print(datapoint)
         assert True
@@ -29,7 +29,7 @@ def test_general_ESL():
 def test_general_costa_rica():
     try:
         cr = CostaRica()
-        data = cr.date()
+        data = cr.today()
         for datapoint in data:
             print(datapoint)
         assert True
@@ -40,7 +40,7 @@ def test_general_costa_rica():
 def test_general_Nicaragua():
     try:
         nic = Nicaragua()
-        data = nic.search_date()
+        data = nic.today()
         for datapoint in data:
             print(datapoint)
         assert True
