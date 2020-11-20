@@ -41,7 +41,11 @@ class CostaRica:
         full_path = str(Path(str(__file__)).parents[0])
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = '/drivers/linux_chromedriver86'
+            architecture = platform.architecture()[0]
+            if architecture == '32bit'
+                chrome_driver = '/drivers/linux_chromedriver65_32bit.deb'
+            else:
+                chrome_driver = '/drivers/linux_chromedriver86'
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
