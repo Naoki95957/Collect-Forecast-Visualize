@@ -43,7 +43,7 @@ class CostaRica:
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
             if architecture == '32bit':
-                chrome_driver = '/drivers/linux_chromedriver65_32bit'
+                chrome_driver = r'/drivers/linux_chromedriver65_32bit'
             else:
                 chrome_driver = '/drivers/linux_chromedriver86_64bit'
         elif operating_system == "Windows":
