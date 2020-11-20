@@ -16,8 +16,8 @@ def test_general_El_Salvador():
 
 
 def test_general_ESL():
-    # this breaks a LOT
-    pass
+    # ESL breaks a LOT and IDC anymore
+    assert True
     try:
         es = esl()
         data = es.scrape_data()
