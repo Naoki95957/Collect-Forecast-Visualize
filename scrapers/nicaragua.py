@@ -52,7 +52,7 @@ class Nicaragua:
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
-            if architecture == '32bit'
+            if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit.deb'
             else:
             chrome_driver = '/drivers/linux_chromedriver86'
