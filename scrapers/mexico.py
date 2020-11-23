@@ -3,7 +3,6 @@ import platform
 import re
 from datetime import timedelta
 from pathlib import Path
-import shutil
 
 import arrow
 import selenium
@@ -14,10 +13,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-import os
 
 import zipfile
 import pandas as pd
+import os
+import shutil
+
 
 
 class Mexico:
@@ -52,23 +53,25 @@ class Mexico:
     # should these be capitalized or should the other variables be outside the class... ?
     driver = None
     directory = ''
+    downloads_dir = ''
 
     def __init__(self):
         self.directory = os.getcwd()
+        self.directory = os.path.join(self.directory, 'scrapers')
         drivers_dir = os.path.join(self.directory, 'drivers')
-        downloads_dir = os.path.join(self.directory, 'downloads')
-        if not os.path.exists(downloads_dir):
-            os.mkdir(downloads_dir)
+        self.downloads_dir = os.path.join(self.directory, 'downloads')
+        if not os.path.exists(self.downloads_dir):
+            os.mkdir(self.downloads_dir)
 
         options = webdriver.ChromeOptions()
         options.headless = True
-        prefs = {"download.default_directory" : download_dir}
+        prefs = {"download.default_directory" : self.downloads_dir}
         options.add_experimental_option("prefs",prefs)
 
-        os = platform.system()
-        if os == "Linux":
+        operating_system = platform.system()
+        if operating_system == "Linux":
             chrome_driver = 'linux_chromedriver86'
-        elif os == "Windows":
+        elif operating_system == "Windows":
             chrome_driver = 'win_chromedriver86.exe'
         else:
             chrome_driver = 'mac_chromedriver86'
@@ -81,8 +84,9 @@ class Mexico:
 
     def __del__(self):
         self.driver.quit()
-        downloads_dir = os.path.join(self.directory, 'downloads')
-        shutil.rmtree(downloads_dir)
+        shutil.rmtree(self.downloads_dir)
+
+        # Original method, for reference
         # for filename in os.listdir(downloads_dir):
         #         if filename.endswith(".zip") or filename.endswith(".csv"):
         #             os.remove(self.directory + '/' + filename)
@@ -121,23 +125,20 @@ class Mexico:
                 action.pause(1)
                 action.perform()
                 action.reset_actions()
-                for filename in os.listdir(self.directory):
+                for filename in os.listdir(self.downloads_dir):
                     if filename.endswith('.zip'):
                         zip_exists = True
                         break
 
             # extract zip files
-            for filename in os.listdir(self.directory):
+            for filename in os.listdir(self.downloads_dir):
                 if filename.endswith(".zip"):
-                    self.__unzip(filename)
+                    path = os.path.join(self.downloads_dir, filename)
+                    with zipfile.ZipFile(path, 'r') as zip_ref:
+                        zip_ref.extractall(self.downloads_dir)
 
         except selenium.common.exceptions.NoSuchElementException:
             print("Button not found!")
-
-    def __unzip(self, filename):
-        path = self.directory + '/' + filename
-        with zipfile.ZipFile(path, 'r') as zip_ref:
-            zip_ref.extractall(self.directory)
 
     def __data_point(self, date_time, value, production_type) -> dict:
         return {
@@ -152,27 +153,11 @@ class Mexico:
 
         data = []
         # find each csv file
-        for filename in os.listdir(self.directory):
+        for filename in os.listdir(self.downloads_dir):
             if filename.endswith(".csv"):
-                path = self.directory + '/' + filename
+                path = self.downloads_dir + '/' + filename
                 df = pd.read_csv(path, skiprows=7)
-                column_labels = list(df.columns)
-                # ignore first three column labels (System, day, hour)
-                column_labels = column_labels[3:]
                 
-                for i in range(len(df)) : 
-                    date = df.iloc[i, 1]
-                    hour = str(df.iloc[i, 2] - 1).zfill(2)
-                    date_time = arrow.get(
-                        date + hour + ':00',
-                        'DD/MM/YYYYHH:mm',
-                        locale='es',
-                        tzinfo='Mexico/General').datetime
-
-                    for label in column_labels:
-                        value = df.loc[i, label]
-                        # labels can come with leading whitespace, hence .strip()
-                        data.append(self.__data_point(date_time, value, label.strip()))
         return data
 
 def main():
