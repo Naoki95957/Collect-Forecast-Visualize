@@ -19,9 +19,16 @@ import pandas as pd
 import os
 import shutil
 
-
+# TODO refactor, make pep 8 compliant
 
 class Mexico:
+    '''
+    This class scrapes the energy generation data from the files
+    provided in the url. The website reports the data for an entire
+    month at a time, thus it does not have data for the current
+    month. It reports data by the day and the hour (24 hours per
+    day). To retrieve data run the scrape method on a date range.
+    '''
     URL = 'https://www.cenace.gob.mx/Paginas/SIM/Reportes/EnergiaGeneradaTipoTec.aspx'
     TRANSLATION_DICT = {
         'Eolica' : 'Wind',
@@ -154,6 +161,7 @@ class Mexico:
         data = []
         # find each csv file
         for filename in os.listdir(self.downloads_dir):
+            # TODO figure out why some months have more than 1 file
             if filename.endswith(".csv"):
                 path = self.downloads_dir + '/' + filename
                 df = pd.read_csv(path, skiprows=7)
