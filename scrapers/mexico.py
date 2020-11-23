@@ -157,7 +157,23 @@ class Mexico:
             if filename.endswith(".csv"):
                 path = self.downloads_dir + '/' + filename
                 df = pd.read_csv(path, skiprows=7)
+                column_labels = list(df.columns)
+                # ignore first three column labels (System, day, hour)
+                column_labels = column_labels[3:]
                 
+                for i in range(len(df)) : 
+                    date = df.iloc[i, 1]
+                    hour = str(df.iloc[i, 2] - 1).zfill(2)
+                    date_time = arrow.get(
+                        date + hour + ':00',
+                        'DD/MM/YYYYHH:mm',
+                        locale='es',
+                        tzinfo='Mexico/General').datetime
+
+                    for label in column_labels:
+                        value = df.loc[i, label]
+                        # labels can come with leading whitespace, hence .strip()
+                        data.append(self.__data_point(date_time, value, label.strip()))
         return data
 
 def main():
