@@ -15,52 +15,64 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 import os
 
-from zipfile import ZipFile
+import zipfile
 import pandas as pd
 
 
 class Mexico:
     URL = 'https://www.cenace.gob.mx/Paginas/SIM/Reportes/EnergiaGeneradaTipoTec.aspx'
-    driver = None
     TRANSLATION_DICT = {
+        'Eolica' : 'Wind',
+        'Fotovoltaica' : 'Photovoltaic',
         'Biomasa': 'Biomass',
-        'Geotérmico': 'Geothermal',
-        'Hidroeléctrico': 'HydroElectric',
-        'Interconexión': 'Interconnection',
-        'Solar': 'Solar',
-        'Térmico': 'Thermal'
+        'Carboelectrica' : 'Carboelectric',
+        'Ciclo Combinado' : 'Combined Cycle',
+        'Combustion Interna' : 'Internal Combustion',
+        'Geotermoelectrica' : 'Geothermalelectric',
+        'Hidroelectrica': 'HydroElectric',
+        'Nucleoelectrica' : 'Nuclear Power',
+        'Termica Convencional' : 'Conventional Thermal',
+        'Turbo Gas' : 'Turbo Gas'
     }
+    MONTHS = [
+        'enero',
+        'febrero',
+        'marzo',
+        'abril',
+        'mayo',
+        'junio',
+        'julio',
+        'agosto',
+        'septiembre',
+        'octubre',
+        'noviembre',
+        'diciembre'
+    ]
+    # should these be capitalized or should the other variables be outside the class... ?
+    driver = None
+    directory = ''
 
     def __init__(self):
-        chrome_options = webdriver.ChromeOptions()
-        # options = Options()
+        options = webdriver.ChromeOptions()
         # options.headless = True
         operating_system = platform.system()
-        full_path = str(Path(str(__file__)).parents[0])
-        prefs = {"download.default_directory" : "/downloads"}
-        chrome_options.add_experimental_option("prefs",prefs)
+        self.directory = str(Path(str(__file__)).parents[0])
+        prefs = {"download.default_directory" : self.directory}
+        options.add_experimental_option("prefs",prefs)
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
             chrome_driver = '/drivers/linux_chromedriver86'
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
-            chrome_options=chrome_options,
-            executable_path=(full_path + chrome_driver))
+            chrome_options=options,
+            executable_path=(self.directory + chrome_driver))
         self.driver.get(self.URL)
-        
-        # cwd = os.path.abspath(__file__ + "/../")
-        # driver_dir = cwd + '/drivers/win_chromedriver86.exe'
-        # download_dir = cwd + "/downloads"
-        # try:
-        #     os.makedirs(download_dir)
-        # except FileExistsError:
-        #     pass
 
     def __del__(self):
         self.driver.quit()
 
-    def __manual_click(self, element, wait=0):
+    def __manual_click(self, element):
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.ID, element)))
@@ -68,61 +80,87 @@ class Mexico:
         action = selenium.webdriver.ActionChains(self.driver)
         action.move_to_element(button)
         action.click(on_element=button)
-        if(wait > 0):
-            action.pause(wait)
         action.perform()
         action.reset_actions()
 
-    # TODO add date argument
-    def __retrieve_files(self):
+    def __format_query(self, date):
+        temp = date.split('/')
+        month = self.MONTHS[int(temp[1]) - 1]
+        year = temp[2]
+        return month + ' de ' + year
+
+    def __retrieve_files(self, initial_date, final_date):
         try:
-            # Originlly did everything with manual clicks
-            # self.__manual_click('ctl00_ContentPlaceHolder1_FechaInicial_popupButton')
-            # self.__manual_click('rcMView_sep.')
-            # self.__manual_click('rcMView_OK')
-            # self.__manual_click('ctl00_ContentPlaceHolder1_FechaFinal_popupButton')
-            # self.__manual_click('rcMView_oct.')
-            # self.__manual_click('rcMView_OK')
-
-            # Names of all the buttons
-            # rcMView_ene.    rcMView_feb.    rcMView_2016    rcMView_2021
-            # rcMView_mar.    rcMView_abr.    rcMView_2017    rcMView_2022
-            # rcMView_may.    rcMView_jun.    rcMView_2018    rcMView_2023
-            # rcMView_jul.    rcMView_ago.    rcMView_2019    rcMView_2024
-            # rcMView_sep.    rcMView_oct.    rcMView_2020    rcMView_2025
-            # rcMView_nov.    rcMView_dic.
-
-            print('Downloading .zip file...')
+            print('Downloading zip file...')
+            # TODO check validity of date
             start = self.driver.find_element_by_id("ctl00_ContentPlaceHolder1_FechaInicial_dateInput")
             start.clear()
-            # TODO make translation method to translate from integer date to input in spanish
-            # example: 10/2020 -> octubre de 2020
-            start.send_keys('agosto de 2020')
+            start.send_keys(self.__format_query(initial_date))
             stop = self.driver.find_element_by_id("ctl00_ContentPlaceHolder1_FechaFinal_dateInput")
             stop.clear()
-            stop.send_keys('octubre de 2020')
-            # TODO check if file has been downloaded before closing  (instead of manual pause)
-            self.__manual_click('DescargaZip', 20)
+            stop.send_keys(self.__format_query(final_date))
+            self.__manual_click('DescargaZip')
+
+            # wait for file to finish downloading
+            zip_exists = False
+            while not zip_exists:
+                action = selenium.webdriver.ActionChains(self.driver)
+                action.pause(1)
+                action.perform()
+                action.reset_actions()
+                for filename in os.listdir(self.directory):
+                    if filename.endswith('.zip'):
+                        zip_exists = True
+                        break
 
             print('Extracting files...')
-            # TODO
-            # with ZipFile('.zip', 'r') as zipObj:
-            #     # Extract all the contents of zip file in current directory
-            #     zipObj.extractall()
+            for filename in os.listdir(self.directory):
+                if filename.endswith(".zip"):
+                    self.__unzip(filename)
+                    # delete zip file
+                    # os.remove(self.directory + '/' + filename)
 
         except selenium.common.exceptions.NoSuchElementException:
             print("Button not found!")
-    
-    def scrape(self):
-        self.__retrieve_files()
-        
+
+    # write date in dd/mm/yyyy format
+    def scrape(self, initial_date, final_date):
+        self.__retrieve_files(initial_date, final_date)
+
+        for filename in os.listdir(self.directory):
+            if filename.endswith(".csv"):
+                path = self.directory + '/' + filename
+                df = pd.read_csv(path, skiprows=7)
+                
+                # TODO grab and format data
+
+                for index, row in df.iterrows():\
+                    pass
+                    # grab col 2 and 3 and create date
+                    # for columns 4 - last
+                        # create datapoint(date, value, column header)
+
+                #delete csv file
+                # os.remove(path)
+
+    def __unzip(self, filename):
+        path = self.directory + '/' + filename
+        with zipfile.ZipFile(path, 'r') as zip_ref:
+            zip_ref.extractall(self.directory)
+
+    def __data_point(self, date, value, production_type) -> dict:
+        return {'ts': date,
+                'value': float(value),
+                'ba': 'CENACE', # TODO ask connor for clarification
+                'meta': self.TRANSLATION_DICT[production_type] + ' (MWh)'}
 
 
 def main():
     print("Initializing driver...")
-    mexico = Mexico()
+    scraper = Mexico()
+
     print("Scraping data...")
-    mexico.scrape()
+    scraper.scrape('12/08/2020', '12/10/2020')
 
 
 if __name__ == "__main__":
