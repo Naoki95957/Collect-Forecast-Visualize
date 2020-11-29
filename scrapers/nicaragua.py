@@ -66,10 +66,6 @@ class Nicaragua:
     def __del__(self):
         self.driver.quit()
 
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.year, yesterday.month, yesterday.day)
-
     def date(self, year, month, day) -> list:
         return self.date_range(year, month, day, year, month, day)
 
