@@ -129,11 +129,6 @@ def main():
     print("Initializing driver...")
     nicaragua = Nicaragua()
 
-    print("Loading Yesterday...")
-    yesterday = nicaragua.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
-
     print("Loading date...")
     day = nicaragua.date(2020, 9, 30)
     for datapoint in day:
