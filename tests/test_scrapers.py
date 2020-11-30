@@ -13,6 +13,7 @@ def test_general_El_Salvador():
     except Exception:
         assert False
 
+
 def test_general_costa_rica():
     try:
         cr = CostaRica()
@@ -22,6 +23,7 @@ def test_general_costa_rica():
         assert True
     except Exception:
         assert False
+
 
 def test_general_Nicaragua():
     try:
