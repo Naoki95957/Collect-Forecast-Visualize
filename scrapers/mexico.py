@@ -49,26 +49,26 @@ class Mexico:
         'noviembre',
         'diciembre'
     ]
-    DRIVER = None
-    DIRECTORY = ''
-    DOWNLOADS_DIR = ''
+    driver = None
+    directory = ''
+    downloads_dir = ''
 
     def __init__(self):
-        self.DIRECTORY = os.getcwd()
-        if not self.DIRECTORY.endswith('scrapers'):
-            self.DIRECTORY = os.path.join(self.DIRECTORY, 'scrapers')
-        drivers_dir = os.path.join(self.DIRECTORY, 'drivers')
-        self.DOWNLOADS_DIR = os.path.join(self.DIRECTORY, 'mexico_downloads')
+        self.directory = os.getcwd()
+        if not self.directory.endswith('scrapers'):
+            self.directory = os.path.join(self.directory, 'scrapers')
+        drivers_dir = os.path.join(self.directory, 'drivers')
+        self.downloads_dir = os.path.join(self.directory, 'mexico_downloads')
         try:
-            os.mkdir(self.DOWNLOADS_DIR)
+            os.mkdir(self.downloads_dir)
         except OSError as e:
             if e.errno != errno.EEXIST:
-                os.remove(self.DOWNLOADS_DIR)
-                os.mkdir(self.DOWNLOADS_DIR)
+                os.remove(self.downloads_dir)
+                os.mkdir(self.downloads_dir)
 
         options = Options()
         options.headless = True
-        prefs = {"download.default_directory": self.DOWNLOADS_DIR}
+        prefs = {"download.default_directory": self.downloads_dir}
         options.add_experimental_option("prefs", prefs)
 
         operating_system = platform.system()
@@ -80,22 +80,22 @@ class Mexico:
             chrome_driver = 'mac_chromedriver86'
             options.headless = False
 
-        self.DRIVER = selenium.webdriver.Chrome(
+        self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(os.path.join(drivers_dir, chrome_driver))
         )
-        self.DRIVER.get(self.URL)
+        self.driver.get(self.URL)
 
     def __del__(self):
-        self.DRIVER.quit()
-        shutil.rmtree(self.DOWNLOADS_DIR)
+        self.driver.quit()
+        shutil.rmtree(self.downloads_dir)
 
     def __manual_click(self, element):
-        WebDriverWait(self.DRIVER, 10).until(
+        WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.ID, element)))
-        button = self.DRIVER.find_element_by_id(element)
-        action = selenium.webdriver.ActionChains(self.DRIVER)
+        button = self.driver.find_element_by_id(element)
+        action = selenium.webdriver.ActionChains(self.driver)
         action.move_to_element(button)
         action.click(on_element=button)
         action.perform()
@@ -107,35 +107,35 @@ class Mexico:
     def __retrieve_files(self, initial_month: int, initial_year: int,
                          final_month: int, final_year: int):
         try:
-            start = self.DRIVER.find_element_by_id(
+            start = self.driver.find_element_by_id(
                 "ctl00_ContentPlaceHolder1_FechaInicial_dateInput")
             start.clear()
             start.send_keys(self.__query(initial_month, initial_year))
-            stop = self.DRIVER.find_element_by_id(
+            stop = self.driver.find_element_by_id(
                 "ctl00_ContentPlaceHolder1_FechaFinal_dateInput")
             stop.clear()
             stop.send_keys(self.__query(final_month, final_year))
             self.__manual_click('DescargaZip')
 
-            zip_exists = (len(self.DOWNLOADS_DIR) == 0)
+            zip_exists = (len(self.downloads_dir) == 0)
             while not zip_exists:
-                action = selenium.webdriver.ActionChains(self.DRIVER)
+                action = selenium.webdriver.ActionChains(self.driver)
                 action.pause(1)
                 action.perform()
                 action.reset_actions()
-                if len(self.DOWNLOADS_DIR) != 0:
+                if len(self.downloads_dir) != 0:
                     zip_exists = True
                     break
 
-            for filename in os.listdir(self.DOWNLOADS_DIR):
+            for filename in os.listdir(self.downloads_dir):
                 if filename.endswith(".zip"):
-                    path = os.path.join(self.DOWNLOADS_DIR, filename)
+                    path = os.path.join(self.downloads_dir, filename)
                     with zipfile.ZipFile(path, 'r') as zip_ref:
-                        zip_ref.extractall(self.DOWNLOADS_DIR)
+                        zip_ref.extractall(self.downloads_dir)
 
-            for filename in os.listdir(self.DOWNLOADS_DIR):
+            for filename in os.listdir(self.downloads_dir):
                 if not filename.startswith("Generacion Liquidada_L0"):
-                    os.remove(self.DOWNLOADS_DIR + '/' + filename)
+                    os.remove(self.downloads_dir + '/' + filename)
 
         except selenium.common.exceptions.NoSuchElementException:
             raise
@@ -154,9 +154,9 @@ class Mexico:
                               final_month, final_year)
 
         data = []
-        for filename in os.listdir(self.DOWNLOADS_DIR):
+        for filename in os.listdir(self.downloads_dir):
             if filename.endswith(".csv"):
-                path = self.DOWNLOADS_DIR + '/' + filename
+                path = self.downloads_dir + '/' + filename
                 df = pd.read_csv(path, skiprows=7)
                 column_labels = list(df.columns)
                 column_labels = column_labels[3:]
@@ -181,7 +181,7 @@ class Mexico:
 
 
 def main():
-    print("Initializing DRIVER...")
+    print("Initializing driver...")
     mexico = Mexico()
     '''
     print("Scraping month/year range data...")
