@@ -29,7 +29,6 @@
 
 import datetime
 import platform
-from datetime import timedelta
 from pathlib import Path
 import os
 import arrow
@@ -83,7 +82,7 @@ class Nicaragua:
                     str(start_date.year).zfill(4))
 
             self.driver.get(self.URL + date + "&d=1")
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, 30).until(
                 ec.presence_of_element_located((
                     By.XPATH, ('//div[@id="Postdespacho"]/'
                                '/table[@id="GeneracionXAgente"]'))))
