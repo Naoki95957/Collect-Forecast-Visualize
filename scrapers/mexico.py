@@ -1,25 +1,16 @@
-import datetime
 import platform
-import re
-from datetime import timedelta
-from pathlib import Path
-
 import arrow
 import selenium
-from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-
 import zipfile
 import pandas as pd
 import os
+import errno
 import shutil
 
-# TODO refactor, make pep 8 compliant
 
 class Mexico:
     '''
@@ -29,19 +20,20 @@ class Mexico:
     month. It reports data by the day and the hour (24 hours per
     day). To retrieve data run the scrape method on a date range.
     '''
-    URL = 'https://www.cenace.gob.mx/Paginas/SIM/Reportes/EnergiaGeneradaTipoTec.aspx'
+    URL = ('https://www.cenace.gob.mx/Paginas/'
+           'SIM/Reportes/EnergiaGeneradaTipoTec.aspx')
     TRANSLATION_DICT = {
-        'Eolica' : 'Wind',
-        'Fotovoltaica' : 'Photovoltaic',
+        'Eolica': 'Wind',
+        'Fotovoltaica': 'Photovoltaic',
         'Biomasa': 'Biomass',
-        'Carboelectrica' : 'Carboelectric',
-        'Ciclo Combinado' : 'Combined Cycle',
-        'Combustion Interna' : 'Internal Combustion',
-        'Geotermoelectrica' : 'Geothermalelectric',
+        'Carboelectrica': 'Carboelectric',
+        'Ciclo Combinado': 'Combined Cycle',
+        'Combustion Interna': 'Internal Combustion',
+        'Geotermoelectrica': 'Geothermalelectric',
         'Hidroelectrica': 'HydroElectric',
-        'Nucleoelectrica' : 'Nuclear Power',
-        'Termica Convencional' : 'Conventional Thermal',
-        'Turbo Gas' : 'Turbo Gas'
+        'Nucleoelectrica': 'Nuclear Power',
+        'Termica Convencional': 'Conventional Thermal',
+        'Turbo Gas': 'Turbo Gas'
     }
     MONTHS = [
         'enero',
@@ -57,23 +49,27 @@ class Mexico:
         'noviembre',
         'diciembre'
     ]
-    # should these be capitalized or should the other variables be outside the class... ?
-    driver = None
-    directory = ''
-    downloads_dir = ''
+    DRIVER = None
+    DIRECTORY = ''
+    DOWNLOADS_DIR = ''
 
     def __init__(self):
-        self.directory = os.getcwd()
-        self.directory = os.path.join(self.directory, 'scrapers')
-        drivers_dir = os.path.join(self.directory, 'drivers')
-        self.downloads_dir = os.path.join(self.directory, 'downloads')
-        if not os.path.exists(self.downloads_dir):
-            os.mkdir(self.downloads_dir)
+        self.DIRECTORY = os.getcwd()
+        if not self.DIRECTORY.endswith('scrapers'):
+            self.DIRECTORY = os.path.join(self.DIRECTORY, 'scrapers')
+        drivers_dir = os.path.join(self.DIRECTORY, 'drivers')
+        self.DOWNLOADS_DIR = os.path.join(self.DIRECTORY, 'mexico_downloads')
+        try:
+            os.mkdir(self.DOWNLOADS_DIR)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                os.remove(self.DOWNLOADS_DIR)
+                os.mkdir(self.DOWNLOADS_DIR)
 
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        prefs = {"download.default_directory" : self.downloads_dir}
-        options.add_experimental_option("prefs",prefs)
+        options = Options()
+        options.add_argument('--headless')
+        prefs = {"download.default_directory": self.DOWNLOADS_DIR}
+        options.add_experimental_option("prefs", prefs)
 
         operating_system = platform.system()
         if operating_system == "Linux":
@@ -83,27 +79,22 @@ class Mexico:
         else:
             chrome_driver = 'mac_chromedriver86'
 
-        self.driver = selenium.webdriver.Chrome(
-            chrome_options=options,
+        self.DRIVER = selenium.webdriver.Chrome(
+            options=options,
             executable_path=(os.path.join(drivers_dir, chrome_driver))
         )
-        self.driver.get(self.URL)
+        self.DRIVER.get(self.URL)
 
     def __del__(self):
-        self.driver.quit()
-        shutil.rmtree(self.downloads_dir)
-
-        # Original method, for reference
-        # for filename in os.listdir(downloads_dir):
-        #         if filename.endswith(".zip") or filename.endswith(".csv"):
-        #             os.remove(self.directory + '/' + filename)
+        self.DRIVER.quit()
+        shutil.rmtree(self.DOWNLOADS_DIR)
 
     def __manual_click(self, element):
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.DRIVER, 10).until(
             ec.presence_of_element_located((
                 By.ID, element)))
-        button = self.driver.find_element_by_id(element)
-        action = selenium.webdriver.ActionChains(self.driver)
+        button = self.DRIVER.find_element_by_id(element)
+        action = selenium.webdriver.ActionChains(self.DRIVER)
         action.move_to_element(button)
         action.click(on_element=button)
         action.perform()
@@ -112,64 +103,64 @@ class Mexico:
     def __query(self, month: int, year: int):
         return str(self.MONTHS[month - 1]) + ' de ' + str(year)
 
-    def __retrieve_files(self, initial_month: int, initial_year: int, final_month: int, final_year: int):
+    def __retrieve_files(self, initial_month: int, initial_year: int,
+                         final_month: int, final_year: int):
         try:
-            # TODO check validity of date
-            # first send dates
-            start = self.driver.find_element_by_id("ctl00_ContentPlaceHolder1_FechaInicial_dateInput")
+            start = self.DRIVER.find_element_by_id(
+                "ctl00_ContentPlaceHolder1_FechaInicial_dateInput")
             start.clear()
             start.send_keys(self.__query(initial_month, initial_year))
-            stop = self.driver.find_element_by_id("ctl00_ContentPlaceHolder1_FechaFinal_dateInput")
+            stop = self.DRIVER.find_element_by_id(
+                "ctl00_ContentPlaceHolder1_FechaFinal_dateInput")
             stop.clear()
             stop.send_keys(self.__query(final_month, final_year))
-            # click download button
             self.__manual_click('DescargaZip')
 
-            # wait for file to finish downloading (AKA, zip file exists in directory)
-            zip_exists = False
+            zip_exists = (len(self.DOWNLOADS_DIR) == 0)
             while not zip_exists:
-                action = selenium.webdriver.ActionChains(self.driver)
+                action = selenium.webdriver.ActionChains(self.DRIVER)
                 action.pause(1)
                 action.perform()
                 action.reset_actions()
-                for filename in os.listdir(self.downloads_dir):
-                    if filename.endswith('.zip'):
-                        zip_exists = True
-                        break
+                if len(self.DOWNLOADS_DIR) != 0:
+                    zip_exists = True
+                    break
 
-            # extract zip files
-            for filename in os.listdir(self.downloads_dir):
+            for filename in os.listdir(self.DOWNLOADS_DIR):
                 if filename.endswith(".zip"):
-                    path = os.path.join(self.downloads_dir, filename)
+                    path = os.path.join(self.DOWNLOADS_DIR, filename)
                     with zipfile.ZipFile(path, 'r') as zip_ref:
-                        zip_ref.extractall(self.downloads_dir)
+                        zip_ref.extractall(self.DOWNLOADS_DIR)
+
+            for filename in os.listdir(self.DOWNLOADS_DIR):
+                if not filename.startswith("Generacion Liquidada_L0"):
+                    os.remove(self.DOWNLOADS_DIR + '/' + filename)
 
         except selenium.common.exceptions.NoSuchElementException:
-            print("Button not found!")
+            raise
 
     def __data_point(self, date_time, value, production_type) -> dict:
         return {
             'ts': date_time,
             'value': float(value),
-            'ba': 'CENACE', # TODO ask connor for clarification
+            'ba': 'CENACE',  # TODO ask connor for clarification
             'meta': self.TRANSLATION_DICT[production_type] + ' (MWh)'
         }
 
-    def scrape(self, initial_month: int, initial_year: int, final_month: int, final_year: int):
-        self.__retrieve_files(initial_month, initial_year, final_month, final_year)
+    def scrape_month_range(self, initial_month: int, initial_year: int,
+                           final_month: int, final_year: int):
+        self.__retrieve_files(initial_month, initial_year,
+                              final_month, final_year)
 
         data = []
-        # find each csv file
-        for filename in os.listdir(self.downloads_dir):
-            # TODO figure out why some months have more than 1 file
+        for filename in os.listdir(self.DOWNLOADS_DIR):
             if filename.endswith(".csv"):
-                path = self.downloads_dir + '/' + filename
+                path = self.DOWNLOADS_DIR + '/' + filename
                 df = pd.read_csv(path, skiprows=7)
                 column_labels = list(df.columns)
-                # ignore first three column labels (System, day, hour)
                 column_labels = column_labels[3:]
-                
-                for i in range(len(df)) : 
+
+                for i in range(len(df)):
                     date = df.iloc[i, 1]
                     hour = str(df.iloc[i, 2] - 1).zfill(2)
                     date_time = arrow.get(
@@ -180,18 +171,28 @@ class Mexico:
 
                     for label in column_labels:
                         value = df.loc[i, label]
-                        # labels can come with leading whitespace, hence .strip()
-                        data.append(self.__data_point(date_time, value, label.strip()))
+                        data.append(self.__data_point(
+                            date_time, value, label.strip()))
         return data
 
-def main():
-    print("Initializing driver...")
-    scraper = Mexico()
+    def scrape_month(self, month: int, year: int):
+        return self.scrape_month_range(month, year, month, year)
 
-    print("Scraping data...")
-    data = scraper.scrape(10, 2020, 10, 2020)
+
+def main():
+    print("Initializing DRIVER...")
+    mexico = Mexico()
+    '''
+    print("Scraping month/year range data...")
+    data = mexico.scrape_month_range(10, 2020, 10, 2020)
     for dp in data:
         print(dp)
+    '''
+    print("Scraping specific month data...")
+    data = mexico.scrape_month(10, 2020)
+    for dp in data:
+        print(dp)
+
 
 if __name__ == "__main__":
     main()
