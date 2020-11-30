@@ -13,19 +13,6 @@ def test_general_El_Salvador():
     except Exception:
         assert False
 
-# ESL breaks a LOT and IDC anymore
-# from scrapers.el_salvador_legacy import ElSalvador as esl
-# def test_general_ESL():
-#     try:
-#         es = esl()
-#         data = es.scrape_data()
-#         for datapoint in data:
-#             print(datapoint)
-#         assert True
-#     except Exception:
-#         assert False
-
-
 def test_general_costa_rica():
     try:
         cr = CostaRica()
@@ -35,7 +22,6 @@ def test_general_costa_rica():
         assert True
     except Exception:
         assert False
-
 
 def test_general_Nicaragua():
     try:
