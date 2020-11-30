@@ -67,7 +67,7 @@ class Mexico:
                 os.mkdir(self.DOWNLOADS_DIR)
 
         options = Options()
-        options.add_argument('--headless')
+        options.headless = True
         prefs = {"download.default_directory": self.DOWNLOADS_DIR}
         options.add_experimental_option("prefs", prefs)
 
@@ -78,6 +78,7 @@ class Mexico:
             chrome_driver = 'win_chromedriver86.exe'
         else:
             chrome_driver = 'mac_chromedriver86'
+            options.headless = False
 
         self.DRIVER = selenium.webdriver.Chrome(
             options=options,
@@ -143,7 +144,7 @@ class Mexico:
         return {
             'ts': date_time,
             'value': float(value),
-            'ba': 'CENACE',  # TODO ask connor for clarification
+            'ba': 'CENACE',
             'meta': self.TRANSLATION_DICT[production_type] + ' (MWh)'
         }
 
