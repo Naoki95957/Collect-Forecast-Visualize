@@ -1,3 +1,21 @@
+"""
+    This class retrives Real Generation, MWh from all Costa Rica's power
+    plants by hour. It uses chrome webdrivers to navigate the website.
+    Initilizing driver takes longer than retriving date. Use date_range for
+    multiple days instead of constructing class and initilizing driver for
+    each date.
+
+    If program doesn't run in MAC, open mac_chromedriver86 in drivers folder
+    If you get a warning:
+        “mac_chromedriver86” can’t be opened because the identity of the
+        developer cannot be confirmed."
+    Go to Apple > System Preferences > Security & Privacy and click the
+        'Open Anyway' button. Then rerun program.
+
+    To update drivers:
+    https://selenium-python.readthedocs.io/installation.html
+"""
+
 import datetime
 import platform
 import re
@@ -15,9 +33,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class ElSalvador:
-    # This is needed to track what the current date is
-    __current_days_back = 0
-    __initial_reqest = True
     URL = 'http://estadistico.ut.com.sv/OperacionDiaria.aspx'
     driver = None
     TRANSLATION_DICT = {
@@ -28,6 +43,8 @@ class ElSalvador:
         'Solar': 'Solar',
         'Térmico': 'Thermal'
     }
+    __current_days_back = 0
+    __initial_reqest = True
 
     def __init__(self):
         options = Options()
@@ -51,51 +68,6 @@ class ElSalvador:
 
     def __del__(self):
         self.driver.quit()
-
-    def today(self) -> list:
-        today = datetime.date.today()
-        return self.date(today.year, today.month, today.day)
-
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.year, yesterday.month, yesterday.day)
-
-    def date(self, year, month, day) -> list:
-        # I'm rewritting this becuase before it would be
-        # incredibly more efficient to scroll down all at once than
-        # to reload the page one day at a time
-        today = datetime.date.today()
-        delta = (today - datetime.date(year, month, day)).days
-        delta -= self.__current_days_back
-        if -delta > self.__current_days_back:
-            print("date is in the future; loading present")
-            delta = -(self.__current_days_back)
-        if bool(delta):
-            self.__request_days_back(delta)
-        return self.scrape_data()
-
-    def date_range(self, start_year, start_month, start_day,
-                   end_year, end_month, end_day) -> list:
-        # I changed a few things, basically to work top-down.
-        # Working in this way due to how the website is structered.
-        # THIS IS MUCH BETTER THAN FOWRARD - TRUST ME
-        start_date = datetime.date(start_year, start_month, start_day)
-        end_date = datetime.date(end_year, end_month, end_day)
-        delta = (datetime.date.today() - end_date).days
-        delta -= self.__current_days_back
-        if -delta > self.__current_days_back:
-            print("date is in the future; loading present")
-            delta = -(self.__current_days_back)
-        data_points = []
-        if bool(delta):
-            self.__request_days_back(delta + 1)
-            data_points.extend(self.scrape_data())
-            start_date += datetime.timedelta(days=1)
-        while start_date <= end_date:
-            self.__request_days_back(1)
-            data_points.extend(self.scrape_data())
-            start_date += datetime.timedelta(days=1)
-        return data_points
 
     def __request_days_back(self, days_back: int):
         """
@@ -216,19 +188,46 @@ class ElSalvador:
                 'ba': 'Unidad de Transacciones',
                 'meta': production_type + ' (MWh)'}
 
+    def date(self, year, month, day) -> list:
+        # I'm rewritting this becuase before it would be
+        # incredibly more efficient to scroll down all at once than
+        # to reload the page one day at a time
+        today = datetime.date.today()
+        delta = (today - datetime.date(year, month, day)).days
+        delta -= self.__current_days_back
+        if -delta > self.__current_days_back:
+            print("date is in the future; loading present")
+            delta = -(self.__current_days_back)
+        if bool(delta):
+            self.__request_days_back(delta)
+        return self.scrape_data()
+
+    def date_range(self, start_year, start_month, start_day,
+                   end_year, end_month, end_day) -> list:
+        # I changed a few things, basically to work top-down.
+        # Working in this way due to how the website is structered.
+        # THIS IS MUCH BETTER THAN FOWRARD - TRUST ME
+        start_date = datetime.date(start_year, start_month, start_day)
+        end_date = datetime.date(end_year, end_month, end_day)
+        delta = (datetime.date.today() - end_date).days
+        delta -= self.__current_days_back
+        if -delta > self.__current_days_back:
+            print("date is in the future; loading present")
+            delta = -(self.__current_days_back)
+        data_points = []
+        if bool(delta):
+            self.__request_days_back(delta + 1)
+            data_points.extend(self.scrape_data())
+            start_date += datetime.timedelta(days=1)
+        while start_date <= end_date:
+            self.__request_days_back(1)
+            data_points.extend(self.scrape_data())
+            start_date += datetime.timedelta(days=1)
+        return data_points
+
 
 def main():
     el_salvador = ElSalvador()
-
-    print("Loading Today...")
-    today = el_salvador.today()
-    for datapoint in today:
-        print(datapoint)
-
-    print("Loading Yesterday...")
-    yesterday = el_salvador.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
 
     print("Loading date...")
     day = el_salvador.date(2020, 11, 10)
