@@ -42,7 +42,7 @@ def test_output_value(get_driver):
     print("Testing if output value is a float")
     es = get_driver
     data = es.date(10, 10, 2020)
-    assert isinstance(type(data[0]['value']), float)
+    assert isinstance(data[0]['value'], float)
 
 
 def test_output_dict_size(get_driver):
