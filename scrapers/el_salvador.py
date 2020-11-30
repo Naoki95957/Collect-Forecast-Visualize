@@ -41,7 +41,8 @@ class ElSalvador:
         'Hidroeléctrico': 'HydroElectric',
         'Interconexión': 'Interconnection',
         'Solar': 'Solar',
-        'Térmico': 'Thermal'
+        'Térmico': 'Thermal',
+        'Eólico' : 'Wind'
     }
     __current_days_back = 0
     __initial_reqest = True
@@ -226,7 +227,7 @@ class ElSalvador:
         return data_points
 
 
-def main():
+if __name__ == "__main__":
     el_salvador = ElSalvador()
 
     print("Loading date...")
@@ -238,7 +239,3 @@ def main():
     days = el_salvador.date_range(2020, 11, 8, 2020, 11, 9)
     for datapoint in days:
         print(datapoint)
-
-
-if __name__ == "__main__":
-    main()
