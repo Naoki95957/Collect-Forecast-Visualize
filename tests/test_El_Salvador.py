@@ -32,7 +32,7 @@ def test_multiple_queries(get_driver):
 def test_output_list(get_driver):
     es = get_driver
     data = es.date(10, 10, 2020)
-    assert list == type(data)
+    assert isinstance(data, list)
 
 
 def test_output_value(get_driver):
