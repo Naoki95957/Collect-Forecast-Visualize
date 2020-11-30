@@ -10,6 +10,8 @@
         Reduction for quality and safety
         Reduction due to plant restriction
 
+    Most recent data available is the day before yesterday.
+
     It uses chrome webdrivers to navigate the website. Initilizing driver
     takes longer than retriving date. Use date_range for multiple days instead
     of constructing class and initilizing driver for each date.
