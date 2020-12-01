@@ -61,10 +61,10 @@ class ElSalvador:
         yesterday = datetime.date.today() - timedelta(days=1)
         return self.date(yesterday.day, yesterday.month, yesterday.year)
 
-    def date(self, day, month, year) -> list:
-        # I'm rewritting this becuase before it would be
-        # incredibly more efficient to scroll down all at once than
-        # to reload the page one day at a time
+    def date(self, year, month, day) -> list:
+        """
+        Rerturns data scraped for the specified date
+        """
         today = datetime.date.today()
         delta = (today - datetime.date(year, month, day)).days
         delta -= self.__current_days_back
@@ -75,11 +75,11 @@ class ElSalvador:
             self.__request_days_back(delta)
         return self.scrape_data()
 
-    def date_range(self, start_day, start_month, start_year,
-                   end_day, end_month, end_year) -> list:
-        # I changed a few things, basically to work top-down.
-        # Working in this way due to how the website is structered.
-        # THIS IS MUCH BETTER THAN FOWRARD - TRUST ME
+    def date_range(self, start_year, start_month, start_day,
+                   end_year, end_month, end_day) -> list:        
+        """
+        Rerturns data scraped for the specified date range
+        """
         start_date = datetime.date(start_year, start_month, start_day)
         end_date = datetime.date(end_year, end_month, end_day)
         delta = (datetime.date.today() - end_date).days
