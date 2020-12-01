@@ -64,34 +64,33 @@ jobs:
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
       run: |
-        sudo chmod +x ./scrapers/drivers/linux_chromedriver86
         pytest tests --suppress-no-test-exit-code
-  buildMac:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest]
-        python-version: [3.8]
+  # buildMac:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [macos-latest]
+  #       python-version: [3.8]
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        pip install pytest-custom-exit-code
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
-        # exit-zero treats all errors as warnings.
-        flake8 . --count --max-complexity=10 --statistics
-    - name: Test pytest
-      run: |
-        sudo chmod +x ./scrapers/drivers/mac_chromedriver86
-        pytest tests --suppress-no-test-exit-code
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Set up Python ${{ matrix.python-version }}
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: ${{ matrix.python-version }}
+  #   - name: Install dependencies
+  #     run: |
+  #       python -m pip install --upgrade pip
+  #       pip install flake8 pytest
+  #       pip install pytest-custom-exit-code
+  #       if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+  #   - name: Lint with flake8
+  #     run: |
+  #       # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
+  #       flake8 . --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
+  #       # exit-zero treats all errors as warnings.
+  #       flake8 . --count --max-complexity=10 --statistics
+  #   - name: Test pytest
+  #     run: |
+  #       sudo chmod +x ./scrapers/drivers/mac_chromedriver86
+  #       pytest tests --suppress-no-test-exit-code
