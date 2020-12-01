@@ -13,7 +13,7 @@ import shutil
 
 
 class Mexico:
-    '''
+    """
     This class scrapes the energy generation data from the files
     provided in the url. The website reports the data for an entire
     month at a time, thus it does not have data for the current
@@ -22,7 +22,7 @@ class Mexico:
     (24 hours per day). The data only dates back to April of 2016
     To retrieve data run the scrape_month_range or scrape_month,
     for a range or single month of data.
-    '''
+    """
     URL = ('https://www.cenace.gob.mx/Paginas/'
            'SIM/Reportes/EnergiaGeneradaTipoTec.aspx')
     TRANSLATION_DICT = {
@@ -75,12 +75,16 @@ class Mexico:
         options.add_experimental_option("prefs", prefs)
 
         operating_system = platform.system()
+        chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = 'linux_chromedriver86'
+            architecture = platform.architecture()[0]
+            if architecture == '32bit':
+                chrome_driver = '/drivers/linux_chromedriver65_32bit'
+            else:
+                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+            os.chmod(os.path.join(drivers_dir, chrome_driver, 0o777))
         elif operating_system == "Windows":
-            chrome_driver = 'win_chromedriver86.exe'
-        else:
-            chrome_driver = 'mac_chromedriver86'
+            chrome_driver = '/drivers/win_chromedriver86.exe'
             options.headless = False
 
         self.driver = selenium.webdriver.Chrome(
@@ -154,13 +158,13 @@ class Mexico:
 
     def scrape_month_range(self, initial_month: int, initial_year: int,
                            final_month: int, final_year: int):
-        '''
+        """
         The mexico data provided is in whole month chunks.
         Any new month data won't be provided until up to 2
         weeks into the following month. scrape_month_range
         provides data across the input month range.
         The data only dates back to April of 2016.
-        '''
+        """
         self.__retrieve_files(initial_month, initial_year,
                               final_month, final_year)
 
@@ -188,13 +192,13 @@ class Mexico:
         return data
 
     def scrape_month(self, month: int, year: int):
-        '''
+        """
         The mexico data provided is in whole month chunks.
         Any new month data won't be provided until up to 2
         weeks into the following month. scrape_month provides
         data for a single month of input.
         The data only dates back to April of 2016.
-        '''
+        """
         return self.scrape_month_range(month, year, month, year)
 
 
@@ -212,6 +216,7 @@ def main():
     for dp in data:
         print(dp)
     '''
+
 
 if __name__ == "__main__":
     main()
