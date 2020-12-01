@@ -11,7 +11,7 @@
     website is 8 Jan 2011.
 
     Known Bugs:
-    -   This class uses selenium webdrivers. If the program doesn't run in 
+    -   This class uses selenium webdrivers. If the program doesn't run in
         MAC, open mac_chromedriver86 in drivers folder. If you get a warning:
             “mac_chromedriver86” can’t be opened because the identity of the
             developer cannot be confirmed."
@@ -22,7 +22,7 @@
         This issue has been reported to Python/Selenium.
 
     Recent website changes:
-    -   1 Dec 2020: The site recently added a column for wind (Eólico) which 
+    -   1 Dec 2020: The site recently added a column for wind (Eólico) which
         will not be present in all historical data
 
     To update drivers:
@@ -57,7 +57,7 @@ class ElSalvador:
         'Eólico': 'Wind',
         'Solar': 'Solar',
         'Térmico': 'Thermal',
-        'Eólico' : 'Wind'
+        'Eólico': 'Wind'
     }
 
     def __init__(self):
@@ -97,12 +97,12 @@ class ElSalvador:
     def __request_days_back(self, days_back: int):
         """
         Requests n days back on the Daily Operation's page and reloads the
-        entire page, so that it can be scraped. Does this by clicking on 
+        entire page, so that it can be scraped. Does this by clicking on
         the "dashboard parameters" button and then scrolling down by the
         days back argument, and finally hitting the send button.
 
         Note: The behavior of the dropdown menu is unpredictable, depending
-              on the current date in view. Therefore, this method needs to 
+              on the current date in view. Therefore, this method needs to
               reload the entire page each time.
         """
         self.__manual_click('dx-icon-dashboard-parameters')
@@ -203,7 +203,7 @@ class ElSalvador:
             days_back = (today - date).days
             self.__request_days_back(days_back)
             data = self.scrape_data()
-        except:
+        except Exception:
             print('Error: Illegal date')
         return data
 
@@ -228,7 +228,7 @@ class ElSalvador:
                     start_date.day
                 ))
                 start_date += delta
-        except:
+        except Exception:
             print('Error: Illegal date(s)')
         return data
 
