@@ -67,7 +67,7 @@ class ElSalvador:
         return self.scrape_data()
 
     def date_range(self, start_year, start_month, start_day,
-                   end_year, end_month, end_day) -> list:        
+                   end_year, end_month, end_day) -> list:
         """
         Rerturns data scraped for the specified date range
         """
