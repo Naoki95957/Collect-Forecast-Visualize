@@ -134,7 +134,7 @@ class Mexico:
                     if filename.endswith('.zip'):
                         zip_exists = True
                         break
-                if i==180:
+                if i == 180:
                     raise Exception('File unable to download')
 
             for filename in os.listdir(self.downloads_dir):

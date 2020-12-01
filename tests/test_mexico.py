@@ -72,6 +72,7 @@ def test_error_illegal_date(get_driver):
         print(e)
         assert True
 
+
 def test_error_no_file(get_driver):
     mexico = get_driver
     try:
@@ -81,23 +82,22 @@ def test_error_no_file(get_driver):
         print(e)
         assert True
 
-# TODO
-# def test_large_range()
 
 '''
 We don't need this test at the moment because the
-method will actually succeed independent of how the 
-dates are given. This is entirely dependent on the 
-behavior of the host's website and may be subject 
+method will actually succeed independent of how the
+dates are given. This is entirely dependent on the
+behavior of the host's website and may be subject
 to change in the future.
+
+def test_error_backwards_dates(get_driver):
+    mexico = get_driver
+    try:
+        mexico.scrape_month_range(
+            initial_month=10, initial_year=2020,
+            final_month=10, final_year=2020)
+        assert False
+    except Exception as e:
+        print(e)
+        assert True
 '''
-# def test_error_backwards_dates(get_driver):
-#     mexico = get_driver
-#     try:
-#         mexico.scrape_month_range(
-#             initial_month=10, initial_year=2020,
-#             final_month=10, final_year=2020)
-#         assert False
-#     except Exception as e:
-#         print(e)
-#         assert True
