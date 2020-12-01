@@ -42,7 +42,7 @@ def test_date_range(get_driver):
 def test_output_type_is_a_list(get_driver):
     costa_rica = get_driver
     data = costa_rica.date(2020, 10, 10)
-    assert list == type(data)
+    assert isinstance(list, data)
 
 
 def test_output_value_is_a_float(get_driver):
