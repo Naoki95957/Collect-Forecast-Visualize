@@ -20,7 +20,6 @@
 import datetime
 import platform
 import re
-from datetime import timedelta
 from pathlib import Path
 import os
 import arrow
@@ -56,14 +55,6 @@ class CostaRica:
 
     def __del__(self):
         self.driver.quit()
-
-    def today(self) -> list:
-        today = datetime.date.today()
-        return self.date(today.year, today.month, today.day)
-
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.year, yesterday.month, yesterday.day)
 
     def date(self, year, month, day) -> list:
         return self.date_range(year, month, day, year, month, day)
@@ -114,16 +105,6 @@ class CostaRica:
 def main():
     print("Initializing driver...")
     costa_rica = CostaRica()
-
-    print("Loading Today...")
-    today = costa_rica.today()
-    for datapoint in today:
-        print(datapoint)
-
-    print("Loading Yesterday...")
-    yesterday = costa_rica.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
 
     print("Loading date...")
     day = costa_rica.date(2020, 9, 30)
