@@ -43,7 +43,7 @@ Students will be working within a framework provided by WattTime which already i
   - pandas
   
   You can install all required python modules with `pip install -r requirments.txt`
-  (You'll need to manually install pandas do to different instructions per OS)
+  (You'll need to manually install pandas due to different instructions per OS)
   
 ## APIs:
  - [Watttime.org](https://www.watttime.org/api-documentation/#introduction)
