@@ -56,7 +56,7 @@ def test_output_tz_aware(get_driver):
 def test_error_future(get_driver):
     es = get_driver
     try:
-        data1 = es.date(day=10, month=10, year=2080)
+        es.date(day=10, month=10, year=2080)
         assert False
     except Exception as e:
         print(e)
