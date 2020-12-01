@@ -40,6 +40,7 @@ Students will be working within a framework provided by WattTime which already i
   - datetime
   - requests
   - selenium
+  - pandas
   
   You can install all required python modules with `pip install -r requirments.txt`
   
