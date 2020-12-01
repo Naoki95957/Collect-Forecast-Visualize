@@ -6,7 +6,7 @@ from scrapers.el_salvador import ElSalvador
 def test_general_El_Salvador():
     try:
         es = ElSalvador()
-        data = es.today()
+        data = es.date(day=10, month=10, year=2020)
         for datapoint in data:
             print(datapoint)
         assert True
