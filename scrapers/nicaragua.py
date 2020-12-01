@@ -29,7 +29,7 @@ import datetime
 import platform
 from datetime import timedelta
 from pathlib import Path
-
+import os
 import arrow
 import selenium
 from bs4 import BeautifulSoup
@@ -51,7 +51,12 @@ class Nicaragua:
         full_path = str(Path(str(__file__)).parents[0])
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = '/drivers/linux_chromedriver86'
+            architecture = platform.architecture()[0]
+            if architecture == '32bit':
+                chrome_driver = '/drivers/linux_chromedriver65_32bit'
+            else:
+                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+            os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
@@ -80,7 +85,7 @@ class Nicaragua:
                     str(start_date.year).zfill(4))
 
             self.driver.get(self.URL + date + "&d=1")
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, 30).until(
                 ec.presence_of_element_located((
                     By.XPATH, ('//div[@id="Postdespacho"]/'
                                '/table[@id="GeneracionXAgente"]'))))

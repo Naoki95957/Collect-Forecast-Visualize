@@ -20,9 +20,8 @@
 import datetime
 import platform
 import re
-from datetime import timedelta
 from pathlib import Path
-
+import os
 import arrow
 import selenium
 from bs4 import BeautifulSoup
@@ -41,7 +40,12 @@ class CostaRica:
         full_path = str(Path(str(__file__)).parents[0])
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = '/drivers/linux_chromedriver86'
+            architecture = platform.architecture()[0]
+            if architecture == '32bit':
+                chrome_driver = '/drivers/linux_chromedriver65_32bit'
+            else:
+                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+            os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
@@ -51,14 +55,6 @@ class CostaRica:
 
     def __del__(self):
         self.driver.quit()
-
-    def today(self) -> list:
-        today = datetime.date.today()
-        return self.date(today.year, today.month, today.day)
-
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.year, yesterday.month, yesterday.day)
 
     def date(self, year, month, day) -> list:
         return self.date_range(year, month, day, year, month, day)
@@ -109,16 +105,6 @@ class CostaRica:
 def main():
     print("Initializing driver...")
     costa_rica = CostaRica()
-
-    print("Loading Today...")
-    today = costa_rica.today()
-    for datapoint in today:
-        print(datapoint)
-
-    print("Loading Yesterday...")
-    yesterday = costa_rica.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
 
     print("Loading date...")
     day = costa_rica.date(2020, 9, 30)

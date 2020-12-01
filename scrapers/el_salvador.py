@@ -1,9 +1,8 @@
 import datetime
 import platform
 import re
-from datetime import timedelta
 from pathlib import Path
-
+import os
 import arrow
 import selenium
 from bs4 import BeautifulSoup
@@ -25,6 +24,7 @@ class ElSalvador:
         'Geotérmico': 'Geothermal',
         'Hidroeléctrico': 'HydroElectric',
         'Interconexión': 'Interconnection',
+        'Eólico': 'Wind',
         'Solar': 'Solar',
         'Térmico': 'Thermal'
     }
@@ -36,7 +36,12 @@ class ElSalvador:
         full_path = str(Path(str(__file__)).parents[0])
         chrome_driver = '/drivers/mac_chromedriver86'
         if operating_system == "Linux":
-            chrome_driver = '/drivers/linux_chromedriver86'
+            architecture = platform.architecture()[0]
+            if architecture == '32bit':
+                chrome_driver = '/drivers/linux_chromedriver65_32bit'
+            else:
+                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+            os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver86.exe'
         self.driver = selenium.webdriver.Chrome(
@@ -47,18 +52,10 @@ class ElSalvador:
     def __del__(self):
         self.driver.quit()
 
-    def today(self) -> list:
-        today = datetime.date.today()
-        return self.date(today.year, today.month, today.day)
-
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.year, yesterday.month, yesterday.day)
-
     def date(self, year, month, day) -> list:
-        # I'm rewritting this becuase before it would be
-        # incredibly more efficient to scroll down all at once than
-        # to reload the page one day at a time
+        """
+        Rerturns data scraped for the specified date
+        """
         today = datetime.date.today()
         delta = (today - datetime.date(year, month, day)).days
         delta -= self.__current_days_back
@@ -71,9 +68,9 @@ class ElSalvador:
 
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
-        # I changed a few things, basically to work top-down.
-        # Working in this way due to how the website is structered.
-        # THIS IS MUCH BETTER THAN FOWRARD - TRUST ME
+        """
+        Rerturns data scraped for the specified date range
+        """
         start_date = datetime.date(start_year, start_month, start_day)
         end_date = datetime.date(end_year, end_month, end_day)
         delta = (datetime.date.today() - end_date).days
@@ -107,7 +104,7 @@ class ElSalvador:
         action.perform()
         action.reset_actions()
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, 30).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-dropdowneditor-icon')))
         dropdown = self.driver.find_element_by_class_name(
@@ -125,7 +122,7 @@ class ElSalvador:
         action = selenium.webdriver.ActionChains(self.driver)
         key_action = Keys.DOWN
         self.__current_days_back += times
-        if (times < 0):
+        if times < 0:
             key_action = Keys.UP
             times *= -1
         if self.__initial_reqest:
@@ -214,16 +211,6 @@ class ElSalvador:
 
 def main():
     el_salvador = ElSalvador()
-
-    print("Loading Today...")
-    today = el_salvador.today()
-    for datapoint in today:
-        print(datapoint)
-
-    print("Loading Yesterday...")
-    yesterday = el_salvador.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
 
     print("Loading date...")
     day = el_salvador.date(2020, 11, 10)
