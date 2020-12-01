@@ -34,7 +34,6 @@
 import datetime
 import platform
 import re
-from datetime import timedelta
 from pathlib import Path
 import os
 import arrow
@@ -55,6 +54,7 @@ class ElSalvador:
         'Geotérmico': 'Geothermal',
         'Hidroeléctrico': 'HydroElectric',
         'Interconexión': 'Interconnection',
+        'Eólico': 'Wind',
         'Solar': 'Solar',
         'Térmico': 'Thermal',
         'Eólico' : 'Wind'
