@@ -1,7 +1,6 @@
 import datetime
 import platform
 import re
-from datetime import timedelta
 from pathlib import Path
 import os
 import arrow
@@ -52,14 +51,6 @@ class ElSalvador:
 
     def __del__(self):
         self.driver.quit()
-
-    def today(self) -> list:
-        today = datetime.date.today()
-        return self.date(today.day, today.month, today.year)
-
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.day, yesterday.month, yesterday.year)
 
     def date(self, year, month, day) -> list:
         """
