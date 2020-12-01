@@ -26,7 +26,7 @@
         will not be present in all historical data
 
     To update drivers:
-    https://selenium-python.readthedocs.io/installation.html
+    -   https://selenium-python.readthedocs.io/installation.html
 
     Last update: 1 Dec 2020
 """
@@ -127,8 +127,10 @@ class ElSalvador:
 
     def scrape_data(self) -> list:
         """
-        Grabs the daily report for El Salvador.
-        Return: list of datapoints
+        Grabs the all the data on the current webpage.
+        Since the website intially shows todays data, this method can
+        be used on its own to grab all of today's data.
+        @Return: list of datapoints
         """
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
@@ -136,28 +138,28 @@ class ElSalvador:
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-icon-dashboard-parameters')))
+
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         generation_table = soup.find('table', {'class': 'dx-word-wrap'})
-        table_headers = generation_table.find('td',
-                                              {'class': 'dx-area-column-cell'})
+        table_headers = generation_table.find(
+            'td', {'class': 'dx-area-column-cell'})
         columns = table_headers.find('table').find_all('span')
         columns = columns[0:-1]
         for i in range(len(columns)):
             columns[i] = columns[i].text
-
         data_table = generation_table.find('tr', {'class': 'dx-bottom-row'})
-        times = data_table.find('td',
-                                {'class': 'dx-area-row-cell'}).find_all('span')
-        data = data_table.find('td',
-                               {'class': 'dx-area-data-cell'}).find('table')
+        times = data_table.find(
+            'td', {'class': 'dx-area-row-cell'}).find_all('span')
+        data = data_table.find(
+            'td', {'class': 'dx-area-data-cell'}).find('table')
+
         try:
             scrape_date = times[1].text
         except Exception:
             # this occurs sometime around 10pm PDT
             print("There is no data for this day yet")
             return []
-        # this needs to be here since the
-        # website reports 1/8/2020 instead of 01/08/2020
+        # the website reports 1/8/2020 instead of 01/08/2020
         scrape_day = re.search(r'(\d+)/\d+/\d+', scrape_date).group(1)
         scrape_month = re.search(r'\d+/(\d+)/\d+', scrape_date).group(1)
         scrape_year = re.search(r'\d+/\d+/(\d+)', scrape_date).group(1)
@@ -166,6 +168,7 @@ class ElSalvador:
             + scrape_month.zfill(2) + '/'
             + scrape_year.zfill(4)
         )
+
         hours = times[2:-1]
         data_points = []
         for i in range(len(hours)):
@@ -196,16 +199,17 @@ class ElSalvador:
         @Param: Date must be a valid date and not in the future.
                 Earliest available date is (2011, 1, 8)
         '''
-        data = []
         try:
             date = datetime.date(year, month, day)
             today = datetime.date.today()
             days_back = (today - date).days
-            self.__request_days_back(days_back)
-            data = self.scrape_data()
         except Exception:
-            print('Error: Illegal date')
-        return data
+            raise Exception("Illegal date.")
+        if days_back < 0:
+            raise Exception("Cannot scrape future date.")
+
+        self.__request_days_back(days_back)
+        return self.scrape_data()
 
     def date_range(self, start_year, start_month, start_day,
                    end_year, end_month, end_day) -> list:
@@ -215,21 +219,23 @@ class ElSalvador:
                 Earliest available date is (2011, 1, 8)
         @Return: data in oldest-newest order
         '''
-        data = []
         try:
             start_date = datetime.date(start_year, start_month, start_day)
             end_date = datetime.date(end_year, end_month, end_day)
             delta = datetime.timedelta(days=1)
-
-            while start_date <= end_date:
-                data.extend(self.date(
-                    start_date.year,
-                    start_date.month,
-                    start_date.day
-                ))
-                start_date += delta
         except Exception:
-            print('Error: Illegal date(s)')
+            raise Exception("Illegal date.")
+        if start_date > end_date:
+            raise Exception("Start date should come before end date.")
+
+        data = []
+        while start_date <= end_date:
+            data.extend(self.date(
+                start_date.year,
+                start_date.month,
+                start_date.day
+            ))
+            start_date += delta
         return data
 
 
@@ -239,11 +245,11 @@ if __name__ == "__main__":
     '''
     el_salvador = ElSalvador()
 
-    # print("\nLoading today...")
-    # today = el_salvador.scrape_data()
-    # print("First ten datapoints:")
-    # for i in range(10):
-    #     print(today[i])
+    print("\nLoading today...")
+    today = el_salvador.scrape_data()
+    print("First ten datapoints:")
+    for i in range(10):
+        print(today[i])
 
     print("\nLoading date...")
     day = el_salvador.date(2020, 11, 10)
@@ -261,20 +267,3 @@ if __name__ == "__main__":
         print("Last ten datapoints:")
         for i in range(-10, 0):
             print(days[i])
-
-    # print("\nTrying future date...")
-    # future_date = el_salvador.date(2021, 1, 10)
-    # print("First ten datapoints:")
-    # for i in range(10):
-    #     print(future_date[i])
-
-    # print("\nTrying future dates...")
-    # future_dates = el_salvador.date_range(2020, 12, 1, 2020, 12, 2)
-    # for dp in future_dates:
-    #     print(dp)
-
-    # print("\nTrying nonexistant date...")
-    # illegal_date = el_salvador.date(2020, 11, 31)
-
-    # print("\nTrying nonexistant dates...")
-    # illegal_dates = el_salvador.date_range(20200, 13, 7, 2021, 1, 35)
