@@ -211,7 +211,7 @@ class ElSalvador:
 
 def main():
     el_salvador = ElSalvador()
-    
+
     print("Loading date...")
     day = el_salvador.date(2020, 11, 10)
     for datapoint in day:
