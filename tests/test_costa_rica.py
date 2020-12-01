@@ -55,10 +55,3 @@ def test_output_tz_aware(get_driver):
     costa_rica = get_driver
     data = costa_rica.date(2020, 10, 10)
     assert data[0]['ts'].tzinfo is not None
-
-
-
-
-
-
-

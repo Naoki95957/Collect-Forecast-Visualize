@@ -112,7 +112,7 @@ class ElSalvador:
         action.perform()
         action.reset_actions()
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, 30).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-dropdowneditor-icon')))
         dropdown = self.driver.find_element_by_class_name(
@@ -130,7 +130,7 @@ class ElSalvador:
         action = selenium.webdriver.ActionChains(self.driver)
         key_action = Keys.DOWN
         self.__current_days_back += times
-        if (times < 0):
+        if times < 0:
             key_action = Keys.UP
             times *= -1
         if self.__initial_reqest:
