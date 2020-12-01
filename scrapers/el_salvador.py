@@ -211,17 +211,7 @@ class ElSalvador:
 
 def main():
     el_salvador = ElSalvador()
-
-    print("Loading Today...")
-    today = el_salvador.today()
-    for datapoint in today:
-        print(datapoint)
-
-    print("Loading Yesterday...")
-    yesterday = el_salvador.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
-
+    
     print("Loading date...")
     day = el_salvador.date(2020, 11, 10)
     for datapoint in day:
