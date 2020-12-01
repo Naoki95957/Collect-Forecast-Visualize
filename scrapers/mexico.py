@@ -17,8 +17,11 @@ class Mexico:
     This class scrapes the energy generation data from the files
     provided in the url. The website reports the data for an entire
     month at a time, thus it does not have data for the current
-    month. It reports data by the day and the hour (24 hours per
-    day). To retrieve data run the scrape method on a date range.
+    month. It may take up to 2 weeks into the following month to
+    to provide new data. It reports data by the day and the hour
+    (24 hours per day). The data only dates back to April of 2016
+    To retrieve data run the scrape_month_range or scrape_month,
+    for a range or single month of data.
     '''
     URL = ('https://www.cenace.gob.mx/Paginas/'
            'SIM/Reportes/EnergiaGeneradaTipoTec.aspx')
@@ -150,6 +153,13 @@ class Mexico:
 
     def scrape_month_range(self, initial_month: int, initial_year: int,
                            final_month: int, final_year: int):
+        '''
+        The mexico data provided is in whole month chunks.
+        Any new month data won't be provided until up to 2
+        weeks into the following month. scrape_month_range
+        provides data across the input month range.
+        The data only dates back to April of 2016.
+        '''
         self.__retrieve_files(initial_month, initial_year,
                               final_month, final_year)
 
@@ -177,6 +187,13 @@ class Mexico:
         return data
 
     def scrape_month(self, month: int, year: int):
+        '''
+        The mexico data provided is in whole month chunks.
+        Any new month data won't be provided until up to 2
+        weeks into the following month. scrape_month provides
+        data for a single month of input.
+        The data only dates back to April of 2016.
+        '''
         return self.scrape_month_range(month, year, month, year)
 
 
