@@ -64,7 +64,6 @@ jobs:
         flake8 . --count --max-complexity=10 --statistics
     - name: Test pytest
       run: |
-        sudo chmod +x ./scrapers/drivers/linux_chromedriver86
         pytest tests --suppress-no-test-exit-code
   # buildMac:
   #   runs-on: ${{ matrix.os }}
