@@ -120,15 +120,16 @@ class Mexico:
             stop.send_keys(self.__query(final_month, final_year))
             self.__manual_click('DescargaZip')
 
-            zip_exists = (len(self.downloads_dir) == 0)
+            zip_exists = False
             while not zip_exists:
                 action = selenium.webdriver.ActionChains(self.driver)
                 action.pause(1)
                 action.perform()
                 action.reset_actions()
-                if len(self.downloads_dir) != 0:
-                    zip_exists = True
-                    break
+                for filename in os.listdir(self.downloads_dir):
+                    if filename.endswith('.zip'):
+                        zip_exists = True
+                        break
 
             for filename in os.listdir(self.downloads_dir):
                 if filename.endswith(".zip"):
@@ -200,9 +201,9 @@ class Mexico:
 def main():
     print("Initializing driver...")
     mexico = Mexico()
-    '''
+
     print("Scraping month/year range data...")
-    data = mexico.scrape_month_range(10, 2020, 10, 2020)
+    data = mexico.scrape_month_range(1, 2020, 10, 2020)
     for dp in data:
         print(dp)
     '''
@@ -210,7 +211,7 @@ def main():
     data = mexico.scrape_month(10, 2020)
     for dp in data:
         print(dp)
-
+    '''
 
 if __name__ == "__main__":
     main()
