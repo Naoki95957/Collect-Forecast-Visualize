@@ -136,7 +136,7 @@ class Mexico:
             if i == 180:
                 raise Exception('File unable to download')
         self.__extract_files()
-    
+
     def __extract_files(self):
         for filename in os.listdir(self.downloads_dir):
             if filename.endswith(".zip"):
