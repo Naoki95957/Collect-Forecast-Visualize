@@ -1,3 +1,36 @@
+"""
+    This class retrieves real-time and historical Generation data from all
+    El Salvador's power plants by hour. To use this class all you need to do
+    is initialize an instance of the class (no parameters ncessaray). Then you
+    can simply call scrape_data() to grab all the current generation data for
+    the current day. The site reports data by hour, so you can grab up to the
+    previous hour. Alternatively if your interested in historical data you can
+    use date(year, month, day) to grab data from a certain day or
+    date_range(start_year, start_month, start_day, ...) to grab data from a
+    range of dates. (see examples in main) The earliest date available on the
+    website is 8 Jan 2011.
+
+    Known Bugs:
+    -   This class uses selenium webdrivers. If the program doesn't run in
+        MAC, open mac_chromedriver86 in drivers folder. If you get a warning:
+            “mac_chromedriver86” can’t be opened because the identity of the
+            developer cannot be confirmed."
+        Go to Apple > System Preferences > Security & Privacy and click the
+        'Open Anyway' button. Then rerun program.
+    -   The driver.close() or driver.quit() method may result in an error:
+            ImportError: sys.meta_path is None, Python is likely shutting down
+        This issue has been reported to Python/Selenium.
+
+    Recent website changes:
+    -   1 Dec 2020: The site recently added a column for wind (Eólico) which
+        will not be present in all historical data
+
+    To update drivers:
+    -   https://selenium-python.readthedocs.io/installation.html
+
+    Last update: 1 Dec 2020
+"""
+
 import datetime
 import platform
 import re
@@ -14,9 +47,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class ElSalvador:
-    # This is needed to track what the current date is
-    __current_days_back = 0
-    __initial_reqest = True
     URL = 'http://estadistico.ut.com.sv/OperacionDiaria.aspx'
     driver = None
     TRANSLATION_DICT = {
@@ -26,7 +56,8 @@ class ElSalvador:
         'Interconexión': 'Interconnection',
         'Eólico': 'Wind',
         'Solar': 'Solar',
-        'Térmico': 'Thermal'
+        'Térmico': 'Thermal',
+        'Eólico': 'Wind'
     }
 
     def __init__(self):
@@ -50,97 +81,56 @@ class ElSalvador:
         self.driver.get(self.URL)
 
     def __del__(self):
-        self.driver.quit()
+        self.driver.close()
 
-    def date(self, year, month, day) -> list:
-        """
-        Rerturns data scraped for the specified date
-        """
-        today = datetime.date.today()
-        delta = (today - datetime.date(year, month, day)).days
-        delta -= self.__current_days_back
-        if -delta > self.__current_days_back:
-            print("date is in the future; loading present")
-            delta = -(self.__current_days_back)
-        if bool(delta):
-            self.__request_days_back(delta)
-        return self.scrape_data()
-
-    def date_range(self, start_year, start_month, start_day,
-                   end_year, end_month, end_day) -> list:
-        """
-        Rerturns data scraped for the specified date range
-        """
-        start_date = datetime.date(start_year, start_month, start_day)
-        end_date = datetime.date(end_year, end_month, end_day)
-        delta = (datetime.date.today() - end_date).days
-        delta -= self.__current_days_back
-        if -delta > self.__current_days_back:
-            print("date is in the future; loading present")
-            delta = -(self.__current_days_back)
-        data_points = []
-        if bool(delta):
-            self.__request_days_back(delta + 1)
-            data_points.extend(self.scrape_data())
-            start_date += datetime.timedelta(days=1)
-        while start_date <= end_date:
-            self.__request_days_back(1)
-            data_points.extend(self.scrape_data())
-            start_date += datetime.timedelta(days=1)
-        return data_points
-
-    def __request_days_back(self, days_back: int):
-        """
-        Requests n days back on the Daily Operation's page and reloads it
-        """
+    def __manual_click(self, element):
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
-                By.CLASS_NAME, 'dx-icon-dashboard-parameters')))
-        button = self.driver.find_element_by_class_name(
-            'dx-icon-dashboard-parameters')
+                By.CLASS_NAME, element)))
+        button = self.driver.find_element_by_class_name(element)
         action = selenium.webdriver.ActionChains(self.driver)
         action.move_to_element(button)
         action.click(on_element=button)
         action.perform()
         action.reset_actions()
 
-        WebDriverWait(self.driver, 30).until(
-            ec.presence_of_element_located((
-                By.CLASS_NAME, 'dx-dropdowneditor-icon')))
-        dropdown = self.driver.find_element_by_class_name(
-            'dx-dropdowneditor-icon')
-        action.move_to_element(dropdown)
-        action.click(on_element=dropdown)
-        action.release()
-        action.perform()
-        self.__key_down_element(days_back, dropdown)
+    def __request_days_back(self, days_back: int):
+        """
+        Requests n days back on the Daily Operation's page and reloads the
+        entire page, so that it can be scraped. Does this by clicking on
+        the "dashboard parameters" button and then scrolling down by the
+        days back argument, and finally hitting the send button.
 
-    def __key_down_element(self, times: int, element):
+        Note: The behavior of the dropdown menu is unpredictable, depending
+              on the current date in view. Therefore, this method needs to
+              reload the entire page each time.
         """
-        Helper function to focus on element and click the down arrow n times
-        """
+        self.__manual_click('dx-icon-dashboard-parameters')
+        self.__manual_click('dx-dropdowneditor-icon')
+
         action = selenium.webdriver.ActionChains(self.driver)
-        key_action = Keys.DOWN
-        self.__current_days_back += times
-        if times < 0:
-            key_action = Keys.UP
-            times *= -1
-        if self.__initial_reqest:
-            self.__initial_reqest = False
-            action.send_keys(key_action)
-        for i in range(0, times):
-            action.send_keys(key_action)
-        action.send_keys(Keys.RETURN)
+        for _ in range(0, days_back + 1):
+            action.send_keys(Keys.DOWN)
+        action.send_keys(Keys.RETURN)   # select date
         action.send_keys(Keys.TAB)
         action.send_keys(Keys.TAB)
         action.send_keys(Keys.TAB)
         action.send_keys(Keys.RETURN)
         action.perform()
+        action.reset_actions()
+
+    def __data_point(self, date, value, production_type) -> dict:
+        return {'ts': date,
+                'value': float(value),
+                'ba': 'Unidad de Transacciones',
+                'meta': production_type + ' (MWh)'}
 
     def scrape_data(self) -> list:
         """
-        Grabs the daily report for El Salvador.
-        Return: list of datapoints
+        Grabs the all the data on the current webpage.
+        Since the website intially shows todays data, this method can
+        be used on its own to grab all of today's data.
+        @Return: list of datapoints
         """
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
@@ -148,28 +138,28 @@ class ElSalvador:
         WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((
                 By.CLASS_NAME, 'dx-icon-dashboard-parameters')))
+
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         generation_table = soup.find('table', {'class': 'dx-word-wrap'})
-        table_headers = generation_table.find('td',
-                                              {'class': 'dx-area-column-cell'})
+        table_headers = generation_table.find(
+            'td', {'class': 'dx-area-column-cell'})
         columns = table_headers.find('table').find_all('span')
         columns = columns[0:-1]
         for i in range(len(columns)):
             columns[i] = columns[i].text
-
         data_table = generation_table.find('tr', {'class': 'dx-bottom-row'})
-        times = data_table.find('td',
-                                {'class': 'dx-area-row-cell'}).find_all('span')
-        data = data_table.find('td',
-                               {'class': 'dx-area-data-cell'}).find('table')
+        times = data_table.find(
+            'td', {'class': 'dx-area-row-cell'}).find_all('span')
+        data = data_table.find(
+            'td', {'class': 'dx-area-data-cell'}).find('table')
+
         try:
             scrape_date = times[1].text
         except Exception:
             # this occurs sometime around 10pm PDT
             print("There is no data for this day yet")
             return []
-        # this needs to be here since the
-        # website reports 1/8/2020 instead of 01/08/2020
+        # the website reports 1/8/2020 instead of 01/08/2020
         scrape_day = re.search(r'(\d+)/\d+/\d+', scrape_date).group(1)
         scrape_month = re.search(r'\d+/(\d+)/\d+', scrape_date).group(1)
         scrape_year = re.search(r'\d+/\d+/(\d+)', scrape_date).group(1)
@@ -178,6 +168,7 @@ class ElSalvador:
             + scrape_month.zfill(2) + '/'
             + scrape_year.zfill(4)
         )
+
         hours = times[2:-1]
         data_points = []
         for i in range(len(hours)):
@@ -202,26 +193,77 @@ class ElSalvador:
                     self.__data_point(date, value, production_type))
         return data_points
 
-    def __data_point(self, date, value, production_type) -> dict:
-        return {'ts': date,
-                'value': float(value),
-                'ba': 'Unidad de Transacciones',
-                'meta': production_type + ' (MWh)'}
+    def date(self, year, month, day) -> list:
+        '''
+        Grabs historical for the given date.
+        @Param: Date must be a valid date and not in the future.
+                Earliest available date is (2011, 1, 8)
+        '''
+        try:
+            date = datetime.date(year, month, day)
+            today = datetime.date.today()
+            days_back = (today - date).days
+        except Exception:
+            raise Exception("Illegal date.")
+        if days_back < 0:
+            raise Exception("Cannot scrape future date.")
 
+        self.__request_days_back(days_back)
+        return self.scrape_data()
 
-def main():
-    el_salvador = ElSalvador()
+    def date_range(self, start_year, start_month, start_day,
+                   end_year, end_month, end_day) -> list:
+        '''
+        Grabs historical data within given range (inclusive)
+        @Param: Date must be a valid date and not in the future.
+                Earliest available date is (2011, 1, 8)
+        @Return: data in oldest-newest order
+        '''
+        try:
+            start_date = datetime.date(start_year, start_month, start_day)
+            end_date = datetime.date(end_year, end_month, end_day)
+            delta = datetime.timedelta(days=1)
+        except Exception:
+            raise Exception("Illegal date.")
+        if start_date > end_date:
+            raise Exception("Start date should come before end date.")
 
-    print("Loading date...")
-    day = el_salvador.date(2020, 11, 10)
-    for datapoint in day:
-        print(datapoint)
-
-    print("Loading date range...")
-    days = el_salvador.date_range(2020, 11, 8, 2020, 11, 9)
-    for datapoint in days:
-        print(datapoint)
+        data = []
+        while start_date <= end_date:
+            data.extend(self.date(
+                start_date.year,
+                start_date.month,
+                start_date.day
+            ))
+            start_date += delta
+        return data
 
 
 if __name__ == "__main__":
-    main()
+    '''
+    Example use cases
+    '''
+    el_salvador = ElSalvador()
+
+    print("\nLoading today...")
+    today = el_salvador.scrape_data()
+    print("First ten datapoints:")
+    for i in range(10):
+        print(today[i])
+
+    print("\nLoading date...")
+    day = el_salvador.date(2020, 11, 10)
+    if len(day) > 0:
+        print("First ten datapoints:")
+        for i in range(10):
+            print(day[i])
+
+    print("\nLoading date range...")
+    days = el_salvador.date_range(2020, 11, 8, 2020, 11, 9)
+    if len(days) > 0:
+        print("First ten datapoints:")
+        for i in range(10):
+            print(days[i])
+        print("Last ten datapoints:")
+        for i in range(-10, 0):
+            print(days[i])

@@ -56,14 +56,11 @@ def test_output_tz_aware(get_driver):
 def test_error_future(get_driver):
     es = get_driver
     try:
-        data1 = es.date(day=10, month=10, year=2080)
-        data2 = es.date(day=10, month=10, year=2040)
-        # This should work and just report present
-        # day info instead of future info
-        assert data1[0] == data2[0]
+        es.date(day=10, month=10, year=2080)
+        assert False
     except Exception as e:
         print(e)
-        assert False
+        assert True
 
 
 def test_error_illegal_date(get_driver):
