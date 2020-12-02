@@ -10,6 +10,8 @@
         Reduction for quality and safety
         Reduction due to plant restriction
 
+    Data for yesterday will not be available early in the day.
+
     It uses chrome webdrivers to navigate the website. Initilizing driver
     takes longer than retriving date. Use date_range for multiple days instead
     of constructing class and initilizing driver for each date.
@@ -27,7 +29,6 @@
 
 import datetime
 import platform
-from datetime import timedelta
 from pathlib import Path
 import os
 import arrow
@@ -65,10 +66,6 @@ class Nicaragua:
 
     def __del__(self):
         self.driver.quit()
-
-    def yesterday(self) -> list:
-        yesterday = datetime.date.today() - timedelta(days=1)
-        return self.date(yesterday.year, yesterday.month, yesterday.day)
 
     def date(self, year, month, day) -> list:
         return self.date_range(year, month, day, year, month, day)
@@ -132,11 +129,6 @@ class Nicaragua:
 def main():
     print("Initializing driver...")
     nicaragua = Nicaragua()
-
-    print("Loading Yesterday...")
-    yesterday = nicaragua.yesterday()
-    for datapoint in yesterday:
-        print(datapoint)
 
     print("Loading date...")
     day = nicaragua.date(2020, 9, 30)
