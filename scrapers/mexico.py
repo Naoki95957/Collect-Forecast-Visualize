@@ -133,6 +133,7 @@ class Mexico:
                 if filename.endswith('.zip'):
                     zip_exists = True
                     break
+            i += 1
             if i == 180:
                 raise Exception('File unable to download')
         self.__extract_files()
