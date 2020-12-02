@@ -112,43 +112,38 @@ class Mexico:
 
     def __retrieve_files(self, initial_month: int, initial_year: int,
                          final_month: int, final_year: int):
-        try:
-            start = self.driver.find_element_by_id(
-                "ctl00_ContentPlaceHolder1_FechaInicial_dateInput")
-            start.clear()
-            start.send_keys(self.__query(initial_month, initial_year))
-            stop = self.driver.find_element_by_id(
-                "ctl00_ContentPlaceHolder1_FechaFinal_dateInput")
-            stop.clear()
-            stop.send_keys(self.__query(final_month, final_year))
-            self.__manual_click('DescargaZip')
+        start = self.driver.find_element_by_id(
+            "ctl00_ContentPlaceHolder1_FechaInicial_dateInput")
+        start.clear()
+        start.send_keys(self.__query(initial_month, initial_year))
+        stop = self.driver.find_element_by_id(
+            "ctl00_ContentPlaceHolder1_FechaFinal_dateInput")
+        stop.clear()
+        stop.send_keys(self.__query(final_month, final_year))
+        self.__manual_click('DescargaZip')
 
-            zip_exists = False
-            i = 0
-            while not zip_exists:
-                action = selenium.webdriver.ActionChains(self.driver)
-                action.pause(1)
-                action.perform()
-                action.reset_actions()
-                for filename in os.listdir(self.downloads_dir):
-                    if filename.endswith('.zip'):
-                        zip_exists = True
-                        break
-                if i == 180:
-                    raise Exception('File unable to download')
-
+        zip_exists = False
+        i = 0
+        while not zip_exists:
+            action = selenium.webdriver.ActionChains(self.driver)
+            action.pause(1)
+            action.perform()
+            action.reset_actions()
             for filename in os.listdir(self.downloads_dir):
-                if filename.endswith(".zip"):
-                    path = os.path.join(self.downloads_dir, filename)
-                    with zipfile.ZipFile(path, 'r') as zip_ref:
-                        zip_ref.extractall(self.downloads_dir)
+                if filename.endswith('.zip'):
+                    zip_exists = True
+                    break
+            if i == 180:
+                raise Exception('File unable to download')
+        for filename in os.listdir(self.downloads_dir):
+            if filename.endswith(".zip"):
+                path = os.path.join(self.downloads_dir, filename)
+                with zipfile.ZipFile(path, 'r') as zip_ref:
+                    zip_ref.extractall(self.downloads_dir)
 
-            for filename in os.listdir(self.downloads_dir):
-                if not filename.startswith("Generacion Liquidada_L0"):
-                    os.remove(self.downloads_dir + '/' + filename)
-
-        except selenium.common.exceptions.NoSuchElementException:
-            raise
+        for filename in os.listdir(self.downloads_dir):
+            if not filename.startswith("Generacion Liquidada_L0"):
+                os.remove(self.downloads_dir + '/' + filename)
 
     def __data_point(self, date_time, value, production_type) -> dict:
         return {
