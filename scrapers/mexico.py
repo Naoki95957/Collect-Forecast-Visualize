@@ -135,6 +135,9 @@ class Mexico:
                     break
             if i == 180:
                 raise Exception('File unable to download')
+        self.__extract_files()
+    
+    def __extract_files(self):
         for filename in os.listdir(self.downloads_dir):
             if filename.endswith(".zip"):
                 path = os.path.join(self.downloads_dir, filename)
@@ -204,7 +207,7 @@ def main():
     mexico = Mexico()
 
     print("Scraping month/year range data...")
-    data = mexico.scrape_month_range(1, 2020, 10, 2020)
+    data = mexico.scrape_month_range(8, 2020, 10, 2020)
     for dp in data:
         print(dp)
     '''
