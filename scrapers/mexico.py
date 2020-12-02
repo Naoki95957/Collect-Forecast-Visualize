@@ -136,6 +136,7 @@ class Mexico:
             i += 1
             if i == 180:
                 raise Exception('File unable to download')
+            i += 1
         self.__extract_files()
 
     def __extract_files(self):
