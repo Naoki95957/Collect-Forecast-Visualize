@@ -41,6 +41,7 @@ Students will be working within a framework provided by WattTime which already i
   - requests
   - selenium
   - pandas
+  - pymongo
   
   You can install all required python modules with `pip install -r requirments.txt`
   (You'll need to manually install pandas due to different instructions per OS)
