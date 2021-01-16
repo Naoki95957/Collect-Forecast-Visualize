@@ -17,7 +17,7 @@ class CostaRicaAdapter(ScraperAdaptor):
     def scrape(self, day, month, year):
         # for loop get days, 7 days
         
-        data = adaptee.date(year, month, day)
+        data = self.adaptee.date(year, month, day)
         return data
 
         # get start, finish data range
