@@ -6,7 +6,7 @@ import sys
 
 @pytest.fixture(scope='module', autouse=True)
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def get_driver():
     print("init Mexico testing")
@@ -15,7 +15,7 @@ def get_driver():
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_driver_crash():
     try:
@@ -27,7 +27,7 @@ def test_driver_crash():
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_multiple_queries(get_driver):
     mexico = get_driver
@@ -41,7 +41,7 @@ def test_multiple_queries(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_output_list(get_driver):
     mexico = get_driver
@@ -50,7 +50,7 @@ def test_output_list(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_output_value(get_driver):
     mexico = get_driver
@@ -59,7 +59,7 @@ def test_output_value(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_output_dict_size(get_driver):
     mexico = get_driver
@@ -68,7 +68,7 @@ def test_output_dict_size(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_output_tz_aware(get_driver):
     mexico = get_driver
@@ -77,7 +77,7 @@ def test_output_tz_aware(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_error_future(get_driver):
     mexico = get_driver
@@ -90,7 +90,7 @@ def test_error_future(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_error_illegal_date(get_driver):
     mexico = get_driver
@@ -103,7 +103,7 @@ def test_error_illegal_date(get_driver):
 
 
 @pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.versioninfo == (3, 6, 6)),
+    (platform.system() == "Linux" and sys.version_info  == (3, 6, 6)),
     reason="Raspberry pi can't run mexico for some reason")
 def test_error_no_file(get_driver):
     mexico = get_driver
