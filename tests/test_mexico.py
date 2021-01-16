@@ -4,7 +4,9 @@ import platform
 import sys
 
 rpi = pytest.mark.skipif(
-    (platform.system() == "Linux" and sys.version_info == (3, 6, 6)),
+    (platform.system() == "Linux" and
+    sys.version_info == (3, 6) and
+    platform.architecture()[0] == "32bit"),
     reason="Raspberry pi can't run mexico for some reason"
 )
 
