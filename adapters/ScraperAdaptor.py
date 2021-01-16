@@ -1,5 +1,5 @@
-#from abc import ABCMeta, abstractmethod
-#from interface import implements, Interface
+# from abc import ABCMeta, abstractmethod
+# from interface import implements, Interface
 
 class ScraperAdapter():
     # __metaclass__ = ABCMeta
@@ -12,10 +12,9 @@ class ScraperAdapter():
 
     def scrape(self) -> dict:
         pass
-    
+
     def scrape_day(self) -> dict:
-    
-    def frequency(self) -> str:
         pass
 
-    
+    def frequency(self) -> str:
+        pass

@@ -16,7 +16,6 @@
     https://selenium-python.readthedocs.io/installation.html
 """
 
-
 import datetime
 import platform
 import re
@@ -27,9 +26,7 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-
 import pymongo
-
 
 
 class CostaRica:
@@ -107,9 +104,12 @@ class CostaRica:
 
 def main():
 
-#BCWATT:WattTime2021
+    # BCWATT:WattTime2021
 
-    client = pymongo.MongoClient("mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/WattTime?retryWrites=true&w=majority")
+    client = pymongo.MongoClient(
+        "mongodb+srv://BCWATT:WattTime2021" +
+        "@cluster0.tbh2o.mongodb.net/" +
+        "WattTime?retryWrites=true&w=majority")
     db = client.get_database('WattTime')
 
     records = db.accounts
@@ -117,7 +117,6 @@ def main():
 
     mydb = client["WattTime"]
     mycol = mydb["Costa_Rica"]
-
 
     print("Initializing driver...")
     costa_rica = CostaRica()
