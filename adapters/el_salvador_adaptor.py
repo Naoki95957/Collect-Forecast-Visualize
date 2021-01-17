@@ -29,8 +29,6 @@ class ElSalvadorAdapter(ScraperAdaptor):
             return dict
         else:
             return None
-        # get start, finish data range
-        # combine into one week and return
 
     def frequency(self):
         # shoudn't the adaptor have an integer or date parameter?
