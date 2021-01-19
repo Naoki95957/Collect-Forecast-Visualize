@@ -1,35 +1,52 @@
-from adapters import ScraperAdaptor
-from scrapers import el_salvador
+from adapters.scraper_adapter import ScraperAdapter
+from scrapers.el_salvador import ElSalvador
+from datetime import timedelta
+import copy
 import datetime
 
 
-class ElSalvadorAdapter(ScraperAdaptor):
+# I can't figure out this import error
+class ElSalvadorAdapter(ScraperAdapter):
 
-    def __init__(self, scraper: el_salvador):
-        self.scraper = el_salvador
+    def __init__(self, scraper=ElSalvador):
+        self.scraper = ElSalvador()
         self.last_scrape_date = None
+        self.last_scrape_list = []
 
     def scrape(self):
         '''
-        Will attempt to scrape data for the week
+        Will attempt to scrape data by the hour
 
-        If the last scrape was within a week, it will return None
+        If the last scrape was within an hour, it will return None
 
-        Returns: dict with data entries for the past week.
+        Returns: dict with data entries for the hour.
         '''
-        # for loop get days, 7 days
         will_scrape = False
-        delta = (datetime.datetime.today() - self.last_scrape_date)
-        if (not self.last_scrape_date or delta.days > 7):
+        delta = None
+        if (not self.last_scrape_date):
             will_scrape = True
+        else:
+            delta = timedelta(datetime.datetime.today() - self.last_scrape_date)
+            # 60 seconds * 60 minutes
+            if (delta.seconds / (60 * 60) > 1):
+                will_scrape = True
 
         if (will_scrape):
             # TODO scrape data
-            self.last_scrape_date = datetime.datetime.today()
-            return dict
+            self.last_scrape_date = datetime.datetime.now()
+            data = self.scraper.scrape_data()
+            print(data)
+            dataCopy = copy.deepcopy(self.last_scrape_list)
+            self.last_scrape_list = data
+            # TODO make these into dictionaries to take a difference in sets
+            return data - dataCopy
         else:
             return None
 
+    def scrape_day(self) -> dict:
+        # TODO
+        return None
+
     def frequency(self):
-        # shoudn't the adaptor have an integer or date parameter?
-        return
+        # TODO return something that indicates hourly
+        return None

@@ -54,7 +54,6 @@ class ElSalvador:
         'Geotérmico': 'Geothermal',
         'Hidroeléctrico': 'HydroElectric',
         'Interconexión': 'Interconnection',
-        'Eólico': 'Wind',
         'Solar': 'Solar',
         'Térmico': 'Thermal',
         'Eólico': 'Wind'
