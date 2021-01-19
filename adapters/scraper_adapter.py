@@ -1,5 +1,7 @@
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
+# , ABCMeta
 # from interface import implements, Interface
+
 
 class ScraperAdapter(ABC):
 
@@ -7,7 +9,7 @@ class ScraperAdapter(ABC):
     # def version(self): return "1.0"
 
     def __init__(self):
-      raise NotImplementedError('The class cannot be instantiated')
+        raise NotImplementedError('The class cannot be instantiated')
 
     @abstractmethod
     def scrape(self) -> dict:

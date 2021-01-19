@@ -5,7 +5,6 @@ import copy
 import datetime
 
 
-# I can't figure out this import error
 class ElSalvadorAdapter(ScraperAdapter):
 
     def __init__(self, scraper=ElSalvador):
@@ -26,7 +25,8 @@ class ElSalvadorAdapter(ScraperAdapter):
         if (not self.last_scrape_date):
             will_scrape = True
         else:
-            delta = timedelta(datetime.datetime.today() - self.last_scrape_date)
+            delta = timedelta(
+                datetime.datetime.today() - self.last_scrape_date)
             # 60 seconds * 60 minutes
             if (delta.seconds / (60 * 60) > 1):
                 will_scrape = True
