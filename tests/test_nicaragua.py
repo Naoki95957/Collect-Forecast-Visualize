@@ -11,7 +11,7 @@ def get_driver():
 
 def test_nicaragua_driver_crash():
     try:
-        Nicaragua()
+        get_driver
         assert True
     except Exception as e:
         print(e)

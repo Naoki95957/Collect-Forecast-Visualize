@@ -18,7 +18,7 @@ def get_driver():
 @rpi
 def test_driver_crash():
     try:
-        Mexico()
+        get_driver
         assert True
     except Exception as e:
         print(e)
