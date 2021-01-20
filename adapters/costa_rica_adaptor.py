@@ -11,6 +11,9 @@ from scrapers import costa_rica
 
 
 class CostaRicaAdapter(ScraperAdaptor):
+    last_scraped_date = None
+    
+
 
     def __init__(self, adaptee: costa_rica):
         self.adaptee = adaptee
