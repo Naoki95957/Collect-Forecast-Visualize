@@ -16,3 +16,12 @@ def test_adapter_crash():
     except Exception as e:
         print(e)
         assert False
+
+
+def test_adapter_scrape_too_fast():
+    esa = ElSalvadorAdapter(get_adapter)
+    esa.scrape_new_data()
+    if esa.scrape_new_data():
+        assert False
+    else:
+        assert True
