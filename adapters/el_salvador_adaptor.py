@@ -92,6 +92,8 @@ class ElSalvadorAdapter(ScraperAdapter):
             for j in range(i, len(data)):
                 if data[i]['ts'] == data[j]['ts']:
                     dict_val = dict()
+                    if data[j]['value'] == 0:
+                        continue
                     dict_val['value'] = data[j]['value']
                     dict_val['type'] = data[j]['meta'].replace(" (MWh)", "")
                     entries.append(dict_val)
