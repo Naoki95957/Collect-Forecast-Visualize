@@ -9,7 +9,8 @@ class ScraperAdapter(ABC):
     # def version(self): return "1.0"
 
     def __init__(self):
-        raise NotImplementedError('The class cannot be instantiated')
+        # raise NotImplementedError('The class cannot be instantiated')
+        pass
 
     # will have latest scraped data
     # will be null so manager will look in database for last date
@@ -33,7 +34,11 @@ class ScraperAdapter(ABC):
 
     # filter data, remove BA and combine META in both functions
     @abstractmethod
-    def scrape_history(self) -> dict:
+    def scrape_history(
+            self,
+            start_year, start_month, start_day,
+            end_year, end_month, end_day
+            ) -> dict:
         '''
             Limit to history? Same all or as far back as we can? Cost to store?
             Lets start with 2 years for all countries if we can.

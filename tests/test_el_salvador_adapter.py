@@ -1,4 +1,5 @@
 from adapters.el_salvador_adaptor import ElSalvadorAdapter
+from adapters.scraper_adapter import ScraperAdapter
 import pytest
 
 
@@ -18,8 +19,18 @@ def test_adapter_crash():
         assert False
 
 
+def test_adapter_conversion():
+    esa = ElSalvadorAdapter(get_adapter)
+    esa.__class__ = ScraperAdapter
+    if isinstance(esa, ScraperAdapter):
+        assert True
+    else:
+        assert False
+
+
 def test_adapter_scrape_too_fast():
     esa = ElSalvadorAdapter(get_adapter)
+    esa.__class__ = ScraperAdapter
     esa.scrape_new_data()
     if esa.scrape_new_data():
         assert False

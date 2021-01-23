@@ -10,6 +10,7 @@ class ElSalvadorAdapter(ScraperAdapter):
     __frequency = 60 * 60
 
     def __init__(self, scraper=ElSalvador):
+        super(ElSalvadorAdapter, self).__init__()
         self.scraper = ElSalvador()
         self.last_scrape_date = None
         self.last_scrape_list = []
@@ -17,7 +18,7 @@ class ElSalvadorAdapter(ScraperAdapter):
     def set_last_scraped_date(self):
         '''
         '''
-        pass
+        return None
 
     def scrape_new_data(self):
         '''
