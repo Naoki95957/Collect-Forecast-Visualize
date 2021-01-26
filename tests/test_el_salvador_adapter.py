@@ -21,7 +21,6 @@ def test_adapter_crash():
 
 def test_adapter_conversion():
     esa = ElSalvadorAdapter(get_adapter)
-    esa.__class__ = ScraperAdapter
     if isinstance(esa, ScraperAdapter):
         assert True
     else:
@@ -30,7 +29,6 @@ def test_adapter_conversion():
 
 def test_adapter_scrape_too_fast():
     esa = ElSalvadorAdapter(get_adapter)
-    esa.__class__ = ScraperAdapter
     esa.scrape_new_data()
     if esa.scrape_new_data():
         assert False

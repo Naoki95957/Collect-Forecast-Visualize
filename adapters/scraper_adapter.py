@@ -4,13 +4,16 @@ from abc import ABC, abstractmethod
 
 
 class ScraperAdapter(ABC):
+    '''
+        Serves an interface for abstraction for all our scrapers
+    '''
 
     # @classmethod
     # def version(self): return "1.0"
 
-    def __init__(self):
-        # raise NotImplementedError('The class cannot be instantiated')
-        pass
+    # def __init__(self):
+    #     # raise NotImplementedError('The class cannot be instantiated')
+    #     return None
 
     # will have latest scraped data
     # will be null so manager will look in database for last date
