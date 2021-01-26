@@ -16,8 +16,6 @@ class ElSalvadorAdapter(ScraperAdapter):
         self.last_scrape_list = []
 
     def set_last_scraped_date(self, date: datetime.datetime):
-        '''
-        '''
         self.last_scrape_list = None
         self.last_scrape_date = date
 
@@ -49,8 +47,7 @@ class ElSalvadorAdapter(ScraperAdapter):
             if (delta.days > 0):
                 will_scrape = True
                 self.last_scrape_list = None
-            # 60 seconds * 60 minutes
-            if (delta.seconds / (self.__frequency) > 1):
+            if (delta.seconds / self.__frequency > 1):
                 will_scrape = True
 
         if (will_scrape):
@@ -109,6 +106,9 @@ class ElSalvadorAdapter(ScraperAdapter):
         return buffer
 
     def __filter_time(self, data: dict, start_time: datetime) -> dict:
+        '''
+        Filters out data before and at the start time
+        '''
         if not start_time:
             return data
         ordered = sorted(data.keys())
