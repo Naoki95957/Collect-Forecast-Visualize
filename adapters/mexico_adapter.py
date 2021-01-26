@@ -76,7 +76,7 @@ class MexicoAdapter(ScraperAdapter):
         '''
         Removes BA and combines like emissions
 
-        Since El Salvador doesn't have multiple matching emissions,
+        Since Mexico doesn't have multiple matching emissions,
         this just strips BA and creates a dict:
             keys are time : value is list[dict{value, type}, ...]
 
