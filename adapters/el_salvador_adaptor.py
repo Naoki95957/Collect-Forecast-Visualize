@@ -1,6 +1,8 @@
 from adapters.scraper_adapter import ScraperAdapter
 from scrapers.el_salvador import ElSalvador
 import copy
+import pytz
+import operator
 import datetime
 
 
@@ -10,15 +12,15 @@ class ElSalvadorAdapter(ScraperAdapter):
     __frequency = 60 * 60
 
     def __init__(self, scraper=ElSalvador):
-        super(ElSalvadorAdapter, self).__init__()
         self.scraper = ElSalvador()
         self.last_scrape_date = None
         self.last_scrape_list = []
 
-    def set_last_scraped_date(self):
+    def set_last_scraped_date(self, date: datetime.datetime):
         '''
         '''
-        return None
+        self.last_scrape_list = None
+        self.last_scrape_date = date
 
     def scrape_new_data(self):
         '''
@@ -39,10 +41,12 @@ class ElSalvadorAdapter(ScraperAdapter):
         '''
         will_scrape = False
         delta = None
+        now = datetime.datetime.now(tz=pytz.timezone("America/Los_Angeles"))
+        now = now.astimezone(pytz.timezone('America/El_Salvador'))
         if (not self.last_scrape_date):
             will_scrape = True
         else:
-            delta = datetime.datetime.today() - self.last_scrape_date
+            delta = now - self.last_scrape_date
             if (delta.days > 0):
                 will_scrape = True
                 self.last_scrape_list = None
@@ -51,12 +55,12 @@ class ElSalvadorAdapter(ScraperAdapter):
                 will_scrape = True
 
         if (will_scrape):
-            self.last_scrape_date = datetime.datetime.now()
             data = self.scraper.scrape_data()
             data_copy = copy.deepcopy(self.last_scrape_list)
             self.last_scrape_list = data
-            data = self.__filter_data(data)
+            data = self.__filter_data(data, start_time=self.last_scrape_date)
             data_copy = self.__filter_data(data_copy)
+            self.last_scrape_date = now
             return {k: data[k] for k in set(data) - set(data_copy)}
         else:
             return None
@@ -74,7 +78,7 @@ class ElSalvadorAdapter(ScraperAdapter):
             end_year, end_month, end_day
         ))
 
-    def __filter_data(self, data: list) -> dict:
+    def __filter_data(self, data: list, start_time=None) -> dict:
         '''
         Removes BA and combines like emissions
 
@@ -84,6 +88,8 @@ class ElSalvadorAdapter(ScraperAdapter):
 
         Time is str adjusted to match the format IN THAT TZ: 'HH-DD/MM/YYYY'
         '''
+        if not data:
+            return dict()
         buffer = dict()
         for i in range(0, len(data)):
             entries = list()
@@ -99,7 +105,19 @@ class ElSalvadorAdapter(ScraperAdapter):
                     dict_val['type'] = data[j]['meta'].replace(" (MWh)", "")
                     entries.append(dict_val)
             buffer[formatted_time] = entries
+        if start_time:
+            buffer = self.__filter_time(buffer, start_time)
         return buffer
+
+    def __filter_time(self, data: dict, start_time: datetime) -> dict:
+        if not start_time:
+            return data
+        ordered = sorted(data.keys())
+        time_stamp = start_time.strftime("%H-%d/%m/%Y")
+        for entry in ordered:
+            if entry >= time_stamp:
+                data.pop(entry)
+        return data
 
     def frequency(self):
         '''
