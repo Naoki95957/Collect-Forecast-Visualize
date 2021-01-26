@@ -95,7 +95,12 @@ class Mexico:
 
     def __del__(self):
         self.driver.quit()
-        shutil.rmtree(self.downloads_dir)
+
+        ## TODO: possible errors in this line
+        try:
+            shutil.rmtree(self.downloads_dir)
+        except:
+            pass
 
     def __manual_click(self, element):
         WebDriverWait(self.driver, 10).until(
