@@ -70,6 +70,7 @@ class Mexico:
                 os.mkdir(self.downloads_dir)
 
         options = Options()
+        options.add_argument('--log-level=3')
         options.headless = True
         prefs = {"download.default_directory": self.downloads_dir}
         options.add_experimental_option("prefs", prefs)
