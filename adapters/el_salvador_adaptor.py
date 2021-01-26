@@ -2,7 +2,6 @@ from adapters.scraper_adapter import ScraperAdapter
 from scrapers.el_salvador import ElSalvador
 import copy
 import pytz
-import operator
 import datetime
 
 
