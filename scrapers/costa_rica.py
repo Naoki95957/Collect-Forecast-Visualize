@@ -59,16 +59,11 @@ class CostaRica:
     def __del__(self):
         self.driver.quit()
 
-    def clear_actions(self, action_chain):
-        action_chain.w3c_actions.devices[0].clear_actions()
-        action_chain.w3c_actions.devices[1].clear_actions()
-
     def __manual_click(self, button):
         action = selenium.webdriver.ActionChains(self.driver)
         action.move_to_element(button)
         action.click()
         action.perform()
-        self.clear_actions(action)
 
     def date(self, year, month, day) -> list:
         return self.date_range(year, month, day, year, month, day)
