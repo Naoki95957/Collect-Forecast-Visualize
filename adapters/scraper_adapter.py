@@ -124,7 +124,7 @@ class ScraperAdapter(ABC):
         pass
 
     @abstractmethod
-    def frequency(self) -> str:
+    def frequency(self) -> int:
         '''
         this would execute scrape_new_data only to get current landing page
         if downtime occurs, what is the solution? scrape_history? how to
