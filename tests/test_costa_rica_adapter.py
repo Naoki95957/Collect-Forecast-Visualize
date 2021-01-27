@@ -41,7 +41,6 @@ def test_adapter_conversion(get_adapter):
         assert False
 
 # T3
-@linux
 def test_adapter_scrape_too_fast(get_adapter):
     reset_adapter(get_adapter)
     ca = get_adapter

@@ -162,7 +162,7 @@ class CostaRicaAdapter(ScraperAdapter):
     def __filter_data(self, data) -> dict:
 
         buffer = dict()
-        for i in range(0, len(data), 7):
+        for i in range(0, len(data) - 1, 7):
             time = data.iat[i, 0].strftime("%H-%d/%m/%Y")
             entries = list()
             for j in range(6):

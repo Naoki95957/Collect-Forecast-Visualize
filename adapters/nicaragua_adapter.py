@@ -100,14 +100,14 @@ class NicaraguaAdapter(ScraperAdapter):
         if not self.last_scrape_date:
             will_scrape = True
         else:
-            delta = datetime.datetime.now() - datetime.timedelta(1) - self.last_scrape_date
+            delta = datetime.datetime.now() - datetime.timedelta(2) - self.last_scrape_date
             if delta.days > 0:
                 will_scrape = True
             if delta.seconds / self.__frequency > 1:
                 will_scrape = True
 
         if will_scrape:
-            self.last_scrape_date = datetime.datetime.now() - datetime.timedelta(1)
+            self.last_scrape_date = datetime.datetime.now() - datetime.timedelta(2)
             year = self.last_scrape_date.year
             month = self.last_scrape_date.month
             day = self.last_scrape_date.day
