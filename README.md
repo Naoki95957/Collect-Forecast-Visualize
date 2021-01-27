@@ -12,6 +12,16 @@ A forecasting model will be implemented to predict future generation values and 
 
 Students will be working within a framework provided by WattTime which already includes a robust ETL pipeline, database, and significant support on where to find data and how to interpret it. 
 
+### Software Documents:
+
+  - [Press Release FAQ (PR)](https://github.com/Naoki95957/Collect-Forecast-Visualize/blob/vitaliybeinspired-patch-1/Documents/Press%20Release%20FAQ.pdf)
+
+  - [Software Requirements Specification Document (SRS)](https://github.com/Naoki95957/Collect-Forecast-Visualize/blob/vitaliybeinspired-patch-1/Documents/Software%20Requirements%20Specifications.pdf)
+
+  - [Software Design Document (SDD)](https://github.com/Naoki95957/Collect-Forecast-Visualize/blob/vitaliybeinspired-patch-1/Documents/Software%20Design%20Document.pdf)
+
+  - [Software Test Document (STD)](https://github.com/Naoki95957/Collect-Forecast-Visualize/blob/vitaliybeinspired-patch-1/Documents/Software%20Test%20Document.pdf)
+
 ### Mentor - [Connor Guest](mailto:connor@watttime.org)
 
 ### Proffessor - [Dr. Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
