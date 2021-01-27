@@ -40,9 +40,8 @@ class ScraperAdapter(ABC):
     @abstractmethod
     def scrape_history(
             self,
-            start_year, start_month,
-            end_year, end_month,
-            start_day=0, end_day=0
+            start_year=0, start_month=0, start_day=0,
+            end_year=0, end_month=0, end_day=0
             ) -> dict:
         '''
             Limit to history? Same all or as far back as we can? Cost to store?
