@@ -9,6 +9,7 @@ def get_driver():
     yield costa_rica
 
 
+# T1
 def test_driver_crash():
     try:
         get_driver
@@ -18,6 +19,7 @@ def test_driver_crash():
         assert False
 
 
+# T2
 def test_multiple_queries(get_driver):
     costa_rica = get_driver
     try:
@@ -29,6 +31,7 @@ def test_multiple_queries(get_driver):
         assert False
 
 
+# T3
 def test_date_range(get_driver):
     costa_rica = get_driver
     try:
@@ -39,18 +42,21 @@ def test_date_range(get_driver):
         assert False
 
 
+# T4
 def test_output_type_is_a_list(get_driver):
     costa_rica = get_driver
     data = costa_rica.date(2020, 10, 10)
     assert isinstance(data, list)
 
 
+# T5
 def test_output_value_is_a_float(get_driver):
     costa_rica = get_driver
     data = costa_rica.date(2020, 10, 10)
     assert isinstance(data[0]['value'], float)
 
 
+# T6
 def test_output_tz_aware(get_driver):
     costa_rica = get_driver
     data = costa_rica.date(2020, 10, 10)

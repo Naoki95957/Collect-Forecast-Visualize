@@ -9,6 +9,7 @@ def get_driver():
     yield nicaragua
 
 
+# T1
 def test_nicaragua_driver_crash():
     try:
         get_driver
@@ -18,6 +19,7 @@ def test_nicaragua_driver_crash():
         assert False
 
 
+# T2
 def test_nicaragua_multiple_queries(get_driver):
     nicaragua = get_driver
     try:
@@ -29,6 +31,7 @@ def test_nicaragua_multiple_queries(get_driver):
         assert False
 
 
+# T3
 def test_nicaragua_date_range(get_driver):
     nicaragua = get_driver
     try:
@@ -39,30 +42,35 @@ def test_nicaragua_date_range(get_driver):
         assert False
 
 
+# T4
 def test_nicaragua_output_type_is_a_list(get_driver):
     nicaragua = get_driver
     data = nicaragua.date(2020, 10, 10)
     assert isinstance(data, list)
 
 
+# T5
 def test_nicaragua_output_value_is_a_float(get_driver):
     nicaragua = get_driver
     data = nicaragua.date(2020, 10, 10)
     assert isinstance(data[0]['value'], float)
 
 
+# T6
 def test_nicaragua_output_tz_aware(get_driver):
     nicaragua = get_driver
     data = nicaragua.date(2020, 10, 10)
     assert data[0]['ts'].tzinfo is not None
 
 
+# T7
 def test_nicaragua_output_dict_size(get_driver):
     nicaragua = get_driver
     data = nicaragua.date(day=10, month=10, year=2020)
     assert 4 == len(data[0])
 
 
+# T8
 def test_nicaragua_error_illegal_date(get_driver):
     nicaragua = get_driver
     try:
@@ -73,6 +81,7 @@ def test_nicaragua_error_illegal_date(get_driver):
         assert True
 
 
+# T9
 def test_nicaragua_error_backwards_dates(get_driver):
     nicaragua = get_driver
     try:

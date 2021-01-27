@@ -17,6 +17,7 @@ def reset_adapter(adapter: ElSalvadorAdapter):
     adapter.set_last_scraped_date(None)
 
 
+# T1
 def test_adapter_crash():
     try:
         get_adapter
@@ -26,6 +27,7 @@ def test_adapter_crash():
         assert False
 
 
+# T2
 def test_adapter_inheritance(get_adapter):
     esa = get_adapter
     esa.frequency()
@@ -35,6 +37,7 @@ def test_adapter_inheritance(get_adapter):
         assert False
 
 
+# T3
 def test_adapter_scrape_too_fast(get_adapter):
     esa = get_adapter
     reset_adapter(esa)
@@ -45,6 +48,7 @@ def test_adapter_scrape_too_fast(get_adapter):
         assert True
 
 
+# T4
 def test_adaptor_data_format(get_adapter):
     esa = get_adapter
     reset_adapter(esa)
@@ -62,6 +66,7 @@ def test_adaptor_data_format(get_adapter):
         assert False
 
 
+# T5
 def test_adapter_scrape_history(get_adapter):
     esa = get_adapter
     reset_adapter(esa)
@@ -74,6 +79,7 @@ def test_adapter_scrape_history(get_adapter):
         assert False
 
 
+# T6
 def test_adapter_frequency(get_adapter):
     esa = get_adapter
     if (esa.frequency() == 60 * 60):
@@ -82,6 +88,7 @@ def test_adapter_frequency(get_adapter):
         assert False
 
 
+# T7
 def test_adapter_set_date(get_adapter):
     esa = get_adapter
     reset_adapter(esa)

@@ -15,6 +15,7 @@ def get_driver():
     yield mexico
 
 
+# T1
 @rpi
 def test_driver_crash():
     try:
@@ -25,6 +26,7 @@ def test_driver_crash():
         assert False
 
 
+# T2
 @rpi
 def test_multiple_queries(get_driver):
     mexico = get_driver
@@ -37,6 +39,7 @@ def test_multiple_queries(get_driver):
         assert False
 
 
+# T3
 @rpi
 def test_output_list(get_driver):
     mexico = get_driver
@@ -44,6 +47,7 @@ def test_output_list(get_driver):
     assert isinstance(data, list)
 
 
+# T4
 @rpi
 def test_output_value(get_driver):
     mexico = get_driver
@@ -51,6 +55,7 @@ def test_output_value(get_driver):
     assert isinstance(data[0]['value'], float)
 
 
+# T5
 @rpi
 def test_output_dict_size(get_driver):
     mexico = get_driver
@@ -58,6 +63,7 @@ def test_output_dict_size(get_driver):
     assert 4 == len(data[0])
 
 
+# T6
 @rpi
 def test_output_tz_aware(get_driver):
     mexico = get_driver
@@ -65,6 +71,7 @@ def test_output_tz_aware(get_driver):
     assert data[0]['ts'].tzinfo is not None
 
 
+# T7
 @rpi
 def test_error_future(get_driver):
     mexico = get_driver
@@ -76,6 +83,7 @@ def test_error_future(get_driver):
         assert True
 
 
+# T8
 @rpi
 def test_error_illegal_date(get_driver):
     mexico = get_driver
@@ -87,6 +95,7 @@ def test_error_illegal_date(get_driver):
         assert True
 
 
+# T9
 @rpi
 def test_error_no_file(get_driver):
     mexico = get_driver

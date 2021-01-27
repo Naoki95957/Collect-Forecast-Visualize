@@ -23,6 +23,7 @@ def reset_adapter(adapter: MexicoAdapter):
     adapter.set_last_scraped_date(None)
 
 
+# T1
 @rpi
 def test_adapter_crash():
     try:
@@ -33,6 +34,7 @@ def test_adapter_crash():
         assert False
 
 
+# T2
 @rpi
 def test_adapter_inheritance(get_adapter):
     ma = get_adapter
@@ -42,6 +44,7 @@ def test_adapter_inheritance(get_adapter):
         assert False
 
 
+# T3
 @rpi
 def test_adaptor_data_format(get_adapter):
     ma = get_adapter
@@ -60,6 +63,7 @@ def test_adaptor_data_format(get_adapter):
         assert False
 
 
+# T4
 @rpi
 def test_adapter_scrape_too_fast(get_adapter):
     ma = get_adapter
@@ -71,6 +75,7 @@ def test_adapter_scrape_too_fast(get_adapter):
         assert True
 
 
+# T5
 @rpi
 def test_adapter_scrape_history(get_adapter):
     ma = get_adapter
@@ -80,6 +85,7 @@ def test_adapter_scrape_history(get_adapter):
         assert False
 
 
+# T6
 @rpi
 def test_adapter_frequency(get_adapter):
     ma = get_adapter
@@ -88,7 +94,7 @@ def test_adapter_frequency(get_adapter):
     else:
         assert False
 
-
+# T7
 @rpi
 def test_adapter_set_date(get_adapter):
     ma = get_adapter
