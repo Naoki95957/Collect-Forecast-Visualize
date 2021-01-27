@@ -12,8 +12,7 @@ The manager class uses this class
 
 
 class CostaRicaAdapter(ScraperAdapter):
-
-    # dictionary the key is the type of energy and value is a list of plants
+    __frequency = 60 * 60 * 24
     PLANT_DICTIONARY = {
         'Arenal': 'Hydroelectric',
         'Angostura': 'Hydroelectric',
@@ -56,7 +55,7 @@ class CostaRicaAdapter(ScraperAdapter):
         'Garabito': 'Thermal',
         'Moín II': 'Thermal',
         'Moín III': 'Thermal',
-        'Las Pailas II': 'Geothermal',
+        'Las Pailas I': 'Geothermal',
         'Las Pailas II': 'Geothermal',
         'Miravalles I': 'Geothermal',
         'Miravalles II': 'Geothermal',
@@ -117,14 +116,9 @@ class CostaRicaAdapter(ScraperAdapter):
     appended_new = None
     last_scrape_date = None
     last_scrape_list = []
-    two_years_back = None
-    yesterday = None
-    years_back = 2
 
     def __init__(self):
         self.scraper = CostaRica()
-        self.two_years_back = datetime.datetime.now() - datetime.timedelta(365 * self.years_back)
-        self.yesterday = datetime.datetime.now() - datetime.timedelta(1)
 
     def set_last_scraped_date(self, date: datetime.datetime):
         self.last_scrape_list = None
@@ -132,7 +126,6 @@ class CostaRicaAdapter(ScraperAdapter):
 
     def scrape_history(self, start_year, start_month, start_day, end_year, end_month, end_day) -> dict:
         self.historic_data = self.scraper.date_range(start_year, start_month, start_day, end_year, end_month, end_day)
-        self.last_scrape_date = self.yesterday
 
         self.appended_hist = pd.DataFrame(self.historic_data)
         self.appended_hist = self.appended_hist.drop('ba', axis=1)
@@ -182,24 +175,23 @@ class CostaRicaAdapter(ScraperAdapter):
         return buffer
 
     def frequency(self) -> str:
-        return self.__frequency
+        return str(self.__frequency)
 
 
 def main():
+    ca = CostaRicaAdapter()
 
-        ca = CostaRicaAdapter()
+    start_year = 2020
+    start_month = 11
+    start_day = 1
+    end_year = 2021
+    end_month = 1
+    end_day = 24
 
-        start_year = ca.two_years_back.year
-        start_month = ca.two_years_back.month
-        start_day = ca.two_years_back.day
-        end_year = ca.yesterday.year
-        end_month = ca.yesterday.month
-        end_day = ca.yesterday.day
-
-        data = ca.scrape_history(start_year, start_month, start_day, end_year, end_month, end_day)
-        # data = ca.scrape_new_data()
-        for each in data:
-            print(each, data[each], "\n")
+    data = ca.scrape_history(start_year, start_month, start_day, end_year, end_month, end_day)
+    # data = ca.scrape_new_data()
+    for each in data:
+        print(each, data[each], "\n")
 
 
 if __name__ == "__main__":

@@ -13,9 +13,8 @@ Meta types:
 
 
 class NicaraguaAdapter(ScraperAdapter):
-    # in seconds
-    __frequency = 60 * 60 * 24
 
+    __frequency = 60 * 60 * 24
     PLANT_DICTIONARY = {
         'AMY1': 'WIND',
         'AMY2': 'WIND',
@@ -78,22 +77,16 @@ class NicaraguaAdapter(ScraperAdapter):
     appended_new = None
     last_scrape_date = None
     last_scrape_list = []
-    two_years_back = None
-    yesterday = None
-    years_back = 2
 
     def __init__(self):
         self.scraper = Nicaragua()
-        self.two_years_back = datetime.datetime.now() - datetime.timedelta(365 * self.years_back)
-        self.yesterday = datetime.datetime.now() - datetime.timedelta(1)
 
     def set_last_scraped_date(self, date: datetime.datetime):
         self.last_scrape_list = None
         self.last_scrape_date = date
 
-    def scrape_history(self, start_year, start_month, end_year, end_month, start_day, end_day) -> dict:
+    def scrape_history(self, start_year, start_month, start_day, end_year, end_month, end_day) -> dict:
         self.historic_data = self.scraper.date_range(start_year, start_month, start_day, end_year, end_month, end_day)
-        self.last_scrape_date = self.yesterday
 
         self.appended_hist = pd.DataFrame(self.historic_data)
         self.appended_hist = self.appended_hist.drop('ba', axis=1)
@@ -125,12 +118,6 @@ class NicaraguaAdapter(ScraperAdapter):
             self.appended_new['meta'] = self.appended_new['meta'].replace(self.PLANT_DICTIONARY)
             self.appended_new = self.appended_new.groupby(['ts', 'meta'])['value'].agg('sum').reset_index()
 
-            date = self.appended_new.iat[1, 0]
-            value = self.appended_new.iat[1, 2]
-            meta = self.appended_new.iat[1, 1]
-
-            print(type(date), type(value), type(meta))
-
             return self.__filter_data(self.appended_new)
 
     def __filter_data(self, data) -> dict:
@@ -149,7 +136,7 @@ class NicaraguaAdapter(ScraperAdapter):
         return buffer
 
     def frequency(self) -> str:
-        return self.__frequency
+        return str(self.__frequency)
 
 
 def main():
@@ -162,7 +149,7 @@ def main():
     end_month = 1
     end_day = 24
 
-    data = na.scrape_history(start_year, start_month, end_year, end_month, start_day, end_day)
+    data = na.scrape_history(start_year, start_month, start_day, end_year, end_month, end_day)
     #data = na.scrape_new_data()
     for each in data:
         print(each, data[each], "\n")
