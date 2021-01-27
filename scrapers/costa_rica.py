@@ -88,6 +88,9 @@ class CostaRica:
 
     def __scrape_data(self, date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
+        WebDriverWait(self.driver, 5).until(
+            EC.presence_of_element_located((
+                By.ID, 'formPosdespacho:pickFecha')))
         self.__manual_click(
             self.driver.find_element(By.ID, "formPosdespacho:pickFecha"))
         WebDriverWait(self.driver, 5).until(
