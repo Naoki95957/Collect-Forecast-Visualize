@@ -66,7 +66,7 @@ jobs:
         flake8 ./scrapers --count --max-complexity=10 --statistics
     - name: Allow execution
       run: |
-        chmod -R 777 ./scraper/drivers
+        chmod -R 777 ./scrapers/drivers
     - name: Test pytest
       run: |
         pytest tests --suppress-no-test-exit-code
