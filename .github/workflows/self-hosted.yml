@@ -21,7 +21,7 @@ jobs:
         flake8 ./scrapers --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
         # exit-zero treats all errors as warnings.
         flake8 ./scrapers --count --max-complexity=10 --statistics
-    - name: Test pytest
+    - name: Test pytest ./tests/test_costa_rica_adapter.py
       run: |
         chmod -R 777 ./
         pytest --suppress-no-test-exit-code
