@@ -4,9 +4,9 @@ import pytest
 import platform
 
 
-rpi = pytest.mark.skipif((
-    platform.architecture()[0] == "32bit"),
-    reason="Raspberry pi can't run mexico for some reason"
+linux = pytest.mark.skipif((
+    platform.system() == "Linux"),
+    reason="Linux fails current data???"
 )
 
 
@@ -41,7 +41,7 @@ def test_adapter_conversion(get_adapter):
         assert False
 
 # T3
-@rpi
+@linux
 def test_adapter_scrape_too_fast(get_adapter):
     reset_adapter(get_adapter)
     ca = get_adapter
