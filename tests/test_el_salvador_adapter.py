@@ -1,4 +1,4 @@
-from adapters.el_salvador_adaptor import ElSalvadorAdapter
+from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.scraper_adapter import ScraperAdapter
 import pytest
 import pytz
