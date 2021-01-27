@@ -41,6 +41,23 @@ def test_adapter_inheritance(get_adapter):
     else:
         assert False
 
+@rpi
+def test_adaptor_data_format(get_adapter):
+    ma = get_adapter
+    reset_adapter(ma)
+    data = ma.scrape_new_data()
+    if isinstance(data, dict):
+        test = list(data.keys())[0]
+        try:
+            print(data[test][0]['value'])
+            print(data[test][0]['type'])
+            assert True
+        except Exception as e:
+            print(e)
+            assert False
+    else:
+        assert False
+
 
 @rpi
 def test_adapter_scrape_too_fast(get_adapter):
