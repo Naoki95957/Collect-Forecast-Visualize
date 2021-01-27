@@ -93,7 +93,7 @@ class CostaRica:
     def __scrape_data(self, date) -> list:
         try:
             wait = WebDriverWait(self.driver, 5)
-            filter_button =  wait.until(
+            filter_button = wait.until(
                     EC.presence_of_element_located((
                         By.ID, 'formPosdespacho:pickFecha')))
             self.__manual_click(filter_button)
