@@ -56,14 +56,15 @@ def test_adaptor_data_format(get_adapter):
     if isinstance(data, dict):
         if not data:
             assert True
-        test = list(data.keys())[0]
-        try:
-            print(data[test][0]['value'])
-            print(data[test][0]['type'])
-            assert True
-        except Exception as e:
-            print(e)
-            assert False
+        else:
+            test = list(data.keys())[0]
+            try:
+                print(data[test][0]['value'])
+                print(data[test][0]['type'])
+                assert True
+            except Exception as e:
+                print(e)
+                assert False
     else:
         assert False
 
