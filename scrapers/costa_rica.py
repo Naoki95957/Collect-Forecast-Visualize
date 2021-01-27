@@ -84,9 +84,20 @@ class CostaRica:
             start_date += datetime.timedelta(days=1)
         return all_data_points
 
+    def __manual_click(self, button):
+        action = selenium.webdriver.ActionChains(self.driver)
+        action.move_to_element(button)
+        action.click()
+        action.perform()
+
     def __scrape_data(self, date) -> list:
         try:
-            WebDriverWait(self.driver, 10).until(
+            wait = WebDriverWait(self.driver, 5)
+            filter_button =  wait.until(
+                    EC.presence_of_element_located((
+                        By.ID, 'formPosdespacho:pickFecha')))
+            self.__manual_click(filter_button)
+            wait.until(
                     EC.presence_of_element_located((
                         By.CLASS_NAME, 'ui-state-default.right')))
             soup = BeautifulSoup(self.driver.page_source, "html.parser")
