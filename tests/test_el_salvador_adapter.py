@@ -43,6 +43,23 @@ def test_adapter_scrape_too_fast(get_adapter):
         assert False
     else:
         assert True
+        
+
+def test_adaptor_data_format(get_adapter):
+    esa = get_adapter
+    reset_adapter(esa)
+    data = esa.scrape_new_data()
+    if isinstance(data, dict):
+        test = list(data.keys())[0]
+        try:
+            print(data[test][0]['value'])
+            print(data[test][0]['type'])
+            assert True
+        except Exception as e:
+            print(e)
+            assert False
+    else:
+        assert False
 
 
 def test_adapter_scrape_history(get_adapter):
