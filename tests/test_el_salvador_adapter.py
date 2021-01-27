@@ -54,6 +54,8 @@ def test_adaptor_data_format(get_adapter):
     reset_adapter(esa)
     data = esa.scrape_new_data()
     if isinstance(data, dict):
+        if not data:
+            assert True
         test = list(data.keys())[0]
         try:
             print(data[test][0]['value'])
