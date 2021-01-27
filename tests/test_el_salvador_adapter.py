@@ -43,7 +43,7 @@ def test_adapter_scrape_too_fast(get_adapter):
         assert False
     else:
         assert True
-        
+
 
 def test_adaptor_data_format(get_adapter):
     esa = get_adapter

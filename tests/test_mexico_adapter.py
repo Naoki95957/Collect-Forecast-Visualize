@@ -41,6 +41,7 @@ def test_adapter_inheritance(get_adapter):
     else:
         assert False
 
+
 @rpi
 def test_adaptor_data_format(get_adapter):
     ma = get_adapter
