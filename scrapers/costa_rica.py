@@ -27,6 +27,9 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class CostaRica:
@@ -79,6 +82,9 @@ class CostaRica:
 
     def __scrape_data(self, date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
+        WebDriverWait(self.driver, 5).until(
+            EC.presence_of_element_located((
+                By.ID, 'formPosdespacho:j_id_1a_data')))
         plants_hours = soup.find('tbody', {
             'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
         date_data_points = []
@@ -107,7 +113,7 @@ def main():
     costa_rica = CostaRica()
 
     print("Loading date...")
-    day = costa_rica.date(2020, 9, 30)
+    day = costa_rica.date(2021, 1, 25)
     for datapoint in day:
         print(datapoint)
 
