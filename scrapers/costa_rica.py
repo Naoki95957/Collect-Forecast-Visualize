@@ -72,9 +72,12 @@ class CostaRica:
             date = (str(start_date.day).zfill(2) + "/" +
                     str(start_date.month).zfill(2) + "/" +
                     str(start_date.year).zfill(4))
-            search_date_field = WebDriverWait(self.driver, 5).until(
+
+            search_date_field = WebDriverWait(self.driver, 10).until(
                     EC.presence_of_element_located((
                         By.NAME, 'formPosdespacho:txtFechaInicio_input')))
+            # search_date_field = self.driver.find_element_by_name(
+            #     "formPosdespacho:txtFechaInicio_input")
             search_date_field.clear()
             search_date_field.send_keys(date + Keys.RETURN)
             all_data_points.extend(self.__scrape_data(date))
@@ -83,6 +86,9 @@ class CostaRica:
 
     def __scrape_data(self, date) -> list:
         try:
+            WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((
+                        By.CLASS_NAME, 'ui-state-default.right')))
             soup = BeautifulSoup(self.driver.page_source, "html.parser")
             plants_hours = soup.find('tbody', {
                 'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
