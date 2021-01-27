@@ -19,6 +19,10 @@ def get_adapter():
     yield ma
 
 
+def reset_adapter(adapter: MexicoAdapter):
+    adapter.set_last_scraped_date(None)
+
+
 @rpi
 def test_adapter_crash():
     try:
@@ -41,6 +45,7 @@ def test_adapter_inheritance(get_adapter):
 @rpi
 def test_adapter_scrape_too_fast(get_adapter):
     ma = get_adapter
+    reset_adapter(ma)
     ma.scrape_new_data()
     if ma.scrape_new_data():
         assert False
@@ -68,20 +73,22 @@ def test_adapter_frequency(get_adapter):
 
 @rpi
 def test_adapter_set_date(get_adapter):
-    passing = True
     ma = get_adapter
-    if not ma.scrape_new_data():
-        passing = False
-    now_date = datetime.datetime.now(tz=pytz.timezone("America/Los_Angeles"))
-    now_date.astimezone(tz=pytz.timezone('Mexico/General'))
+    reset_adapter(ma)
+    first_check = False
+    if ma.scrape_new_data():
+        first_check = True
+    test_date = datetime.datetime.now(tz=pytz.timezone("America/Los_Angeles"))
+    test_date.astimezone(tz=pytz.timezone('Mexico/General'))
+    test_date = test_date - datetime.timedelta(days=7)
     test_date = arrow.get(
-        '00-' + now_date.strftime("%d/%m/%Y"),
+        '00-' + test_date.strftime("%d/%m/%Y"),
         'HH-DD/MM/YYYY',
         locale='es',
         tzinfo='Mexico/General'
     ).datetime
     ma.set_last_scraped_date(test_date)
     if ma.scrape_new_data():
-        assert passing
+        assert first_check
     else:
         assert False
