@@ -78,15 +78,19 @@ class CostaRica:
         return all_data_points
 
     def __scrape_data(self, date) -> list:
-        soup = BeautifulSoup(self.driver.page_source, "html.parser")
-        plants_hours = soup.find('tbody', {
-            'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
-        date_data_points = []
-        for plant_hour in plants_hours:
-            if (plant_hour.has_attr('title') and bool(plant_hour.getText())
-                    and 'Total' not in plant_hour['title']):
-                date_data_points.append(self.__data_point(date, plant_hour))
-        return date_data_points
+        try:
+            soup = BeautifulSoup(self.driver.page_source, "html.parser")
+            plants_hours = soup.find('tbody', {
+                'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
+            date_data_points = []
+            for plant_hour in plants_hours:
+                if (plant_hour.has_attr('title') and bool(plant_hour.getText())
+                        and 'Total' not in plant_hour['title']):
+                    date_data_points.append(self.__data_point(date, plant_hour))
+            return date_data_points
+        except Exception as e:
+            raise Exception(self.driver.page_source)
+            print(e)
 
     def __data_point(self, date, plant_hour) -> dict:
         plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)
