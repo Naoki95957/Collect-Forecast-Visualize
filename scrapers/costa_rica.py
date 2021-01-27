@@ -59,6 +59,13 @@ class CostaRica:
     def __del__(self):
         self.driver.quit()
 
+    def __manual_click(self, button):
+        action = selenium.webdriver.ActionChains(self.driver)
+        action.move_to_element(button)
+        action.click()
+        action.perform()
+        self.clear_actions(action)
+
     def date(self, year, month, day) -> list:
         return self.date_range(year, month, day, year, month, day)
 
@@ -82,9 +89,11 @@ class CostaRica:
 
     def __scrape_data(self, date) -> list:
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
+        self.__manual_click(self.driver.find_element(By.ID, "formPosdespacho:pickFecha"))
         WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((
                 By.ID, 'formPosdespacho:j_id_1a_data')))
+        
         plants_hours = soup.find('tbody', {
             'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
         date_data_points = []
