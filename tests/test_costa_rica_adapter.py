@@ -1,6 +1,13 @@
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
 import pytest
+import platform
+
+
+rpi = pytest.mark.skipif((
+    platform.architecture()[0] == "32bit"),
+    reason="Raspberry pi can't run mexico for some reason"
+)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -10,7 +17,10 @@ def get_adapter():
     yield ca
 
 
-# T1
+def reset_adapter(adapter: CostaRicaAdapter):
+    adapter.set_last_scraped_date(None)
+
+
 def test_adapter_crash():
     try:
         get_adapter
@@ -20,18 +30,18 @@ def test_adapter_crash():
         assert False
 
 
-# T2
-def test_adapter_conversion():
-    ca = CostaRicaAdapter()
+def test_adapter_conversion(get_adapter):
+    reset_adapter(get_adapter)
+    ca = get_adapter
     if isinstance(ca, ScraperAdapter):
         assert True
     else:
         assert False
 
-
-# T3
-def test_adapter_scrape_too_fast():
-    ca = CostaRicaAdapter()
+@rpi
+def test_adapter_scrape_too_fast(get_adapter):
+    reset_adapter(get_adapter)
+    ca = get_adapter
     ca.scrape_new_data()
     if ca.scrape_new_data():
         assert False
@@ -39,22 +49,22 @@ def test_adapter_scrape_too_fast():
         assert True
 
 
-# T4
 def test_adapter_scrape_history(get_adapter):
+    reset_adapter(get_adapter)
     ca = get_adapter
     if ca.scrape_history(
-        start_year=2021, start_month=1,
-        start_day=21, end_year=2021,
-        end_month=3, end_day=22):
+            start_year=2021, start_month=1,
+            start_day=21, end_year=2021,
+            end_month=1, end_day=22):
         assert True
     else:
         assert False
 
 
-# T5
 def test_adapter_frequency(get_adapter):
+    reset_adapter(get_adapter)
     ca = get_adapter
-    if (ca.frequency() == str(60 * 60 * 24)):
+    if (ca.frequency() == 60 * 60 * 24):
         assert True
     else:
         assert False

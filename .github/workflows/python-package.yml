@@ -33,9 +33,9 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
+        flake8 ./scrapers --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
         # exit-zero treats all errors as warnings.
-        flake8 . --count --max-complexity=10 --statistics
+        flake8 ./scrapers --count --max-complexity=10 --statistics
     - name: Test pytest
       run: pytest tests --suppress-no-test-exit-code
   buildLinux:
@@ -61,9 +61,9 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names. The GitHub editor is 127 chars wide
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
+        flake8 ./scrapers --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
         # exit-zero treats all errors as warnings.
-        flake8 . --count --max-complexity=10 --statistics
+        flake8 ./scrapers --count --max-complexity=10 --statistics
     - name: Test pytest
       run: |
         pytest tests --suppress-no-test-exit-code

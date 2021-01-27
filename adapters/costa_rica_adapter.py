@@ -174,8 +174,8 @@ class CostaRicaAdapter(ScraperAdapter):
             buffer[time] = entries
         return buffer
 
-    def frequency(self) -> str:
-        return str(self.__frequency)
+    def frequency(self) -> int:
+        return self.__frequency
 
 
 def main():
