@@ -27,9 +27,6 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
 
 
 class CostaRica:
@@ -72,51 +69,24 @@ class CostaRica:
             date = (str(start_date.day).zfill(2) + "/" +
                     str(start_date.month).zfill(2) + "/" +
                     str(start_date.year).zfill(4))
-
-            search_date_field = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((
-                        By.NAME, 'formPosdespacho:txtFechaInicio_input')))
-            # search_date_field = self.driver.find_element_by_name(
-            #     "formPosdespacho:txtFechaInicio_input")
+            search_date_field = self.driver.find_element_by_name(
+                "formPosdespacho:txtFechaInicio_input")
             search_date_field.clear()
             search_date_field.send_keys(date + Keys.RETURN)
             all_data_points.extend(self.__scrape_data(date))
             start_date += datetime.timedelta(days=1)
         return all_data_points
 
-    def __manual_click(self, button):
-        action = selenium.webdriver.ActionChains(self.driver)
-        action.move_to_element(button)
-        action.click()
-        action.perform()
-
     def __scrape_data(self, date) -> list:
-        try:
-            wait = WebDriverWait(self.driver, 5)
-            filter_button = wait.until(
-                    EC.presence_of_element_located((
-                        By.ID, 'formPosdespacho:pickFecha')))
-            self.__manual_click(filter_button)
-            wait.until(
-                    EC.presence_of_element_located((
-                        By.XPATH, "//table[@role='grid']//tbody")))
-            soup = BeautifulSoup(self.driver.page_source, "html.parser")
-            # Alternatives:
-            # xpath: //table[@role='grid']//tbody
-            # class_name: ui-datatable-data
-            # id: formPosdespacho:j_id_1a_data
-            plants_hours = soup.find('tbody', {
-                'class': 'ui-datatable-data'}).find_all('span')
-            date_data_points = []
-            for plant_hour in plants_hours:
-                if (plant_hour.has_attr('title') and bool(plant_hour.getText())
-                        and 'Total' not in plant_hour['title']):
-                    date_data_points.append(
-                        self.__data_point(date, plant_hour))
-            return date_data_points
-        except Exception as e:
-            raise Exception(self.driver.page_source)
-            print(e)
+        soup = BeautifulSoup(self.driver.page_source, "html.parser")
+        plants_hours = soup.find('tbody', {
+            'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
+        date_data_points = []
+        for plant_hour in plants_hours:
+            if (plant_hour.has_attr('title') and bool(plant_hour.getText())
+                    and 'Total' not in plant_hour['title']):
+                date_data_points.append(self.__data_point(date, plant_hour))
+        return date_data_points
 
     def __data_point(self, date, plant_hour) -> dict:
         plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)

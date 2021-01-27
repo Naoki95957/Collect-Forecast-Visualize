@@ -24,4 +24,4 @@ jobs:
     - name: Test pytest
       run: |
         chmod -R 777 ./
-        pytest --suppress-no-test-exit-code ./tests/test_costa_rica_adapter.py
+        pytest --suppress-no-test-exit-code
