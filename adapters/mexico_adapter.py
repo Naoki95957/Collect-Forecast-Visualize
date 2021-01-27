@@ -8,7 +8,7 @@ import datetime
 class MexicoAdapter(ScraperAdapter):
 
     # in seconds
-    __frequency = 60 * 60 * 24 * 31
+    __frequency = 60 * 60 * 24 * 7
 
     def __init__(self, scraper=Mexico):
         self.scraper = Mexico()
@@ -112,7 +112,7 @@ class MexicoAdapter(ScraperAdapter):
         ordered = sorted(data.keys())
         time_stamp = start_time.strftime("%H-%d/%m/%Y")
         for entry in ordered:
-            if entry >= time_stamp:
+            if entry < time_stamp:
                 data.pop(entry)
         return data
 
