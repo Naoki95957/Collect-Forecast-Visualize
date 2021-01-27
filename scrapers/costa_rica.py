@@ -99,7 +99,7 @@ class CostaRica:
             self.__manual_click(filter_button)
             wait.until(
                     EC.presence_of_element_located((
-                        By.CLASS_NAME, 'ui-state-default.right')))
+                        By.CLASS_NAME, 'ui-state-default')))
             soup = BeautifulSoup(self.driver.page_source, "html.parser")
             plants_hours = soup.find('tbody', {
                 'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
