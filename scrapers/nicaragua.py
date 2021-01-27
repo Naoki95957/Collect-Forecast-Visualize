@@ -33,7 +33,6 @@ from pathlib import Path
 import os
 import arrow
 import selenium
-import pandas as pd
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
