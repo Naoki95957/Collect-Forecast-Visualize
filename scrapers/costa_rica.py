@@ -27,6 +27,9 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 
 
 class CostaRica:
@@ -69,8 +72,9 @@ class CostaRica:
             date = (str(start_date.day).zfill(2) + "/" +
                     str(start_date.month).zfill(2) + "/" +
                     str(start_date.year).zfill(4))
-            search_date_field = self.driver.find_element_by_name(
-                "formPosdespacho:txtFechaInicio_input")
+            search_date_field = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located((
+                        By.NAME, 'formPosdespacho:txtFechaInicio_input')))
             search_date_field.clear()
             search_date_field.send_keys(date + Keys.RETURN)
             all_data_points.extend(self.__scrape_data(date))
