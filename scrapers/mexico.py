@@ -82,7 +82,7 @@ class Mexico:
             if architecture == '32bit':
                 chrome_driver = 'linux_chromedriver65_32bit'
             else:
-                chrome_driver = 'linux_chromedriver88_64bit'
+                chrome_driver = 'linux_chromedriver87_64bit'
             os.chmod(os.path.join(drivers_dir, chrome_driver), 0o777)
         elif operating_system == "Windows":
             chrome_driver = 'win_chromedriver88.exe'

@@ -70,7 +70,7 @@ class ElSalvador:
             if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit'
             else:
-                chrome_driver = '/drivers/linux_chromedriver88_64bit'
+                chrome_driver = '/drivers/linux_chromedriver87_64bit'
             os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
             chrome_driver = '/drivers/win_chromedriver88.exe'
