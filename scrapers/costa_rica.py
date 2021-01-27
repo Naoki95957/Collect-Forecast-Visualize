@@ -86,7 +86,8 @@ class CostaRica:
             for plant_hour in plants_hours:
                 if (plant_hour.has_attr('title') and bool(plant_hour.getText())
                         and 'Total' not in plant_hour['title']):
-                    date_data_points.append(self.__data_point(date, plant_hour))
+                    date_data_points.append(
+                        self.__data_point(date, plant_hour))
             return date_data_points
         except Exception as e:
             raise Exception(self.driver.page_source)
