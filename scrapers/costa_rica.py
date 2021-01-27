@@ -16,6 +16,7 @@
     https://selenium-python.readthedocs.io/installation.html
 """
 
+
 import datetime
 import platform
 import re
@@ -26,7 +27,6 @@ import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-import pymongo
 
 
 class CostaRica:
@@ -99,34 +99,22 @@ class CostaRica:
         return {'ts': time_stamp,
                 'value': float(plant_hour.getText()),
                 'ba': 'Operación Sistema Eléctrico Nacional',
-                'meta': plant + " (MWh)"}
+                'meta': plant}
 
 
 def main():
-
-    # BCWATT:WattTime2021
-
-    client = pymongo.MongoClient(
-        "mongodb+srv://BCWATT:WattTime2021" +
-        "@cluster0.tbh2o.mongodb.net/" +
-        "WattTime?retryWrites=true&w=majority")
-    db = client.get_database('WattTime')
-
-    records = db.accounts
-    print(records.count_documents({}))
-
-    mydb = client["WattTime"]
-    mycol = mydb["Costa_Rica"]
-
     print("Initializing driver...")
     costa_rica = CostaRica()
 
     print("Loading date...")
     day = costa_rica.date(2020, 9, 30)
+    for datapoint in day:
+        print(datapoint)
 
-    sample = {"todays date": day}
-
-    mycol.insert_one(sample)
+    print("Loading date range...")
+    days = costa_rica.date_range(2020, 10, 30, 2020, 11, 1)
+    for datapoint in days:
+        print(datapoint)
 
 
 if __name__ == "__main__":

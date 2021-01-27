@@ -33,6 +33,7 @@ from pathlib import Path
 import os
 import arrow
 import selenium
+import pandas as pd
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -43,6 +44,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 class Nicaragua:
     URL = ('http://www.cndc.org.ni/consultas/reportesDiarios/'
            'postDespachoEnergia.php?fecha=')
+
     driver = None
 
     def __init__(self):
@@ -81,7 +83,7 @@ class Nicaragua:
                     str(start_date.month).zfill(2) + "/" +
                     str(start_date.year).zfill(4))
 
-            self.driver.get(self.URL + date + "&d=1")
+            self.driver.get(self.URL + date)
             WebDriverWait(self.driver, 30).until(
                 ec.presence_of_element_located((
                     By.XPATH, ('//div[@id="Postdespacho"]/'
@@ -117,13 +119,14 @@ class Nicaragua:
         return date_data_points
 
     def __data_point(self, agent, todays_date, hour, value) -> dict:
+
         return {'ts': arrow.get(todays_date + str(hour).zfill(2) + ":00",
                                 'DD/MM/YYYYHH:mm',
                                 locale="es",
                                 tzinfo='America/Managua').datetime,
                 'value': float(value),
                 'ba': 'Centro Nacional de Despacho de Carga',
-                'meta': agent + " (MWh)"}
+                'meta': agent}
 
 
 def main():
@@ -131,14 +134,16 @@ def main():
     nicaragua = Nicaragua()
 
     print("Loading date...")
-    day = nicaragua.date(2020, 9, 30)
+    day = nicaragua.date(2015, 10, 10)
     for datapoint in day:
         print(datapoint)
 
+    '''
     print("Loading date range...")
     days = nicaragua.date_range(2020, 10, 31, 2020, 11, 1)
     for datapoint in days:
         print(datapoint)
+    '''
 
 
 if __name__ == "__main__":
