@@ -70,6 +70,7 @@ class Mexico:
                 os.mkdir(self.downloads_dir)
 
         options = Options()
+        options.add_argument('--log-level=3')
         options.headless = True
         prefs = {"download.default_directory": self.downloads_dir}
         options.add_experimental_option("prefs", prefs)
@@ -94,7 +95,8 @@ class Mexico:
 
     def __del__(self):
         self.driver.quit()
-        shutil.rmtree(self.downloads_dir)
+        if os.path.isdir(self.downloads_dir):
+            shutil.rmtree(self.downloads_dir)
 
     def __manual_click(self, element):
         WebDriverWait(self.driver, 10).until(
