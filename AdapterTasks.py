@@ -4,6 +4,8 @@ import threading
 class AdapterThread(threading.Thread):
     '''
     Automatically handle tasks for simultanious scraping
+
+    Make use of multi-threading
     '''
 
     def __init__(self, scraper: ScraperAdapter):
