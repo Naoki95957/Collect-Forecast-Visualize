@@ -10,7 +10,7 @@ class ElSalvadorAdapter(ScraperAdapter):
     # in seconds
     __frequency = 60 * 60
 
-    def __init__(self, scraper=ElSalvador):
+    def __init__(self):
         self.scraper = ElSalvador()
         self.last_scrape_date = None
         self.last_scrape_list = []
@@ -114,7 +114,7 @@ class ElSalvadorAdapter(ScraperAdapter):
         ordered = sorted(data.keys())
         time_stamp = start_time.strftime("%H-%d/%m/%Y")
         for entry in ordered:
-            if entry >= time_stamp:
+            if entry < time_stamp:
                 data.pop(entry)
         return data
 
