@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import datetime
 # , ABCMeta
 # from interface import implements, Interface
 
@@ -21,7 +22,7 @@ class ScraperAdapter(ABC):
     # for last but just get last date
 
     @abstractmethod
-    def set_last_scraped_date(self):
+    def set_last_scraped_date(self, date: datetime.datetime):
         '''
             The intention this is soley for real-time gathering
 
@@ -39,8 +40,9 @@ class ScraperAdapter(ABC):
     @abstractmethod
     def scrape_history(
             self,
-            start_year, start_month, start_day,
-            end_year, end_month, end_day
+            start_year, start_month,
+            end_year, end_month,
+            end_day=0, start_day=0
             ) -> dict:
         '''
             Limit to history? Same all or as far back as we can? Cost to store?
