@@ -99,10 +99,14 @@ class CostaRica:
             self.__manual_click(filter_button)
             wait.until(
                     EC.presence_of_element_located((
-                        By.CLASS_NAME, 'ui-state-default')))
+                        By.XPATH, "//table[@role='grid']//tbody")))
             soup = BeautifulSoup(self.driver.page_source, "html.parser")
+            # Alternatives:
+            # xpath: //table[@role='grid']//tbody
+            # class_name: ui-datatable-data
+            # id: formPosdespacho:j_id_1a_data
             plants_hours = soup.find('tbody', {
-                'id': 'formPosdespacho:j_id_1a_data'}).find_all('span')
+                'class': 'ui-datatable-data'}).find_all('span')
             date_data_points = []
             for plant_hour in plants_hours:
                 if (plant_hour.has_attr('title') and bool(plant_hour.getText())
