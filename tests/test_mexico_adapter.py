@@ -1,6 +1,8 @@
 from adapters.mexico_adapter import MexicoAdapter
 from adapters.scraper_adapter import ScraperAdapter
 import pytest
+import pytz
+import datetime
 import platform
 import arrow
 
@@ -17,9 +19,8 @@ def get_adapter():
     yield ma
 
 
-# test that the adapter doesn't crash
 @rpi
-def test_1():
+def test_adapter_crash():
     try:
         get_adapter
         assert True
@@ -28,20 +29,18 @@ def test_1():
         assert False
 
 
-# test that the adapter pattern holds
 @rpi
-def test_2():
-    ma = MexicoAdapter(get_adapter)
+def test_adapter_inheritance(get_adapter):
+    ma = get_adapter
     if isinstance(ma, ScraperAdapter):
         assert True
     else:
         assert False
 
 
-# test that the adapter will not repeat a scrape
 @rpi
-def test_3():
-    ma = MexicoAdapter(get_adapter)
+def test_adapter_scrape_too_fast(get_adapter):
+    ma = get_adapter
     ma.scrape_new_data()
     if ma.scrape_new_data():
         assert False
@@ -49,38 +48,40 @@ def test_3():
         assert True
 
 
-# test the scrape history method
 @rpi
-def test_4():
-    ma = MexicoAdapter(get_adapter)
+def test_adapter_scrape_history(get_adapter):
+    ma = get_adapter
     if ma.scrape_history(2018, 1, 21, 2018, 3, 21):
         assert True
     else:
         assert False
 
 
-# verify frequency
 @rpi
-def test_5():
-    ma = MexicoAdapter(get_adapter)
-    if (ma.frequency() == 60 * 60 * 24 * 31):
+def test_adapter_frequency(get_adapter):
+    ma = get_adapter
+    if (ma.frequency() == 60 * 60 * 24 * 7):
         assert True
     else:
         assert False
 
 
-# test the scrape history method
 @rpi
-def test_6():
-    ma = MexicoAdapter(get_adapter)
+def test_adapter_set_date(get_adapter):
+    passing = True
+    ma = get_adapter
+    if not ma.scrape_new_data():
+        passing = False
+    now_date = datetime.datetime.now(tz=pytz.timezone("America/Los_Angeles"))
+    now_date.astimezone(tz=pytz.timezone('Mexico/General'))
     test_date = arrow.get(
-        '02-26/01/2021',
+        '00-' + now_date.strftime("%d/%m/%Y"),
         'HH-DD/MM/YYYY',
         locale='es',
         tzinfo='Mexico/General'
     ).datetime
-    # TODO
-    if ma.set_last_scraped_date(test_date):
-        assert False
+    ma.set_last_scraped_date(test_date)
+    if ma.scrape_new_data():
+        assert passing
     else:
-        assert True
+        assert False
