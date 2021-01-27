@@ -76,16 +76,16 @@ class Mexico:
         options.add_experimental_option("prefs", prefs)
 
         operating_system = platform.system()
-        chrome_driver = 'mac_chromedriver86'
+        chrome_driver = 'mac_chromedriver88'
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
             if architecture == '32bit':
                 chrome_driver = 'linux_chromedriver65_32bit'
             else:
-                chrome_driver = 'linux_chromedriver86_64bit'
+                chrome_driver = 'linux_chromedriver88_64bit'
             os.chmod(os.path.join(drivers_dir, chrome_driver), 0o777)
         elif operating_system == "Windows":
-            chrome_driver = 'win_chromedriver86.exe'
+            chrome_driver = 'win_chromedriver88.exe'
 
         self.driver = selenium.webdriver.Chrome(
             options=options,

@@ -51,16 +51,16 @@ class Nicaragua:
         options.headless = True
         operating_system = platform.system()
         full_path = str(Path(str(__file__)).parents[0])
-        chrome_driver = '/drivers/mac_chromedriver86'
+        chrome_driver = '/drivers/mac_chromedriver88'
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
             if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit'
             else:
-                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+                chrome_driver = '/drivers/linux_chromedriver88_64bit'
             os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
-            chrome_driver = '/drivers/win_chromedriver86.exe'
+            chrome_driver = '/drivers/win_chromedriver88.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(full_path + chrome_driver))
