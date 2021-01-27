@@ -38,16 +38,16 @@ class CostaRica:
         options.headless = True
         operating_system = platform.system()
         full_path = str(Path(str(__file__)).parents[0])
-        chrome_driver = '/drivers/mac_chromedriver86'
+        chrome_driver = '/drivers/mac_chromedriver88'
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
             if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit'
             else:
-                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+                chrome_driver = '/drivers/linux_chromedriver87_64bit'
             os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
-            chrome_driver = '/drivers/win_chromedriver86.exe'
+            chrome_driver = '/drivers/win_chromedriver88.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(full_path + chrome_driver))
@@ -99,7 +99,7 @@ class CostaRica:
         return {'ts': time_stamp,
                 'value': float(plant_hour.getText()),
                 'ba': 'Operación Sistema Eléctrico Nacional',
-                'meta': plant + " (MWh)"}
+                'meta': plant}
 
 
 def main():
@@ -107,7 +107,7 @@ def main():
     costa_rica = CostaRica()
 
     print("Loading date...")
-    day = costa_rica.date(2020, 9, 30)
+    day = costa_rica.date(2021, 1, 25)
     for datapoint in day:
         print(datapoint)
 

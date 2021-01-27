@@ -31,8 +31,8 @@ import datetime
 import platform
 from pathlib import Path
 import os
-import arrow
 import selenium
+import arrow
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -43,6 +43,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 class Nicaragua:
     URL = ('http://www.cndc.org.ni/consultas/reportesDiarios/'
            'postDespachoEnergia.php?fecha=')
+
     driver = None
 
     def __init__(self):
@@ -50,16 +51,16 @@ class Nicaragua:
         options.headless = True
         operating_system = platform.system()
         full_path = str(Path(str(__file__)).parents[0])
-        chrome_driver = '/drivers/mac_chromedriver86'
+        chrome_driver = '/drivers/mac_chromedriver88'
         if operating_system == "Linux":
             architecture = platform.architecture()[0]
             if architecture == '32bit':
                 chrome_driver = '/drivers/linux_chromedriver65_32bit'
             else:
-                chrome_driver = '/drivers/linux_chromedriver86_64bit'
+                chrome_driver = '/drivers/linux_chromedriver87_64bit'
             os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
-            chrome_driver = '/drivers/win_chromedriver86.exe'
+            chrome_driver = '/drivers/win_chromedriver88.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(full_path + chrome_driver))
@@ -81,7 +82,7 @@ class Nicaragua:
                     str(start_date.month).zfill(2) + "/" +
                     str(start_date.year).zfill(4))
 
-            self.driver.get(self.URL + date + "&d=1")
+            self.driver.get(self.URL + date)
             WebDriverWait(self.driver, 30).until(
                 ec.presence_of_element_located((
                     By.XPATH, ('//div[@id="Postdespacho"]/'
@@ -117,13 +118,14 @@ class Nicaragua:
         return date_data_points
 
     def __data_point(self, agent, todays_date, hour, value) -> dict:
+
         return {'ts': arrow.get(todays_date + str(hour).zfill(2) + ":00",
                                 'DD/MM/YYYYHH:mm',
                                 locale="es",
                                 tzinfo='America/Managua').datetime,
                 'value': float(value),
                 'ba': 'Centro Nacional de Despacho de Carga',
-                'meta': agent + " (MWh)"}
+                'meta': agent}
 
 
 def main():
@@ -131,14 +133,16 @@ def main():
     nicaragua = Nicaragua()
 
     print("Loading date...")
-    day = nicaragua.date(2020, 9, 30)
+    day = nicaragua.date(2015, 10, 10)
     for datapoint in day:
         print(datapoint)
 
+    '''
     print("Loading date range...")
     days = nicaragua.date_range(2020, 10, 31, 2020, 11, 1)
     for datapoint in days:
         print(datapoint)
+    '''
 
 
 if __name__ == "__main__":
