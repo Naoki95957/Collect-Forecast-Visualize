@@ -64,6 +64,9 @@ jobs:
         flake8 ./scrapers --count --select=E9,F63,F7,F82 --show-source --max-line-length=127 --statistics
         # exit-zero treats all errors as warnings.
         flake8 ./scrapers --count --max-complexity=10 --statistics
+    - name: Allow execution
+      run: |
+        chmod -R 777 ./scraper/drivers
     - name: Test pytest
       run: |
         pytest tests --suppress-no-test-exit-code
