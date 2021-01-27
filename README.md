@@ -14,6 +14,9 @@ Students will be working within a framework provided by WattTime which already i
 
 ### Mentor - [Connor Guest](mailto:connor@watttime.org)
 
+[Software Requirements Specifications Document (SRS)](https://github.com/Naoki95957/Collect-Forecast-Visualize/blob/vitaliybeinspired-patch-1/Documents/Press%20Release%20FAQ.pdf)
+
+
 ### Proffessor - [Dr. Sara Farag](https://www.bellevuecollege.edu/cs/staff/sarag-farag/)
 
 ### Software Engineers:
