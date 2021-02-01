@@ -45,9 +45,12 @@ class AdapterThread(threading.Thread):
         '''
         This will attempt to get todays data
         '''
-        data = self.adapter.scrape_new_data()
-        if data:
-            self.upload_queue.put(data)
+        try:
+            data = self.adapter.scrape_new_data()
+            if data:
+                self.upload_queue.put(data)
+        except Exception as e:
+            print(e)
 
     def is_alive(self):
         return self.__running
@@ -64,20 +67,17 @@ class AdapterThread(threading.Thread):
         This also has a fake watchdog so that we can kill the process
         in a reasonable amount of time
         '''
-        try:
-            self.__running = True
-            freq = self.adapter.frequency()
-            # equals freq so it scrapes once before waiting
-            total_sleep = freq
-            while not self.__kill:
-                if total_sleep < freq:
-                    total_sleep += self.__watchdog_time
-                    time.sleep(self.__watchdog_time)
-                else:
-                    total_sleep = 0
-                    self.attempt_to_queue_todays_data()
-        except Exception as e:
-            print(e)
+        self.__running = True
+        freq = self.adapter.frequency()
+        # equals freq so it scrapes once before waiting
+        total_sleep = freq
+        while not self.__kill:
+            if total_sleep < freq:
+                total_sleep += self.__watchdog_time
+                time.sleep(self.__watchdog_time)
+            else:
+                total_sleep = 0
+                self.attempt_to_queue_todays_data()
         self.__running = False
         return super().run()
 
