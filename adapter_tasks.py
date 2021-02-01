@@ -1,4 +1,5 @@
 from adapters.scraper_adapter import ScraperAdapter
+from queue import Queue
 import threading
 
 class AdapterThread(threading.Thread):
@@ -8,7 +9,7 @@ class AdapterThread(threading.Thread):
     Make use of multi-threading
     '''
 
-    def __init__(self, scraper: ScraperAdapter):
+    def __init__(self, scraper: ScraperAdapter, upload_data: Queue):
         super(AdapterThread, self).__init__()
         self.scraper = ScraperAdapter
 
