@@ -74,11 +74,26 @@ class MexicoAdapter(ScraperAdapter):
         start_time = datetime.datetime(
             year=start_year, month=start_month,
             day=start_day, tzinfo=pytz.timezone('Mexico/General'))
-        return self.__filter_data(
-            self.scraper.scrape_month_range(
+
+        data = []
+        if (
+                end_year - start_year == 1 and
+                start_month == 12 and end_month == 1
+            ):
+            data = self.scraper.scrape_month_range(
+                12, start_year,
+                12, start_year)
+            data.extend(
+                self.scraper.scrape_month_range(
+                1, end_year,
+                1, end_year)
+            )
+        else:
+            data = self.scraper.scrape_month_range(
                 start_month, start_year,
-                end_month, end_year
-            ), 
+                end_month, end_year)
+        return self.__filter_data(
+            data, 
             end_time=end_time,
             start_time=start_time)
 
