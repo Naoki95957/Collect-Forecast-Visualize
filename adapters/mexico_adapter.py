@@ -122,10 +122,10 @@ class MexicoAdapter(ScraperAdapter):
         ordered = sorted(data.keys())
         for entry in ordered:
             entry_time = datetime.datetime.strptime(entry, "%H-%d/%m/%Y")
-            entry_time = entry_time.replace(tz=pytz.timezone('Mexico/General'))
-            if end_time and entry_time < end_time:
+            entry_time = entry_time.replace(tzinfo=pytz.timezone('Mexico/General'))
+            if end_time and entry_time >= (end_time + datetime.timedelta(days=1)):
                 data.pop(entry)
-            if start_time and entry_time > start_time:
+            if start_time and entry_time < start_time:
                 data.pop(entry)
         return data
 
