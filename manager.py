@@ -31,13 +31,12 @@ def es_adapter_demo():
     
     for week in range(105):
         end = start + delta
+        #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
         print("Current:")
         print("\t", id)
         data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
         data['_id'] = id
-        #dd/mm/yyyy
-        # increment
         db.insert_one(data)
         start = end + datetime.timedelta(days=1)
         
@@ -46,11 +45,12 @@ def es_adapter_demo():
     
 def mexico_adapter_demo():    
     ma = MexicoAdapter()
-    start = datetime.date(2019, 1, 1)
+    start = datetime.date(2019, 12, 31)
     delta = datetime.timedelta(days=6)
     
-    for week in range(105):
+    for week in range(53):
         end = start + delta
+        #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
         print("Current:")
         print("\t", id)
@@ -58,8 +58,6 @@ def mexico_adapter_demo():
         data['_id'] = id
         print_data(data)
         db.insert_one(data)
-        #dd/mm/yyyy
-        # increment
         start = end + datetime.timedelta(days=1)
         
     print("Completed to:")
