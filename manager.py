@@ -1,6 +1,7 @@
-from datetime import datetime
+from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.mexico_adapter import MexicoAdapter
+from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
 import datetime
 # import pytz
@@ -59,6 +60,59 @@ def mexico_adapter_demo():
         
     print("Completed to:")
     print("\t", start.strftime("%d/%m/%Y"))
+
+def nic_adapter_demo():
+    # TODO manually sort out the week 27/8/2019
+    # for WHATEVER REASON, 29th and the 30th in 8/2019 have extra columns
+    db = client.get_database('Nicaragua')['Historic']
+    na = NicaraguaAdapter()
+    start = datetime.date(2019, 1, 1)
+    delta = datetime.timedelta(days=6)
+    for week in range(106):
+        end = start + delta
+        #dd/mm/yyyy
+        id = start.strftime("%d/%m/%Y")
+        print("Current:")
+        print("\t", id)
+        data = na.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
+        data['_id'] = id
+        print_data(data)
+        db.insert_one(data)
+        start = end + datetime.timedelta(days=1)
+        
+    print("Completed to:")
+    print("\t", start.strftime("%d/%m/%Y"))
+    
+def cr_adapter_demo():
+    db = client.get_database('Costa_Rica')['Historic']
+    cr = CostaRicaAdapter()
+    start = datetime.date(2019, 1, 1)
+    delta = datetime.timedelta(days=6)
+    failed_weeks = []
+    for week in range(106):
+        end = start + delta
+        #dd/mm/yyyy
+        for i in range(0, 5):
+            try:
+                id = start.strftime("%d/%m/%Y")
+                if i > 0 and id not in failed_weeks:
+                    failed_weeks.append(id)
+                print("Current:")
+                print("\t", id)
+                data = cr.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
+                data['_id'] = id
+                print_data(data)
+                db.insert_one(data)
+                break
+            except Exception as e:
+                print(e)
+        start = end + datetime.timedelta(days=1)
+        
+    print("Completed to:")
+    print("\t", start.strftime("%d/%m/%Y"))
+    print("Double check these weeks:")
+    for entry in failed_weeks:
+        print('\t', entry)
     
 def print_data(data):
     for k in data.keys():
@@ -67,4 +121,4 @@ def print_data(data):
         #     print('\t', v)
 
 if __name__ == "__main__":
-    mexico_adapter_demo()
+    cr_adapter_demo()
