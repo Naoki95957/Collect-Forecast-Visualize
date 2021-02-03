@@ -106,8 +106,8 @@ class CostaRicaAdapter(ScraperAdapter):
         'Taboga': 'Wind',
         'Tacares': 'Hydroelectric',
         'Tapezco': 'Hydroelectric',
-        'Valle Central': 'Other',
-        'Vara Blanca': 'Other'
+        'Valle Central': 'Wind',
+        'Vara Blanca': 'Hydroelectric'
     }
 
     historic_data = None
