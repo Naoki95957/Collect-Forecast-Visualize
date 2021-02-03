@@ -112,6 +112,16 @@ class CostaRicaAdapter(ScraperAdapter):
         'La Esperanza (CoopeL)': 'Solar'
     }
 
+    PLANT_DEFINITIONS = [
+        'Hydroelectric',
+        'Geothermal',
+        'Thermal',
+        'Wind',
+        'Interchange',
+        'Solar',
+        'Other'
+    ]
+
     historic_data = None
     appended_hist = None
     new_data = None
@@ -132,6 +142,8 @@ class CostaRicaAdapter(ScraperAdapter):
         self.appended_hist = pd.DataFrame(self.historic_data)
         self.appended_hist = self.appended_hist.drop('ba', axis=1)
         self.appended_hist['meta'] = self.appended_hist['meta'].replace(self.PLANT_DICTIONARY)
+        if self.appended_hist['meta'] not in PLANT_DEFINITIONS:
+            self.appended_hist['meta'] = 'Other'
         self.appended_hist = self.appended_hist.groupby(['ts', 'meta'])['value'].agg('sum').reset_index()
 
         return self.__filter_data(self.appended_hist)
