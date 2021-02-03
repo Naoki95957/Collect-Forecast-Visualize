@@ -105,6 +105,8 @@ class CostaRicaAdapter(ScraperAdapter):
         'El Angel': 'Other',
         'El Angel Ampliación': 'Other',
         'El Viejo': 'Other',
+        'Otros': 'Other',
+        'Carrillos': 'Solar',
         'Parque Solar Juanilama': 'Solar',
         'Parque Solar Miravalles': 'Solar',
         'La Esperanza (CoopeL)': 'Solar'
@@ -160,17 +162,21 @@ class CostaRicaAdapter(ScraperAdapter):
             return self.__filter_data(self.appended_new)
 
     def __filter_data(self, data) -> dict:
-
         buffer = dict()
-        for i in range(0, len(data) - 1, 7):
+        for i in range(0, len(data) - 1):
             time = data.iat[i, 0].strftime("%H-%d/%m/%Y")
+            if time in buffer:
+                continue
             entries = list()
-            for j in range(6):
-                dict_val = dict()
-                dict_val['value'] = data.iat[i + j, 2]
-                dict_val['type'] = data.iat[i + j, 1]
-                entries.append(dict_val)
-
+            for j in range(i, len(data) - 1):
+                if (
+                        data.iat[j, 0] == data.iat[i, 0] and
+                        not data.iat[i, 1] == data.iat[j, 1]
+                    ):
+                    dict_val = dict()
+                    dict_val['value'] = data.iat[j, 2]
+                    dict_val['type'] = data.iat[j, 1]
+                    entries.append(dict_val)
             buffer[time] = entries
         return buffer
 
