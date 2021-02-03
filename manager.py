@@ -20,16 +20,13 @@ client = pymongo.MongoClient(
     "@cluster0.tbh2o.mongodb.net/" +
     "WattTime?retryWrites=true&w=majority")
 
-
-db = client.get_database('El_Salvador')['Historic']
-
-
-def es_adapter_demo():    
+def es_adapter_demo():
+    db = client.get_database('El_Salvador')['Historic']
     el_salvador = ElSalvadorAdapter()
     start = datetime.date(2019, 1, 1)
     delta = datetime.timedelta(days=6)
     
-    for week in range(105):
+    for week in range(106):
         end = start + delta
         #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
@@ -43,12 +40,12 @@ def es_adapter_demo():
     print("Completed to:")
     print("\t", start.strftime("%d/%m/%Y"))
     
-def mexico_adapter_demo():    
+def mexico_adapter_demo():
+    db = client.get_database('Mexico')['Historic']
     ma = MexicoAdapter()
-    start = datetime.date(2019, 12, 31)
+    start = datetime.date(2019, 1, 1)
     delta = datetime.timedelta(days=6)
-    
-    for week in range(53):
+    for week in range(106):
         end = start + delta
         #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")

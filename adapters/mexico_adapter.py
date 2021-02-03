@@ -76,18 +76,11 @@ class MexicoAdapter(ScraperAdapter):
             day=start_day, tzinfo=pytz.timezone('Mexico/General'))
 
         data = []
-        if (
-                end_year - start_year == 1 and
-                start_month == 12 and end_month == 1
-            ):
-            data = self.scraper.scrape_month_range(
-                12, start_year,
-                12, start_year)
-            data.extend(
-                self.scraper.scrape_month_range(
-                1, end_year,
-                1, end_year)
-            )
+        if (end_month != start_month):
+            first_month = self.scraper.scrape_month(start_month, start_year)
+            second_month = self.scraper.scrape_month(end_month, end_year)
+            data.extend(first_month)
+            data.extend(second_month)
         else:
             data = self.scraper.scrape_month_range(
                 start_month, start_year,
@@ -107,8 +100,6 @@ class MexicoAdapter(ScraperAdapter):
 
         Time is str adjusted to match the format IN THAT TZ: 'HH-DD/MM/YYYY'
         '''
-        if not data:
-            return dict()
         buffer = dict()
         for i in range(0, len(data)):
             entries = list()
