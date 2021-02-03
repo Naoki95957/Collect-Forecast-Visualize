@@ -142,8 +142,6 @@ class CostaRicaAdapter(ScraperAdapter):
         self.appended_hist = pd.DataFrame(self.historic_data)
         self.appended_hist = self.appended_hist.drop('ba', axis=1)
         self.appended_hist['meta'] = self.appended_hist['meta'].replace(self.PLANT_DICTIONARY)
-        if self.appended_hist['meta'] not in self.PLANT_DEFINITIONS:
-            self.appended_hist['meta'] = 'Other'
         self.appended_hist = self.appended_hist.groupby(['ts', 'meta'])['value'].agg('sum').reset_index()
 
         return self.__filter_data(self.appended_hist)
@@ -187,7 +185,10 @@ class CostaRicaAdapter(ScraperAdapter):
                     ):
                     dict_val = dict()
                     dict_val['value'] = data.iat[j, 2]
-                    dict_val['type'] = data.iat[j, 1]
+                    prod_type = data.iat[j, 1]
+                    if prod_type not in self.PLANT_DEFINITIONS:
+                        prod_type = 'Other'
+                    dict_val['type'] = prod_type
                     entries.append(dict_val)
             buffer[time] = entries
         return buffer
