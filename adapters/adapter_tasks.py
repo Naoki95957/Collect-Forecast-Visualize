@@ -1,9 +1,21 @@
 from adapters.scraper_adapter import ScraperAdapter
+from adapters.costa_rica_adapter import CostaRicaAdapter
+from adapters.mexico_adapter import MexicoAdapter
+from adapters.nicaragua_adapter import NicaraguaAdapter
+from adapters.el_salvador_adapter import ElSalvadorAdapter
 from queue import Queue
 from datetime import datetime
 import time
 import threading
 
+class adapter_types(Enum):
+    '''
+    Used to identify what type of adapter
+    '''
+    El_Salvador=1,
+    Costa_Rica=2,
+    Nicaragua=3,
+    Mexico=4
 
 class AdapterThread(threading.Thread):
     '''
@@ -14,6 +26,15 @@ class AdapterThread(threading.Thread):
     '''
     __kill = False
     __running = False
+    bad_adapter = False
+    __bypass = False
+    __adapter_type = None
+    __new_adapter_switcher = {
+        adapter_types.Costa_Rica: CostaRicaAdapter,
+        adapter_types.El_Salvador: ElSalvadorAdapter,
+        adapter_types.Mexico: MexicoAdapter,
+        adapter_types.Nicaragua: NicaraguaAdapter
+    }
 
     # in seconds
     __watchdog_time = 5
@@ -24,14 +45,65 @@ class AdapterThread(threading.Thread):
             raise TypeError(
                 "Expected a Scraper Adapter. Recieved a %s",
                 type(adapter))
-        self.adapter = adapter
+        set_adapter(adapter)
         self.upload_queue = upload_data
+        if isinstance(adapter, MexicoAdapter):
+            self.__adapter_type = adapter_types.Mexico
+        elif isinstance(adapter, NicaraguaAdapter):
+            self.__adapter_type = adapter_types.Nicaragua
+        elif isinstance(adapter, ElSalvadorAdapter):
+            self.__adapter_type = adapter_types.El_Salvador
+        elif isinstance(adapter, CostaRicaAdapter):
+            self.__adapter_type = adapter_types.Costa_Rica
+        
 
     def get_intermittent_data(self, startdate: datetime, enddate: datetime):
-        return self.adapter.scrape_history(
-            start_day=startdate.day, start_month=startdate.month,
-            start_year=startdate.year, end_day=enddate.day,
-            end_month=enddate.month, end_year=enddate.year)
+        '''
+        Gets historical data and throws it into queue
+
+        This is a seperate task and will be threaded
+        '''
+        scrape = lambda self, startdate, enddate:(
+            self.upload_queue.put(
+                (
+                    self.__adapter_type,
+                    self.adapter.scrape_history(
+                        start_day=startdate.day, start_month=startdate.month,
+                        start_year=startdate.year, end_day=enddate.day,
+                        end_month=enddate.month, end_year=enddate.year
+                    )
+                )
+            )
+        )
+        threading.Thread(target=scrape, kwargs=[self, startdate, enddate]).start()
+        
+    def get_adapter_failure(self) -> bool:
+        '''
+        Returns False if adapter is fine
+
+        Returns True if adapter failed
+        '''
+        return self.bad_adapter
+
+    def reset_adapter(self):
+        '''
+        Reset to a new adapter
+        '''
+        threading.Thread(target=self.__reset_adapter, kwargs=[self]).start()
+        
+    def __reset_adapter(self):
+        '''
+        Reset to a new adapter helper
+        '''
+        self.adapter = self.__new_adapter_switcher[self.__adapter_type]()
+        self.bad_adapter = False
+
+    def set_adapter(self, adapter: ScraperAdapter):
+        '''
+        Set adapter to new adapter
+        '''
+        self.adapter = adapter
+        self.bad_adapter = False
 
     def set_todays_start_time(self, time: datetime):
         '''
@@ -41,6 +113,13 @@ class AdapterThread(threading.Thread):
             raise TypeError("datetime object must be tz aware")
         self.adapter.set_last_scraped_date(time)
 
+    def schedule_todays_data_now(self):
+        '''
+        This will let the running thread know to reattempt a scrape now
+        '''
+        self.__bypass = True
+
+
     def attempt_to_queue_todays_data(self):
         '''
         This will attempt to get todays data
@@ -48,9 +127,10 @@ class AdapterThread(threading.Thread):
         try:
             data = self.adapter.scrape_new_data()
             if data:
-                self.upload_queue.put(data)
+                self.upload_queue.put((self.__adapter_type, data))
         except Exception as e:
             print(e)
+            self.bad_adapter = True
 
     def is_alive(self):
         return self.__running
@@ -72,11 +152,12 @@ class AdapterThread(threading.Thread):
         # equals freq so it scrapes once before waiting
         total_sleep = freq
         while not self.__kill:
-            if total_sleep < freq:
+            if total_sleep < freq and not self.__bypass:
                 total_sleep += self.__watchdog_time
                 time.sleep(self.__watchdog_time)
             else:
                 total_sleep = 0
+                self.__bypass
                 self.attempt_to_queue_todays_data()
         self.__running = False
         return super().run()
