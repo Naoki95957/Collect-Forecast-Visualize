@@ -40,7 +40,7 @@ class AdapterThread(threading.Thread):
     # in seconds
     __watchdog_time = 5
 
-    def __init__(self, adapter: ScraperAdapter, upload_data: Queue):
+    def __init__(self, adapter: ScraperAdapter, upload_data: list):
         super(AdapterThread, self).__init__()
         if not isinstance(adapter, ScraperAdapter):
             raise TypeError(
@@ -59,7 +59,7 @@ class AdapterThread(threading.Thread):
     
     def __scrape_intermittent(self, startdate, enddate):
         try:
-            self.upload_queue.put(
+            self.upload_queue.append(
                 (
                     self.__adapter_type,
                     self.__new_adapter_switcher[self.__adapter_type]().scrape_history(
@@ -70,7 +70,7 @@ class AdapterThread(threading.Thread):
                 )
             )
         except Exception as e:
-            print("FAILED", startdate)
+            print("FAILED", startdate, "ADAPTER:", self.__adapter_type)
 
     def get_intermittent_data(self, startdate: datetime, enddate: datetime):
         '''
@@ -137,7 +137,7 @@ class AdapterThread(threading.Thread):
         try:
             data = self.adapter.scrape_new_data()
             if data:
-                self.upload_queue.put((self.__adapter_type, data))
+                self.upload_queue.append((self.__adapter_type, data))
         except Exception as e:
             print(e)
             self.bad_adapter = True

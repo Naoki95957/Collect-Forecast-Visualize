@@ -58,10 +58,10 @@ tz_switcher = {
 
 def main():
     # set up queue and cron jobs
-    upload_queue = Queue()
+    upload_queue = list()
     jobs = cron(upload_queue)
     # Start uploader job
-    Thread(target=uploader, args=[jobs, upload_queue]).start()
+    Thread(target=uploader, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
 
     # check db until we crash
     while True:
@@ -87,17 +87,19 @@ def main():
                 # iterate
                 start = end + datetime.timedelta(days=1)
         # check every 6 hours ~ 4x a day
+        print("Done checking db. Sleeping now...")
         time.sleep(60 * 60 * 6)
 
-def uploader(cron_obj: cron, upload_queue: Queue):
+def uploader(cron_obj: cron, upload_queue: list):
     '''
     This will run in a loop and check the queue for data to load
     '''
     print("Uploader started")
     while cron_obj.cron_alive:
-        if not upload_queue.empty():
-            data = upload_queue.get()
-            print("got data from", name_switcher[data[0]])
+        if len(upload_queue) > 0:
+            data = upload_queue.pop(0)
+            print("Now sorting data from", name_switcher[data[0]])
+            print(len(upload_queue), "uploads in queue")
             collection = db_switcher[data[0]]
             entries = data[1]
             marked_entries = [

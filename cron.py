@@ -11,12 +11,14 @@ import time
 
 class cron:
     adapter_threads = list()
-    manager_queue = Queue()
+    manager_queue = None
     cron_alive = True
     __cron_thread = None
     __switcher = dict()
 
-    def __init__(self, queue: Queue):
+    def __init__(self, queue: list):
+        self.manager_queue = queue
+
         esa = ElSalvadorAdapter()
         ma = MexicoAdapter()
         na = NicaraguaAdapter()
@@ -41,7 +43,6 @@ class cron:
                 nat
             ]
         )
-        self.manager_queue = queue
         self.__set_up_health_check()
 
     def get_adapter_threads(self) -> list:
