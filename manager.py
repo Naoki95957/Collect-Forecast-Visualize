@@ -5,10 +5,14 @@ from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
 from adapters.adapter_tasks import adapter_types
 from cron import cron
+from queue import Queue
+from arrow import Arrow
+from threading import Thread
 import datetime
-# import pytz
+import pytz
 import arrow
 import pymongo
+import time
 
 # this would be the interface between the DB and python
 # adapters would be the interface between THIS and the scrapers
@@ -17,6 +21,14 @@ import pymongo
 
 # connection to the mongodb here
 # use other classes
+
+doc_start_time = {
+    'year': 2019,
+    'month': 1, 
+    'day': 1
+}
+
+doc_format = "%d/%m/%Y"
 
 client = pymongo.MongoClient(
     "mongodb+srv://BCWATT:WattTime2021" +
@@ -30,11 +42,131 @@ db_switcher = {
     adapter_types.Mexico: client.get_database('Mexico')['Historic']
 }
 
-def main():
-    # TODO set up cron
-    # TODO check each db for missing data in x intervals
-    # TODO check queue for data to upload
+name_switcher = {
+    adapter_types.El_Salvador: 'El_Salvador',
+    adapter_types.Nicaragua: 'America/Managua',
+    adapter_types.Costa_Rica: 'America/Costa_Rica',
+    adapter_types.Mexico: 'Mexico/General'
+}
 
+tz_switcher = {
+    adapter_types.El_Salvador: pytz.timezone('America/El_Salvador'),
+    adapter_types.Nicaragua: pytz.timezone('America/Managua'),
+    adapter_types.Costa_Rica: pytz.timezone('America/Costa_Rica'),
+    adapter_types.Mexico: pytz.timezone('Mexico/General')
+}
+
+def main():
+    # set up queue and cron jobs
+    upload_queue = Queue()
+    jobs = cron(upload_queue)
+    # Start uploader job
+    Thread(target=uploader, args=[jobs, upload_queue]).start()
+
+    # check db until we crash
+    while True:
+        # look for missing entries and add them to queue
+        # PROBLEM: Nicaragua still has broken data on
+        # the 29th and the 30th of 8/2019 due to extra columns
+        print("checking DB...")
+        for adapter in adapter_types:
+            db = db_switcher[adapter]
+            now = datetime.datetime.now() - datetime.timedelta(days=1)
+            start = datetime.datetime(2019, 1, 1)
+            delta = datetime.timedelta(days=6)
+            while start < now:
+                end = start + delta
+                # check doc
+                # 169 entries per doc (includes ID)
+                query = db.find_one({'_id': start.strftime(doc_format)})
+                if (not query) or (len(query) != 169):
+                    # This will get pushed into the queue
+                    print("Requesting data from ", name_switcher[adapter], ":")
+                    print("\tfor week:", start.strftime(doc_format))
+                    jobs.request_historical(adapter, start, end)
+                # iterate
+                start = end + datetime.timedelta(days=1)
+        # check every 6 hours ~ 4x a day
+        time.sleep(60 * 60 * 6)
+
+def uploader(cron_obj: cron, upload_queue: Queue):
+    '''
+    This will run in a loop and check the queue for data to load
+    '''
+    print("Uploader started")
+    while cron_obj.cron_alive:
+        if not upload_queue.empty():
+            data = upload_queue.get()
+            print("got data from", name_switcher[data[0]])
+            collection = db_switcher[data[0]]
+            entries = data[1]
+            marked_entries = [
+                {
+                    '_id': get_doc(str2datetime(entry, tz_switcher[data[0]])),
+                    entry: entries[entry]
+                }
+                for entry in entries.keys()
+            ]
+            print("uploading data for", name_switcher[data[0]])
+            upload_sorter(collection, marked_entries)
+        time.sleep(1)
+    print("cron died! Death on:", datetime.datetime.now())
+
+def upload_sorter(db_collection, marked_entries, overwrite=False):
+    '''
+    Helper function that uploads data one at a time:
+
+    It checks if entry exists, and if it does, it skips it
+
+    Otherwise it appends it to the doc
+
+    overwrite will set entries regardless if it exists
+    '''
+    # TODO figureout how to upload data
+    # TODO for each entry:
+    #   if doc exists:
+    #       unless overwrite, only add entries that don't exist
+    #   else:
+    #       make new doc with entry
+    i = 0
+    for _id, entry in marked_entries:
+        doc_id = marked_entries[i]['_id']
+        db_filter = {'_id': doc_id}
+        # check if doc exists
+        if db_collection.find_one(db_filter):
+            # update if overwrite, check for entry and add missing
+            db_entry = db_collection.find({'_id': doc_id, entry:{'$exists':'true'}})
+            print(db_entry)
+            if db_entry.retrieved:
+                # entry exists, only update if overwrite
+                if overwrite:
+                    db_collection.update_one(db_filter, {'$set': {entry: marked_entries[i][entry]}})
+            else:
+                db_collection.update_one(db_filter, {'$set': {entry: marked_entries[i][entry]}})
+        else:
+            db_collection.insert_one(marked_entries[i])
+        i += 1
+
+def str2datetime(string: str, tzinfo=None) -> datetime.datetime:
+    return arrow.get(string, "HH-DD/MM/YYYY", tzinfo=tzinfo)
+
+def get_doc(date: datetime.datetime) -> str:
+    '''
+    Helper function to get the doc for x/y/z date
+
+    returns the str that should be the ID of the doc
+    '''
+    start = datetime.datetime(
+        doc_start_time['year'],
+        doc_start_time['month'],
+        doc_start_time['day']
+    )
+    # yes this is a bit redundant, but I wanna have JUST days, not hours
+    end = datetime.datetime(date.year, date.month, date.day)
+    diff = (end - start).days % 7
+    week = end - datetime.timedelta(days=diff)
+    week_date = Arrow.strptime(str(week), "%Y-%m-%d %H:%M:%S").datetime
+    return week_date.strftime("%d/%m/%Y")
 
 # Everything w/ demo is an old example of
 # how we pushed historical data to our DB
@@ -42,10 +174,10 @@ def main():
 def es_adapter_demo():
     db = client.get_database('El_Salvador')['Historic']
     el_salvador = ElSalvadorAdapter()
-    start = datetime.date(2019, 1, 1)
+    start = datetime.date(2019, 12, 24)
     delta = datetime.timedelta(days=6)
     
-    for week in range(106):
+    for week in range(106 - 51):
         end = start + delta
         #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
@@ -132,6 +264,11 @@ def cr_adapter_demo():
     for entry in failed_weeks:
         print('\t', entry)
 
+def test():
+    db = client.get_database('El_Salvador')['Historic']
+    start = datetime.date(2019, 1, 1)
+    print(len(db.find_one({'_id': start.strftime(doc_format)})))
+
 def print_data(data):
     for k in data.keys():
         print(k)
@@ -139,4 +276,4 @@ def print_data(data):
         #     print('\t', v)
 
 if __name__ == "__main__":
-    cr_adapter_demo()
+    main()

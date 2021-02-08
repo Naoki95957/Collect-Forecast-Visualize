@@ -5,6 +5,7 @@ from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.el_salvador_adapter import ElSalvadorAdapter
 from queue import Queue
 from datetime import datetime
+from enum import Enum
 import time
 import threading
 
@@ -45,7 +46,7 @@ class AdapterThread(threading.Thread):
             raise TypeError(
                 "Expected a Scraper Adapter. Recieved a %s",
                 type(adapter))
-        set_adapter(adapter)
+        self.adapter = adapter
         self.upload_queue = upload_data
         if isinstance(adapter, MexicoAdapter):
             self.__adapter_type = adapter_types.Mexico
@@ -55,7 +56,21 @@ class AdapterThread(threading.Thread):
             self.__adapter_type = adapter_types.El_Salvador
         elif isinstance(adapter, CostaRicaAdapter):
             self.__adapter_type = adapter_types.Costa_Rica
-        
+    
+    def __scrape_intermittent(self, startdate, enddate):
+        try:
+            self.upload_queue.put(
+                (
+                    self.__adapter_type,
+                    self.__new_adapter_switcher[self.__adapter_type]().scrape_history(
+                        start_day=startdate.day, start_month=startdate.month,
+                        start_year=startdate.year, end_day=enddate.day,
+                        end_month=enddate.month, end_year=enddate.year
+                    )
+                )
+            )
+        except Exception as e:
+            print("FAILED", startdate)
 
     def get_intermittent_data(self, startdate: datetime, enddate: datetime):
         '''
@@ -63,19 +78,14 @@ class AdapterThread(threading.Thread):
 
         This is a seperate task and will be threaded
         '''
-        scrape = lambda self, startdate, enddate:(
-            self.upload_queue.put(
-                (
-                    self.__adapter_type,
-                    self.adapter.scrape_history(
-                        start_day=startdate.day, start_month=startdate.month,
-                        start_year=startdate.year, end_day=enddate.day,
-                        end_month=enddate.month, end_year=enddate.year
-                    )
-                )
-            )
-        )
-        threading.Thread(target=scrape, kwargs=[self, startdate, enddate]).start()
+        threading.Thread(
+            target=self.__scrape_intermittent,
+            kwargs={
+                # 'self' : self,
+                'startdate' : startdate,
+                'enddate' : enddate
+            }
+        ).start()
         
     def get_adapter_failure(self) -> bool:
         '''
@@ -89,7 +99,7 @@ class AdapterThread(threading.Thread):
         '''
         Reset to a new adapter
         '''
-        threading.Thread(target=self.__reset_adapter, kwargs=[self]).start()
+        threading.Thread(target=self.__reset_adapter, kwargs={'self':self}).start()
         
     def __reset_adapter(self):
         '''
@@ -136,6 +146,7 @@ class AdapterThread(threading.Thread):
         return self.__running
 
     def start(self):
+        self.__kill = False
         return super().start()
 
     def run(self):
@@ -157,7 +168,7 @@ class AdapterThread(threading.Thread):
                 time.sleep(self.__watchdog_time)
             else:
                 total_sleep = 0
-                self.__bypass
+                self.__bypass = False
                 self.attempt_to_queue_todays_data()
         self.__running = False
         return super().run()

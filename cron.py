@@ -7,13 +7,12 @@ from adapters.adapter_tasks import AdapterThread, adapter_types
 from queue import Queue
 from threading import Thread
 from datetime import datetime
-from enum import Enum
 import time
 
 class cron:
     adapter_threads = list()
     manager_queue = Queue()
-    cron_alive = False
+    cron_alive = True
     __cron_thread = None
     __switcher = dict()
 
@@ -63,7 +62,7 @@ class cron:
         This will let the adpter know that we want to attempt
         to scrape the landing page infomation right now
         '''
-        AdapterThread(self.__switcher[adapter_type]).schedule_todays_data_now()
+        self.__switcher[adapter_type].schedule_todays_data_now()
 
     def request_historical(
             self, 
@@ -74,7 +73,7 @@ class cron:
         Will let the adpter know to queue historical data
         '''
         thread = self.__switcher[adapter_type]
-        AdapterThread(thread).get_intermittent_data(
+        thread.get_intermittent_data(
             start_date, 
             end_date
         )
@@ -83,11 +82,13 @@ class cron:
         '''
         New thread w/ loop to constantly check health of adapters
         '''
+        self.cron_alive = True
+        for t in self.adapter_threads:
+            t.start()
         self.__cron_thread = Thread(target=self.__health_loop)
         self.__cron_thread.start()
 
     def __health_loop(self):
-        self.cron_alive = True
         while self.cron_alive:
             self.check_adapters()
 
@@ -95,8 +96,7 @@ class cron:
         if not self.adapter_threads:
             return
         for t in self.adapter_threads:
-            t = AdapterThread(t)
-            if t.bad_adapter():
+            if t.bad_adapter:
                 t.reset_adapter()
 
     # def recreate_adapter(self, adapter_type: adapter_types):
@@ -119,7 +119,6 @@ class cron:
         self.cron_alive = False
         self.__cron_thread.join()
         for t in self.adapter_threads:
-            t = AdapterThread(t)
             t.join()
 
 
