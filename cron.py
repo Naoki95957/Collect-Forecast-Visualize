@@ -10,6 +10,9 @@ from datetime import datetime
 import time
 
 class cron:
+    '''
+    Sort of a scheduler. This is meant to handle all things threads and adapters
+    '''
     adapter_threads = list()
     manager_queue = None
     cron_alive = True
