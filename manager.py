@@ -14,14 +14,6 @@ import arrow
 import pymongo
 import time
 
-# this would be the interface between the DB and python
-# adapters would be the interface between THIS and the scrapers
-
-# this class is like main that runs all the strategy or adaptor pattern
-
-# connection to the mongodb here
-# use other classes
-
 # hours between checking the DB
 db_checking_frequency = 12
 
