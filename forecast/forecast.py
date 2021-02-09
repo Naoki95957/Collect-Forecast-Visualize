@@ -202,7 +202,9 @@ class Forecast:
             self.model[meta].fit(df)
 
     def predict(self, per=168):
-        pass
+        for meta in self.model:
+            future_dates = self.model[meta].make_future_dataframe(periods=per, freq='h')
+            self.prediction[meta] = self.model[meta].predict(future_dates)
 
     def publish(self):
         pass
@@ -257,6 +259,10 @@ def main():
         print("Fitting Models")
         model.fit()
         print()
+
+        print("Making Predictions")
+        print()
+        model.predict()
         
         show_plot = input('Would you like to see plots (y/n): ')
         if show_plot == 'y':
