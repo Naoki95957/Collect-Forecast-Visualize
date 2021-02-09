@@ -100,59 +100,8 @@ class cron:
             if t.bad_adapter:
                 t.reset_adapter()
 
-    # def recreate_adapter(self, adapter_type: adapter_types):
-    #     '''
-    #     If an adpter is broken/crashed
-
-    #     We can instance a new adpter
-    #     '''
-    #     thread = self.__switcher[adapter_type]
-    #     if isinstance(thread.adapter, ElSalvadorAdapter):
-    #         thread.set_adapter(ElSalvadorAdapter())
-    #     elif isinstance(thread.adapter, MexicoAdapter):
-    #         thread.set_adapter(MexicoAdapter())
-    #     elif isinstance(thread.adapter, NicaraguaAdapter):
-    #         thread.set_adapter(NicaraguaAdapter())
-    #     elif isinstance(thread.adapter,  CostaRicaAdapter):
-    #         thread.set_adapter(CostaRicaAdapter())
-
     def __del__(self):
         self.cron_alive = False
         self.__cron_thread.join()
         for t in self.adapter_threads:
             t.join()
-
-
-def main():
-    esa = ElSalvadorAdapter()
-    ma = MexicoAdapter()
-    na = NicaraguaAdapter()
-    cra = CostaRicaAdapter()
-    queue = Queue()
-
-    t1 = AdapterThread(esa, queue)
-    t2 = AdapterThread(ma, queue)
-    t1.start()
-    t2.start()
-
-    counter = 0
-
-    while t1.is_alive() or t2.is_alive():
-        print("T1:", t1.is_alive())
-        print("T2:", t2.is_alive())
-        print("Queue is", "empty" if queue.empty() else "not empty")
-        if not queue.empty():
-            print(queue.get())
-        if counter > 10:
-            counter = 0
-            if t1.is_alive():
-                t1.join()
-            else:
-                t2.join()
-        counter += 1
-        time.sleep(1)
-
-    print("program terminated")
-
-if __name__ == "__main__":
-    main()

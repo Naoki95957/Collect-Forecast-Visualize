@@ -22,14 +22,20 @@ import time
 # connection to the mongodb here
 # use other classes
 
+# hours between checking the DB
+db_checking_frequency = 12
+
+# the basis to check the db
 doc_start_time = {
     'year': 2019,
     'month': 1, 
     'day': 1
 }
 
+# doc string format for mongodb
 doc_format = "%d/%m/%Y"
 
+# client
 client = pymongo.MongoClient(
     "mongodb+srv://BCWATT:WattTime2021" +
     "@cluster0.tbh2o.mongodb.net/" +
@@ -86,9 +92,8 @@ def main():
                     jobs.request_historical(adapter, start, end)
                 # iterate
                 start = end + datetime.timedelta(days=1)
-        # check every 6 hours ~ 4x a day
         print("Done checking db. Sleeping now...")
-        time.sleep(60 * 60 * 6)
+        time.sleep(60 * 60 * db_checking_frequency)
 
 def uploader(cron_obj: cron, upload_queue: list):
     '''
@@ -124,12 +129,6 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
 
     overwrite will set entries regardless if it exists
     '''
-    # TODO figureout how to upload data
-    # TODO for each entry:
-    #   if doc exists:
-    #       unless overwrite, only add entries that don't exist
-    #   else:
-    #       make new doc with entry
     i = 0
     for _id, entry in marked_entries:
         doc_id = marked_entries[i]['_id']
@@ -150,6 +149,9 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
         i += 1
 
 def str2datetime(string: str, tzinfo=None) -> datetime.datetime:
+    '''
+    This str to datetime is for the hourly format we're using
+    '''
     return arrow.get(string, "HH-DD/MM/YYYY", tzinfo=tzinfo)
 
 def get_doc(date: datetime.datetime) -> str:
