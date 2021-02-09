@@ -23,7 +23,6 @@ class AdapterThread(threading.Thread):
     Automatically handle tasks for simultanious scraping
 
     Make use of multi-threading
-
     '''
     __kill = False
     __running = False

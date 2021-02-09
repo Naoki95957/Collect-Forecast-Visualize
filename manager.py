@@ -66,6 +66,7 @@ def main():
         # look for missing entries and add them to queue
         # PROBLEM: Nicaragua still has broken data on
         # the 29th and the 30th of 8/2019 due to extra columns
+        # this means Nic will continue to fail this week/days until we fix it
         print("checking DB...")
         for adapter in adapter_types:
             db = db_switcher[adapter]
@@ -122,6 +123,8 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
     overwrite will set entries regardless if it exists
     '''
     i = 0
+    updated_entries = 0
+    print("Checking", len(marked_entries), "for upload...")
     for _id, entry in marked_entries:
         doc_id = marked_entries[i]['_id']
         db_filter = {'_id': doc_id}
@@ -129,16 +132,19 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
         if db_collection.find_one(db_filter):
             # update if overwrite, check for entry and add missing
             db_entry = db_collection.find({'_id': doc_id, entry:{'$exists':'true'}})
-            print(db_entry)
             if db_entry.retrieved:
                 # entry exists, only update if overwrite
                 if overwrite:
                     db_collection.update_one(db_filter, {'$set': {entry: marked_entries[i][entry]}})
+                    updated_entries += 1
             else:
                 db_collection.update_one(db_filter, {'$set': {entry: marked_entries[i][entry]}})
+                updated_entries += 1
         else:
             db_collection.insert_one(marked_entries[i])
+            updated_entries += 1
         i += 1
+    print("Updated", updated_entries, "entries")
 
 def str2datetime(string: str, tzinfo=None) -> datetime.datetime:
     '''
