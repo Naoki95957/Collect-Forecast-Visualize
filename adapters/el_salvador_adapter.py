@@ -112,10 +112,10 @@ class ElSalvadorAdapter(ScraperAdapter):
         if not start_time:
             return data
         ordered = sorted(data.keys())
-        time_stamp = start_time.strftime("%H-%d/%m/%Y")
+        time_stamp = start_time
         for entry in ordered:
             entry_time = datetime.datetime.strptime(entry, "%H-%d/%m/%Y")
-            entry_time = entry_time.replace(tz=pytz.timezone('America/El_Salvador'))
+            entry_time = entry_time.replace(tzinfo=pytz.timezone('America/El_Salvador'))
             if entry_time < time_stamp:
                 data.pop(entry)
         return data

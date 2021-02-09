@@ -81,7 +81,6 @@ class AdapterThread(threading.Thread):
         threading.Thread(
             target=self.__scrape_intermittent,
             kwargs={
-                # 'self' : self,
                 'startdate' : startdate,
                 'enddate' : enddate
             }
@@ -98,12 +97,6 @@ class AdapterThread(threading.Thread):
     def reset_adapter(self):
         '''
         Reset to a new adapter
-        '''
-        threading.Thread(target=self.__reset_adapter, kwargs={'self':self}).start()
-        
-    def __reset_adapter(self):
-        '''
-        Reset to a new adapter helper
         '''
         self.adapter = self.__new_adapter_switcher[self.__adapter_type]()
         self.bad_adapter = False
