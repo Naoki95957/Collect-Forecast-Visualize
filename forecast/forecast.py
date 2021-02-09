@@ -3,10 +3,7 @@ import pandas as pd
 import pymongo
 import matplotlib.pyplot as plt
 from datetime import datetime
-
-# from fbprophet import Prophet
-# check prophet version
-# print('Prophet %s' % fbprophet.__version__)
+from fbprophet import Prophet
 
 class Forecast:
     client = pymongo.MongoClient("mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/WattTime?retryWrites=true&w=majority")
@@ -17,7 +14,7 @@ class Forecast:
         self.cursor = self.coll.find(filter)
         self.data = {}
         self.df = {}
-        # self.model = Prophet()
+        self.model = Prophet()
         self.prediction = None
 
     def switch_cursor(self, database, collection, filter='{}'):
@@ -35,13 +32,18 @@ class Forecast:
                 for item in doc[key]:
                     meta = item['type']
                     if meta not in self.data.keys():
-                        print(meta)
+                        print('\t', meta)
                         self.data[meta] = []
                     self.data[meta].append([date, item['value']])
 
         for meta in self.data:
             self.df[meta] = pd.DataFrame(self.data[meta])
             self.df[meta].columns = ['Datetime', meta]
+    
+    def plot_data(self):
+        for meta in self.df:
+            self.df[meta].plot(x='Datetime')
+            plt.show()
     
     # TODO: stationarize data (make all statistical properties, such as mean and variance constant)
     def stationarize_data(self):
@@ -55,13 +57,13 @@ class Forecast:
 
 
 def main():
-    print('Preparing data')
+    print('Preparing data for El Salvador:')
+    print('Energy types found:')
     f_es = Forecast('El_Salvador', 'Historic')
     f_es.prep_data()
-    for meta in f_es.df:
-        f_es.df[meta].plot(x='Datetime')
-        plt.show()
-
+    show_plot = input('Would you like to see plots (y/n): ')
+    if show_plot == 'y':
+        f_es.plot_data()
 
 if __name__ == "__main__":
     main()
