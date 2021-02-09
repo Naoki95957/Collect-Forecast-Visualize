@@ -17,7 +17,7 @@ class Forecast:
         self.model = Prophet()
         self.prediction = None
 
-    def switch_cursor(self, database, collection, filter='{}'):
+    def switch_cursor(self, database, collection, filter={}):
         self.db = client[database]
         self.coll = db[collection]
         self.cursor = collection.find(filter)
@@ -64,6 +64,31 @@ def main():
     show_plot = input('Would you like to see plots (y/n): ')
     if show_plot == 'y':
         f_es.plot_data()
+
+    print('Preparing data for Mexico:')
+    print('Energy types found:')
+    f_mex = Forecast('Mexico', 'Historic')
+    f_mex.prep_data()
+    show_plot = input('Would you like to see plots (y/n): ')
+    if show_plot == 'y':
+        f_mex.plot_data()
+
+    print('Preparing data for Nicaragua:')
+    print('Energy types found:')
+    f_mex = Forecast('Nicaragua', 'Historic')
+    f_mex.prep_data()
+    show_plot = input('Would you like to see plots (y/n): ')
+    if show_plot == 'y':
+        f_mex.plot_data()
+
+    print('Preparing data for Costa Rica:')
+    print('Energy types found:')
+    f_mex = Forecast('Costa_Rica', 'Historic')
+    f_mex.prep_data()
+    show_plot = input('Would you like to see plots (y/n): ')
+    if show_plot == 'y':
+        f_mex.plot_data()
+    
 
 if __name__ == "__main__":
     main()
