@@ -3,6 +3,7 @@ import pandas as pd
 import pymongo
 import matplotlib.pyplot as plt
 from datetime import datetime
+from datetime import timedelta
 from fbprophet import Prophet
 
 '''
@@ -208,6 +209,23 @@ class Forecast:
 
     def publish(self):
         pass
+    #     for meta in self.prediction:
+    #         forecast = self.prediction[meta][['ds', 'yhat']].iloc[self.periods:]
+
+
+    #     while ()
+    #     start = datetime.date(2020, 1, 1)
+    #     delta = timedelta(days=6)
+    # # 1/1/2019 to 1/7/2019
+    # # 1/8/2019 to 1/14/2019
+    # # 1/15/2019 ...
+    # for week in range(2):
+    #     end = start + delta
+    #     data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
+    #     id = start.strftime("%d/%m/%Y")
+    #     data['_id'] = id
+    #     db.insert_one(data)
+    #     start = end + datetime.timedelta(days=1)
 
     def plot(self, hist=False):
         '''
@@ -246,27 +264,35 @@ def main():
 
     for c in countries:
         print('Preparing data for', c)
-        print('Energy types found:\n')
+        print('Energy types found:')
         model.set_cursor(c, 'Historic')
         model.prep_data(prtcl='last')
-        print()
-
-        show_plot = input('Would you like to see plots (y/n): ')
-        if show_plot == 'y':
-            model.plot(hist=True)
-        print()
-
-        print("Fitting Models")
+        print("\nFitting Models")
         model.fit()
-        print()
-
-        print("Making Predictions")
-        print()
+        print("\nMaking Predictions")
         model.predict()
         
-        show_plot = input('Would you like to see plots (y/n): ')
-        if show_plot == 'y':
-            model.plot()
+        # MENU
+        action = ''
+        while action != 'q':
+            print('MENU')
+            print('----')
+            print('h : plot historical data')
+            print('f : plot forecast data')
+            print('v : print cross validation stats')
+            print('p : publish results')
+            print('q : quit')
+            action = input('Input: ')
+
+            if action == 'h':
+                model.plot(hist=True)
+            elif action == 'f':
+                model.plot()
+            elif action == 'v':
+                pass
+            elif action == 'p':
+                pass
+            
    
 
 if __name__ == "__main__":
