@@ -1,32 +1,67 @@
-# this class is only for el_salvador
-
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.neighbors import NearestNeighbors
 import pymongo
+import matplotlib.pyplot as plt
+from datetime import datetime
 
-client = pymongo.MongoClient("mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/WattTime?retryWrites=true&w=majority")
+# from fbprophet import Prophet
+# check prophet version
+# print('Prophet %s' % fbprophet.__version__)
 
-db = client['El_Salvador']
-col = db['Historic']
-doc = col.find_one({'00-01/01/2019.0.type':'Biomass'})
+class Forecast:
+    client = pymongo.MongoClient("mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/WattTime?retryWrites=true&w=majority")
 
-# find or find_one selects documents that have Biomass in them so we are just selecting all documents?
-# need to use different query?
+    def __init__(self, database, collection, filter={}):
+        self.db = self.client[database]
+        self.coll = self.db[collection]
+        self.cursor = self.coll.find(filter)
+        self.data = {}
+        self.df = {}
+        # self.model = Prophet()
+        self.prediction = None
+
+    def switch_cursor(self, database, collection, filter='{}'):
+        self.db = client[database]
+        self.coll = db[collection]
+        self.cursor = collection.find(filter)
+
+    def prep_data(self, years=[2020]):
+        for doc in self.cursor:
+            doc.pop('_id')
+            for key in doc:
+                date = datetime.strptime(key, '%H-%d/%m/%Y')
+                if date.year not in years:
+                    continue
+                for item in doc[key]:
+                    meta = item['type']
+                    if meta not in self.data.keys():
+                        print(meta)
+                        self.data[meta] = []
+                    self.data[meta].append([date, item['value']])
+
+        for meta in self.data:
+            self.df[meta] = pd.DataFrame(self.data[meta])
+            self.df[meta].columns = ['Datetime', meta]
+    
+    # TODO: stationarize data (make all statistical properties, such as mean and variance constant)
+    def stationarize_data(self):
+        pass
+
+    def predict(self):
+        pass
+
+    def plot_prediction(self):
+        pass
 
 
+def main():
+    print('Preparing data')
+    f_es = Forecast('El_Salvador', 'Historic')
+    f_es.prep_data()
+    for meta in f_es.df:
+        f_es.df[meta].plot(x='Datetime')
+        plt.show()
 
-# find({})[0] index 0 is first document
-# find({})[1] is index 1 which is week 2 second document
-print(doc)
 
-# how to query data 
-# create data structures to hold this data
-# bin_dates?, hour, type, target feature
-
-# gradient booster regressor
-# https://towardsdatascience.com/using-gradient-boosting-for-time-series-prediction-tasks-600fac66a5fc
-
-# [bin_date, hour, type, target feature]
-# [bin_date, hour, type, target feature]
+if __name__ == "__main__":
+    main()
