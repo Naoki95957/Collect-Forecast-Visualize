@@ -3,7 +3,7 @@ import pandas as pd
 import pymongo
 import matplotlib.pyplot as plt
 from datetime import datetime
-from fbprophet import Prophet
+# from fbprophet import Prophet
 
 class Forecast:
     client = pymongo.MongoClient("mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/WattTime?retryWrites=true&w=majority")
@@ -14,7 +14,7 @@ class Forecast:
         self.cursor = self.coll.find(filter)
         self.data = {}
         self.df = {}
-        self.model = Prophet()
+        # self.model = Prophet()
         self.prediction = None
 
     def switch_cursor(self, database, collection, filter={}):
