@@ -3,16 +3,34 @@ import pandas as pd
 import pymongo
 import matplotlib.pyplot as plt
 from datetime import datetime
-# from fbprophet import Prophet
+from fbprophet import Prophet
 
 '''
-    Notes:
-        prep_data should allow for a datetime range instead of just years
-        Nicaragua's metas are capitalized for some reason
-        Mexico has a few repeated values
-            * they always seem to appear at the 0 hour
-            * typically first instance is an extreme outlier
-              -> should keep last instance instead
+    Notes
+    -----
+    * prep_data should allow for a datetime range instead of just years
+    * fitting and predicting should allow for specific meta choices
+    * Nicaragua's metas are capitalized for some reason
+    * Mexico has a few repeated values
+        * they always seem to appear at the 0 hour
+        * typically first instance is an extreme outlier
+            -> should keep last instance instead
+
+    * installing fbprophet: (NOT ALWAYS EASY)
+        * MUST look up the documentation
+        * depending on your system this will be more or less difficult
+        * fbprophet primarily depends on pystan (latest ver 2.19.1.1),
+          and a working C++ compiler. I highly suggest setting up a 
+          virtual environment to get this up an running:
+            1. conda create -n <new_env>
+                -> creates new env with name=<new_env>
+            2. conda activate <new_env>
+                ->activates virtual environment
+            3. conda env list
+                -> lists env (* next to active env)
+            4. install fbprophet by following documentation
+            5. conda deactivate
+                -> deactivate env (don't forget this line before exiting)
 '''
 class Forecast:
     '''
@@ -26,9 +44,9 @@ class Forecast:
 
     Dependencies
     ------------
-    fbprophet : additive regrssion model for time-series forecasting
-    pystan 2.19.1.1 (for fbpprophet)
-    properly installed C++ compiler (for fbprophet)
+    * fbprophet (additive regression model for time-series forecasting)
+    * pystan 2.19.1.1 (for fbpprophet)
+    * properly installed C++ compiler (for fbprophet)
     '''
     client = pymongo.MongoClient(
         "mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/" +
@@ -40,8 +58,9 @@ class Forecast:
         self.col = None
         self.cursor = None
         self.data = {}
-        # self.model = Prophet()
-        self.prediction = None
+        self.model = {}
+        self.prediction = {}
+        self.periods = 0
 
     def set_cursor(self, db, col, fltr={}):
         '''
@@ -53,7 +72,7 @@ class Forecast:
             Exact name of your MongoDB Database
         col : str
             Exact name of the Collection within your MongoDB Database
-        fltr : dict
+        fltr : dict, default {}
             Filter object for databse queries. Automatically set to empty which
             behaves the same as SQL SELECT *
         '''
@@ -63,8 +82,8 @@ class Forecast:
 
     def prep_data(self, years=[datetime.now().year- 1], prtcl='first'):
         ''' 
-        Grabs all the data from the cursor (cursor needs to be set first, use 
-        set_cursor(db, col)), then reformats the data into a dict of 
+        Grabs all the data from the cursor (cursor needs to be set first, use
+        set_cursor(db, col)), then reformats the data into a dict of
         dataframes with keys corresponding to their respective energy type.
 
         Parameters
@@ -82,17 +101,6 @@ class Forecast:
             * data for each energy type in a separate dataframe
             * data contains no duplicates
             * data is stationary
-
-        Example
-        -------
-        >>> model.prep_data(years=[2019,2020])
-        Biomass
-        Geothermal
-        Hydroelectric
-        Interconnection
-        Thermal
-        Solar
-        Wind
         '''
         self.data = {}
 
@@ -143,12 +151,12 @@ class Forecast:
         # Expected range
         start = pd.Timestamp(str(years[0]) + '-01-01T00')
         end = pd.Timestamp(str(years[-1]) + '-12-31T23')
-        periods = 0
+        self.periods = 0
         for y in years:
             if self.is_leap_year(y):
-                periods += 8784
+                self.periods += 8784
             else:
-                periods += 8760
+                self.periods += 8760
 
         for meta in self.data:
             # check for missing start/end entries
@@ -175,8 +183,52 @@ class Forecast:
             self.data[meta] = self.data[meta].reset_index()
         
             # validate that df contains full range
-            if len(self.data[meta]) != periods:
+            if len(self.data[meta]) != self.periods:
                 print('error:', meta, 'of incorrect size')
+
+    def stationarize(self):
+        # TODO: make all statistical properties constant
+        pass
+
+    def fit(self):
+        self.model = {}
+        for meta in self.data:
+            print("------------------------------")
+            print("Fitting", meta)
+            print("------------------------------")
+
+            df = self.data[meta].rename(columns={'Datetime': 'ds', meta: 'y'})
+            self.model[meta] = Prophet()
+            self.model[meta].fit(df)
+
+    def predict(self, per=168):
+        pass
+
+    def publish(self):
+        pass
+
+    def plot(self, hist=False):
+        '''
+        Creates a simple plot, using matplotlib.pyplot, for each dataframe
+        within given dataset. To quit you must exit out of each successive
+        plot (plots can also be saved).
+
+        TODO: Add more potential arguments and plot types
+
+        Parameters
+        ----------
+        hist : bool, default False
+            If set to True, uses historical data for plots. Otherwise, it
+            will default to plotting the predicted data.
+        '''
+        if hist:
+            for meta in self.data:
+                self.data[meta].plot(x='Datetime')
+                plt.show()
+        else:
+            for meta in self.prediction:
+                self.prediction[meta][['ds', 'yhat']].iloc[self.periods-1:].plot(x='ds')
+                plt.show()
 
     def is_leap_year(self, year):
         if year % 4 == 0:
@@ -185,62 +237,31 @@ class Forecast:
             elif year % 100 == 0 and year % 400 == 0:
                 return True
 
-    def plot_data(self):
-        '''
-        Create a simple plot, using matplotlib.pyplot, for each dataframe within
-        data. Uses the datetime values as the x axis. To quite you must exit out 
-        of each successive plot (plots can also be saved).
-        '''
-        for meta in self.data:
-            self.data[meta].plot(x='Datetime')
-            plt.show()
-    
-    def stationarize_data(self):
-        # TODO: make all statistical properties constant
-        pass
-
-    def predict(self):
-        pass
-
-    def plot_prediction(self):
-        pass
-
 
 def main():
     model = Forecast()
+    countries = ['El_Salvador', 'Mexico', 'Nicaragua', 'Costa_Rica']
 
-    print('Preparing data for El Salvador:')
-    print('Energy types found:\n')
-    model.set_cursor('El_Salvador', 'Historic')
-    model.prep_data()
-    show_plot = input('\nWould you like to see plots (y/n): ')
-    if show_plot == 'y':
-        model.plot_data()
+    for c in countries:
+        print('Preparing data for', c)
+        print('Energy types found:\n')
+        model.set_cursor(c, 'Historic')
+        model.prep_data(prtcl='last')
+        print()
 
-    print('Preparing data for Mexico:')
-    print('Energy types found:\n')
-    model.set_cursor('Mexico', 'Historic')
-    model.prep_data(prtcl='last')
-    show_plot = input('\nWould you like to see plots (y/n): ')
-    if show_plot == 'y':
-        model.plot_data()
+        show_plot = input('Would you like to see plots (y/n): ')
+        if show_plot == 'y':
+            model.plot(hist=True)
+        print()
 
-    print('Preparing data for Nicaragua:')
-    print('Energy types found:\n')
-    model.set_cursor('Nicaragua', 'Historic')
-    model.prep_data()
-    show_plot = input('\nWould you like to see plots (y/n): ')
-    if show_plot == 'y':
-        model.plot_data()
-
-    print('Preparing data for Costa Rica:')
-    print('Energy types found:\n')
-    model.set_cursor('Costa_Rica', 'Historic')
-    model.prep_data()
-    show_plot = input('\nWould you like to see plots (y/n): ')
-    if show_plot == 'y':
-        model.plot_data()
-    
+        print("Fitting Models")
+        model.fit()
+        print()
+        
+        show_plot = input('Would you like to see plots (y/n): ')
+        if show_plot == 'y':
+            model.plot()
+   
 
 if __name__ == "__main__":
     main()
