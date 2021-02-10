@@ -40,13 +40,6 @@ db_switcher = {
     adapter_types.Mexico: client.get_database('Mexico')['Historic']
 }
 
-name_switcher = {
-    adapter_types.El_Salvador: 'El_Salvador',
-    adapter_types.Nicaragua: 'America/Managua',
-    adapter_types.Costa_Rica: 'America/Costa_Rica',
-    adapter_types.Mexico: 'Mexico/General'
-}
-
 tz_switcher = {
     adapter_types.El_Salvador: pytz.timezone('America/El_Salvador'),
     adapter_types.Nicaragua: pytz.timezone('America/Managua'),
@@ -80,7 +73,7 @@ def main():
                 query = db.find_one({'_id': start.strftime(doc_format)})
                 if (not query) or (len(query) != 169):
                     # This will get pushed into the queue
-                    print("Requesting data from ", name_switcher[adapter], ":")
+                    print("Requesting data from ", adapter, ":")
                     print("\tfor week:", start.strftime(doc_format))
                     jobs.request_historical(adapter, start, end)
                 # iterate
@@ -96,7 +89,7 @@ def uploader(cron_obj: cron, upload_queue: list):
     while cron_obj.cron_alive:
         if len(upload_queue) > 0:
             data = upload_queue.pop(0)
-            print("Now sorting data from", name_switcher[data[0]])
+            print("Now sorting data from", data[0])
             print(len(upload_queue), "uploads in queue")
             collection = db_switcher[data[0]]
             entries = data[1]
@@ -107,7 +100,7 @@ def uploader(cron_obj: cron, upload_queue: list):
                 }
                 for entry in entries.keys()
             ]
-            print("uploading data for", name_switcher[data[0]])
+            print("uploading data for", data[0])
             upload_sorter(collection, marked_entries)
         time.sleep(1)
     print("cron died! Death on:", datetime.datetime.now())
