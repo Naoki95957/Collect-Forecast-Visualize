@@ -62,8 +62,9 @@ class Forecast:
         self.model = {}
         self.prediction = {}
         self.periods = 0
+        self.first = None
 
-    def set_cursor(self, db, col, fltr={}):
+    def set_cursor(self, db, col='Historic', fltr={}):
         '''
         Sets the MongoDB cursor object.
 
@@ -71,7 +72,7 @@ class Forecast:
         ----------
         db : str
             Exact name of your MongoDB Database
-        col : str
+        col : str, default 'Historic'
             Exact name of the Collection within your MongoDB Database
         fltr : dict, default {}
             Filter object for databse queries. Automatically set to empty which
@@ -104,6 +105,7 @@ class Forecast:
             * data is stationary
         '''
         self.data = {}
+        self.first = pd.Timestamp(str(years[-1] + 1) + '-01-01T00')
 
         # grab data from MongoDB
         temp = {}
@@ -207,25 +209,25 @@ class Forecast:
             future_dates = self.model[meta].make_future_dataframe(periods=per, freq='h')
             self.prediction[meta] = self.model[meta].predict(future_dates)
 
-    def publish(self):
+    def cross_validation(self):
         pass
-    #     for meta in self.prediction:
-    #         forecast = self.prediction[meta][['ds', 'yhat']].iloc[self.periods:]
 
+    def publish(self):
+        for meta in self.prediction:
+            forecast = self.prediction[meta][['ds', 'yhat']].iloc[self.periods:]
 
-    #     while ()
-    #     start = datetime.date(2020, 1, 1)
-    #     delta = timedelta(days=6)
-    # # 1/1/2019 to 1/7/2019
-    # # 1/8/2019 to 1/14/2019
-    # # 1/15/2019 ...
-    # for week in range(2):
-    #     end = start + delta
-    #     data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-    #     id = start.strftime("%d/%m/%Y")
-    #     data['_id'] = id
-    #     db.insert_one(data)
-    #     start = end + datetime.timedelta(days=1)
+        start = datetime.date(2020, 1, 1)
+        delta = timedelta(days=6)
+        # 1/1/2019 to 1/7/2019
+        # 1/8/2019 to 1/14/2019
+        # 1/15/2019 ...
+        for week in range(2):
+            end = start + delta
+            data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
+            id = start.strftime("%d/%m/%Y")
+            data['_id'] = id
+            db.insert_one(data)
+            start = end + datetime.timedelta(days=1)
 
     def plot(self, hist=False):
         '''
@@ -247,7 +249,7 @@ class Forecast:
                 plt.show()
         else:
             for meta in self.prediction:
-                self.prediction[meta][['ds', 'yhat']].iloc[self.periods-1:].plot(x='ds')
+                self.prediction[meta][['ds', 'yhat']].iloc[self.periods:].plot(x='ds')
                 plt.show()
 
     def is_leap_year(self, year):
@@ -258,41 +260,49 @@ class Forecast:
                 return True
 
 
+def menu():
+    print('\nMENU')
+    print('----')
+    print('c : set cursor')
+    print('d : prep data')
+    print('f : fit model')
+    print('p : make prediction')
+    print('ph : plot historical data')
+    print('pf : plot forecast data')
+    print('cv : print cross validation stats')
+    print('db : publish results')
+    print('q : quit')
+
+
 def main():
     model = Forecast()
-    countries = ['El_Salvador', 'Mexico', 'Nicaragua', 'Costa_Rica']
 
-    for c in countries:
-        print('Preparing data for', c)
-        print('Energy types found:')
-        model.set_cursor(c, 'Historic')
-        model.prep_data(prtcl='last')
-        print("\nFitting Models")
-        model.fit()
-        print("\nMaking Predictions")
-        model.predict()
-        
-        # MENU
-        action = ''
-        while action != 'q':
-            print('MENU')
-            print('----')
-            print('h : plot historical data')
-            print('f : plot forecast data')
-            print('v : print cross validation stats')
-            print('p : publish results')
-            print('q : quit')
-            action = input('Input: ')
+    action = ''
+    while action != 'q':
+        menu()
+        action = input('>>  ')
 
-            if action == 'h':
-                model.plot(hist=True)
-            elif action == 'f':
-                model.plot()
-            elif action == 'v':
-                pass
-            elif action == 'p':
-                pass
-            
+        if action == 'c':
+            db = input('Database name:  ')
+            model.set_cursor(db)
+        elif action == 'd':
+            n = int(input('Number of years:  '))
+            years = []
+            for i in range(n):
+                years.append(int(input('[' + str(i) + '] >  ')))
+            model.prep_data(years)
+        elif action == 'f':
+            model.fit()
+        elif action == 'p':
+            model.predict()  
+        elif action == 'ph':
+            model.plot(hist=True)
+        elif action == 'pf':
+            model.plot()
+        elif action == 'cv':
+            pass
+        elif action == 'db':
+            pass
    
 
 if __name__ == "__main__":
