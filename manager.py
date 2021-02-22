@@ -58,7 +58,11 @@ def main():
     while True:
         # look for missing entries and add them to queue
         # PROBLEM: Nicaragua still has broken data on
-        # the 29th and the 30th of 8/2019 due to extra columns
+        # TODO manually sort out the week 27/8/2019
+        # TODO Additionally out weeks of 30/05/2017,
+        # 06/06/2017, 13/06/2017, 20/06/2017, 27/06/2017
+        # 17/07/2018, 24/07/2018, 
+        # for WHATEVER REASON, 29th and the 30th in 8/2019 have extra columns
         # this means Nic will continue to fail this week/days until we fix it
         print("checking DB...")
         for adapter in adapter_types:
@@ -169,14 +173,14 @@ def get_doc(date: datetime.datetime) -> str:
 def es_adapter_demo():
     db = client.get_database('El_Salvador')['Historic']
     el_salvador = ElSalvadorAdapter()
-    start = datetime.date(2019, 12, 24)
+    start = datetime.date(year=2016, month=12, day=27)
     delta = datetime.timedelta(days=6)
-    
-    for week in range(106 - 51):
+
+    for week in range(105):
         end = start + delta
         #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
-        print("Current:")
+        print("Current week", week, ":")
         print("\t", id)
         data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
         data['_id'] = id
@@ -189,13 +193,13 @@ def es_adapter_demo():
 def mexico_adapter_demo():
     db = client.get_database('Mexico')['Historic']
     ma = MexicoAdapter()
-    start = datetime.date(2019, 1, 1)
+    start = datetime.date(year=2016, month=12, day=27)
     delta = datetime.timedelta(days=6)
-    for week in range(106):
+    for week in range(105):
         end = start + delta
         #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
-        print("Current:")
+        print("Current week", week, ":")
         print("\t", id)
         data = ma.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
         data['_id'] = id
@@ -208,16 +212,19 @@ def mexico_adapter_demo():
 
 def nic_adapter_demo():
     # TODO manually sort out the week 27/8/2019
+    # TODO Additionally out weeks of 30/05/2017,
+    # 06/06/2017, 13/06/2017, 20/06/2017, 27/06/2017
+    # 17/07/2018, 24/07/2018, 
     # for WHATEVER REASON, 29th and the 30th in 8/2019 have extra columns
     db = client.get_database('Nicaragua')['Historic']
     na = NicaraguaAdapter()
-    start = datetime.date(2019, 1, 1)
+    start = datetime.date(year=2018, month=12, day=18)
     delta = datetime.timedelta(days=6)
-    for week in range(106):
+    for week in range(105):
         end = start + delta
         #dd/mm/yyyy
         id = start.strftime("%d/%m/%Y")
-        print("Current:")
+        print("Current week", week, ":")
         print("\t", id)
         data = na.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
         data['_id'] = id
@@ -231,18 +238,18 @@ def nic_adapter_demo():
 def cr_adapter_demo():
     db = client.get_database('Costa_Rica')['Historic']
     cr = CostaRicaAdapter()
-    start = datetime.date(2019, 1, 1)
+    start = datetime.date(year=2016, month=12, day=27)
     delta = datetime.timedelta(days=6)
     failed_weeks = []
-    for week in range(106):
+    for week in range(105):
         end = start + delta
         #dd/mm/yyyy
         for i in range(0, 5):
-            try:
+            try:    
                 id = start.strftime("%d/%m/%Y")
                 if i > 0 and id not in failed_weeks:
                     failed_weeks.append(id)
-                print("Current:")
+                print("Current week", week, ":")
                 print("\t", id)
                 data = cr.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
                 data['_id'] = id
@@ -259,11 +266,6 @@ def cr_adapter_demo():
     for entry in failed_weeks:
         print('\t', entry)
 
-def test():
-    db = client.get_database('El_Salvador')['Historic']
-    start = datetime.date(2019, 1, 1)
-    print(len(db.find_one({'_id': start.strftime(doc_format)})))
-
 def print_data(data):
     for k in data.keys():
         print(k)
@@ -272,3 +274,6 @@ def print_data(data):
 
 if __name__ == "__main__":
     main()
+    # start = datetime.datetime(2016, 12, 27)
+    # end = datetime.datetime(2017, 8, 1)
+    # print((end - start).days / 7)
