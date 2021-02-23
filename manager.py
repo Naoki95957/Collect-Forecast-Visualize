@@ -19,9 +19,9 @@ db_checking_frequency = 12
 
 # the basis to check the db
 doc_start_time = {
-    'year': 2019,
-    'month': 1, 
-    'day': 1
+    'year': 2016,
+    'month': 12, 
+    'day': 27
 }
 
 # doc string format for mongodb
