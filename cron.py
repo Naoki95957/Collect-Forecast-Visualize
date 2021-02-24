@@ -4,10 +4,8 @@ from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
 from adapters.adapter_tasks import AdapterThread, adapter_types
-from queue import Queue
 from threading import Thread
 from datetime import datetime
-import time
 
 class cron:
     '''
@@ -27,6 +25,8 @@ class cron:
         na = NicaraguaAdapter()
         cra = CostaRicaAdapter()
 
+        # TODO add in neccessary components for Forecasting
+
         esat = AdapterThread(esa, queue)
         mat = AdapterThread(ma, queue)
         nat = AdapterThread(na, queue)
@@ -38,6 +38,7 @@ class cron:
             adapter_types.Mexico: mat,
             adapter_types.Nicaragua: nat
         }
+
         self.adapter_threads.extend(
             [
                 esat,
@@ -95,6 +96,7 @@ class cron:
     def __health_loop(self):
         while self.cron_alive:
             self.check_adapters()
+            # TODO check forecasters
 
     def check_adapters(self):
         if not self.adapter_threads:
@@ -106,5 +108,6 @@ class cron:
     def __del__(self):
         self.cron_alive = False
         self.__cron_thread.join()
+        # TODO join forecaster threads
         for t in self.adapter_threads:
             t.join()

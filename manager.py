@@ -5,7 +5,6 @@ from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
 from adapters.adapter_tasks import adapter_types
 from cron import cron
-from queue import Queue
 from arrow import Arrow
 from threading import Thread
 import datetime
@@ -38,6 +37,12 @@ db_switcher = {
     adapter_types.Nicaragua: client.get_database('Nicaragua')['Historic'],
     adapter_types.Costa_Rica: client.get_database('Costa_Rica')['Historic'],
     adapter_types.Mexico: client.get_database('Mexico')['Historic']
+    # TODO add forecast types and db's to upload
+    # IE: forecaster_type.El_Salvador: ... ['Forecast'], ... etc 
+    # client.get_database('El_Salvador')['Forecast'],
+    # client.get_database('Nicaragua')['Forecast'],
+    # client.get_database('Costa_Rica')['Forecast'],
+    # client.get_database('Mexico')['Forecast']
 }
 
 tz_switcher = {
@@ -45,6 +50,11 @@ tz_switcher = {
     adapter_types.Nicaragua: pytz.timezone('America/Managua'),
     adapter_types.Costa_Rica: pytz.timezone('America/Costa_Rica'),
     adapter_types.Mexico: pytz.timezone('Mexico/General')
+    # TODO add forecast types
+    # pytz.timezone('America/El_Salvador'),
+    # pytz.timezone('America/Managua'),
+    # pytz.timezone('America/Costa_Rica'),
+    # pytz.timezone('Mexico/General')
 }
 
 def main():
@@ -121,7 +131,7 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
     '''
     i = 0
     updated_entries = 0
-    print("Checking", len(marked_entries), "for upload...")
+    print("Checking", len(marked_entries), "entries for upload...")
     for _id, entry in marked_entries:
         doc_id = marked_entries[i]['_id']
         db_filter = {'_id': doc_id}
@@ -274,6 +284,3 @@ def print_data(data):
 
 if __name__ == "__main__":
     main()
-    # start = datetime.datetime(2016, 12, 27)
-    # end = datetime.datetime(2017, 8, 1)
-    # print((end - start).days / 7)
