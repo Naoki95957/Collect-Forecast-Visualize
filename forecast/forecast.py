@@ -154,13 +154,16 @@ class Forecast:
 
     def predict(self, per=168):
         for meta in self.model:
+            print("------------------------------")
+            print("Predicting", meta)
+            print("------------------------------")
             future_dates = self.model[meta].make_future_dataframe(periods=per, freq='h')
             self.results[meta] = self.model[meta].predict(future_dates)
-            self.prediction = self.results[meta][['ds', 'yhat']]
-            self.prediction = self.prediction.iloc[-self.periods:]
-            self.prediction = self.prediction.set_index('ds')
+            self.prediction[meta] = self.results[meta][['ds', 'yhat']]
+            self.prediction[meta] = self.prediction[meta].iloc[-per:]
+            self.prediction[meta] = self.prediction[meta].set_index('ds')
 
-    def cross_validation(self):
+    def cross_validation(self):a
         pass
 
     def publish(self):
@@ -181,7 +184,7 @@ class Forecast:
         #     start = end + datetime.timedelta(days=1)
         pass
 
-    def plot(self, hist=False):eeeee
+    def plot(self, hist=False):
         '''
         Creates a simple plot, using matplotlib.pyplot, for each dataframe
         within given dataset. To quit you must exit out of each successive
@@ -203,9 +206,9 @@ class Forecast:
             for meta in self.prediction:
                 print(meta)
                 print('E')
-                print(self.prediction)
-                ax = self.prediction.plot()
-                print('P')
+                print(self.prediction[meta])
+                ax = self.prediction[meta].plot()
+                print('A')
                 print(self.test[meta])
                 self.test[meta].plot(ax=ax, title=meta, )
                 plt.show()
