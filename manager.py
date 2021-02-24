@@ -189,11 +189,11 @@ def es_adapter_demo():
     for week in range(105):
         end = start + delta
         #dd/mm/yyyy
-        id = start.strftime("%d/%m/%Y")
+        doc_id = start.strftime("%d/%m/%Y")
         print("Current week", week, ":")
-        print("\t", id)
+        print("\t", doc_id)
         data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-        data['_id'] = id
+        data['_id'] = doc_id
         db.insert_one(data)
         start = end + datetime.timedelta(days=1)
         
@@ -208,11 +208,11 @@ def mexico_adapter_demo():
     for week in range(105):
         end = start + delta
         #dd/mm/yyyy
-        id = start.strftime("%d/%m/%Y")
+        doc_id = start.strftime("%d/%m/%Y")
         print("Current week", week, ":")
-        print("\t", id)
+        print("\t", doc_id)
         data = ma.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-        data['_id'] = id
+        data['_id'] = doc_id
         print_data(data)
         db.insert_one(data)
         start = end + datetime.timedelta(days=1)
@@ -233,11 +233,11 @@ def nic_adapter_demo():
     for week in range(105):
         end = start + delta
         #dd/mm/yyyy
-        id = start.strftime("%d/%m/%Y")
+        doc_id = start.strftime("%d/%m/%Y")
         print("Current week", week, ":")
-        print("\t", id)
+        print("\t", doc_id)
         data = na.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-        data['_id'] = id
+        data['_id'] = doc_id
         print_data(data)
         db.insert_one(data)
         start = end + datetime.timedelta(days=1)
@@ -256,13 +256,13 @@ def cr_adapter_demo():
         #dd/mm/yyyy
         for i in range(0, 5):
             try:    
-                id = start.strftime("%d/%m/%Y")
-                if i > 0 and id not in failed_weeks:
-                    failed_weeks.append(id)
+                doc_id = start.strftime("%d/%m/%Y")
+                if i > 0 and doc_id not in failed_weeks:
+                    failed_weeks.append(doc_id)
                 print("Current week", week, ":")
-                print("\t", id)
+                print("\t", doc_id)
                 data = cr.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-                data['_id'] = id
+                data['_id'] = doc_id
                 print_data(data)
                 db.insert_one(data)
                 break
