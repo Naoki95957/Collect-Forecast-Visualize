@@ -52,12 +52,13 @@ class ElSalvadorAdapter(ScraperAdapter):
 
         if (will_scrape):
             data = self.scraper.scrape_data()
-            data_copy = copy.deepcopy(self.last_scrape_list)
-            self.last_scrape_list = data
+            # data_copy = copy.deepcopy(self.last_scrape_list)
+            # self.last_scrape_list = data
             data = self.__filter_data(data, start_time=self.last_scrape_date)
-            data_copy = self.__filter_data(data_copy)
+            # data_copy = self.__filter_data(data_copy)
             self.last_scrape_date = now
-            return {k: data[k] for k in set(data) - set(data_copy)}
+            # return {k: data[k] for k in set(data) - set(data_copy)}
+            return data
         else:
             return None
 
@@ -101,8 +102,8 @@ class ElSalvadorAdapter(ScraperAdapter):
                     dict_val['type'] = data[j]['meta'].replace(" (MWh)", "")
                     entries.append(dict_val)
             buffer[formatted_time] = entries
-        if start_time:
-            buffer = self.__filter_time(buffer, start_time)
+        # if start_time:
+        #     buffer = self.__filter_time(buffer, start_time)
         return buffer
 
     def __filter_time(self, data: dict, start_time: datetime) -> dict:
@@ -112,9 +113,11 @@ class ElSalvadorAdapter(ScraperAdapter):
         if not start_time:
             return data
         ordered = sorted(data.keys())
-        time_stamp = start_time.strftime("%H-%d/%m/%Y")
+        time_stamp = start_time
         for entry in ordered:
-            if entry < time_stamp:
+            entry_time = datetime.datetime.strptime(entry, "%H-%d/%m/%Y")
+            entry_time = entry_time.replace(tzinfo=pytz.timezone('America/El_Salvador'))
+            if entry_time < time_stamp:
                 data.pop(entry)
         return data
 

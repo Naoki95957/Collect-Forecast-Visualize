@@ -52,7 +52,7 @@ class MexicoAdapter(ScraperAdapter):
             data = self.scraper.scrape_month(now.month, now.year)
             data_copy = copy.deepcopy(self.last_scrape_list)
             self.last_scrape_list = data
-            data = self.__filter_data(data, start_time=self.last_scrape_date)
+            data = self.__filter_data(data, end_time=self.last_scrape_date)
             data_copy = self.__filter_data(data_copy)
             self.last_scrape_date = now
             return {k: data[k] for k in set(data) - set(data_copy)}
@@ -67,12 +67,30 @@ class MexicoAdapter(ScraperAdapter):
         '''
         Returns formated data for the specified range
         '''
-        return self.__filter_data(self.scraper.scrape_month_range(
-            start_month, start_year,
-            end_month, end_year
-        ))
+        end_time = datetime.datetime(
+            year=end_year, month=end_month,
+            day=end_day, tzinfo=pytz.timezone('Mexico/General'))
+        
+        start_time = datetime.datetime(
+            year=start_year, month=start_month,
+            day=start_day, tzinfo=pytz.timezone('Mexico/General'))
 
-    def __filter_data(self, data: list, start_time=None) -> dict:
+        data = []
+        if (end_month != start_month):
+            first_month = self.scraper.scrape_month(start_month, start_year)
+            second_month = self.scraper.scrape_month(end_month, end_year)
+            data.extend(first_month)
+            data.extend(second_month)
+        else:
+            data = self.scraper.scrape_month_range(
+                start_month, start_year,
+                end_month, end_year)
+        return self.__filter_data(
+            data, 
+            end_time=end_time,
+            start_time=start_time)
+
+    def __filter_data(self, data: list, end_time=None, start_time=None) -> dict:
         '''
         Removes BA and combines like emissions
 
@@ -82,8 +100,6 @@ class MexicoAdapter(ScraperAdapter):
 
         Time is str adjusted to match the format IN THAT TZ: 'HH-DD/MM/YYYY'
         '''
-        if not data:
-            return dict()
         buffer = dict()
         for i in range(0, len(data)):
             entries = list()
@@ -99,20 +115,23 @@ class MexicoAdapter(ScraperAdapter):
                     dict_val['type'] = data[j]['meta'].replace(" (MWh)", "")
                     entries.append(dict_val)
             buffer[formatted_time] = entries
-        if start_time:
-            buffer = self.__filter_time(buffer, start_time)
+        if end_time or start_time:
+            buffer = self.__filter_time(buffer, end_time, start_time)
         return buffer
 
-    def __filter_time(self, data: dict, start_time: datetime) -> dict:
+    def __filter_time(self, data: dict, end_time=None, start_time=None) -> dict:
         '''
         Filters out data before and at the start time
         '''
-        if not start_time:
+        if not end_time:
             return data
         ordered = sorted(data.keys())
-        time_stamp = start_time.strftime("%H-%d/%m/%Y")
         for entry in ordered:
-            if entry < time_stamp:
+            entry_time = datetime.datetime.strptime(entry, "%H-%d/%m/%Y")
+            entry_time = entry_time.replace(tzinfo=pytz.timezone('Mexico/General'))
+            if end_time and entry_time >= (end_time + datetime.timedelta(days=1)):
+                data.pop(entry)
+            if start_time and entry_time < start_time:
                 data.pop(entry)
         return data
 
