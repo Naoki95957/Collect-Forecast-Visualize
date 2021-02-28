@@ -4,3 +4,4 @@ datetime
 requests
 selenium
 pymongo
+pymongo[srv]
