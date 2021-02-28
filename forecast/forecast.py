@@ -33,6 +33,7 @@ from fbprophet import Prophet
             5. conda deactivate
                 -> deactivate env (don't forget this line before exiting)
 '''
+
 class Forecast:
     '''
     This class can generate predicted values of energy generation data for
@@ -59,11 +60,12 @@ class Forecast:
              'Nicaragua' : ['GEOTHERMAL','HYDRO','INTERCHANGE','SOLAR','THERMAL','WIND']}
     
     def __init__(self,
-                 db,
+                 db: str,
                  col='Historic',
                  fltr={},
                  start=datetime(2020,1,1,0),
                  stop=datetime(2020,12,31,23),
+                 frequency=60*60,
                  test=True):
         '''
         Initializes mongoDB cursor
@@ -85,6 +87,7 @@ class Forecast:
         self.cursor = self.col.find(fltr)
         self.start = start
         self.stop = stop
+        self.__frequency = frequency
         self.data = self.__get_data()
         self.train = self.data.loc[start:stop]
         if test:
@@ -184,6 +187,24 @@ class Forecast:
         #     start = end + datetime.timedelta(days=1)
         pass
 
+    def get_exported_data(self):
+        """
+        Generates a dictionary of values in the DB form for upload
+
+        Does not need to check for entries, only needs to hand off data
+        """
+        # TODO convert DF to dict[dict]
+        pass
+
+    def frequency(self) -> int:
+        """
+        Gets the frequency at which this class should make predictions
+
+        Returns:
+            int: time in seconds to sleep before next iteration
+        """
+        return self.__frequency
+    
     def plot(self, hist=False):
         '''
         Creates a simple plot, using matplotlib.pyplot, for each dataframe
@@ -222,7 +243,6 @@ class Forecast:
                 return True
             elif year % 100 == 0 and year % 400 == 0:
                 return True
-
 
 def main():
     print('Grabbing El_Salvador')
