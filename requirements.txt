@@ -5,3 +5,4 @@ requests
 selenium
 pymongo
 pymongo[srv]
+matplotlib

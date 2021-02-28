@@ -1,0 +1,6 @@
+You will need to install pandas and fbprophet
+pandas is usually just `pip intall pandas` but
+can vary depending on OS
+
+To install fbprophet, the easiest way is w/ conda:
+`conda install -c conda-forge fbprophet`
