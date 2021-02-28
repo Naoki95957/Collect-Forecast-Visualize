@@ -163,7 +163,7 @@ class Forecast:
             self.prediction[meta] = self.prediction[meta].iloc[-per:]
             self.prediction[meta] = self.prediction[meta].set_index('ds')
 
-    def cross_validation(self):a
+    def cross_validation(self):
         pass
 
     def publish(self):
