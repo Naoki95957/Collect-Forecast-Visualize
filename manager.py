@@ -3,7 +3,7 @@ from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.mexico_adapter import MexicoAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
-from adapters.adapter_tasks import adapter_types
+from adapters.adapter_tasks import AdapterTypes
 from cron import cron
 from arrow import Arrow
 from threading import Thread
@@ -33,10 +33,10 @@ client = pymongo.MongoClient(
     "WattTime?retryWrites=true&w=majority")
 
 db_switcher = {
-    adapter_types.El_Salvador: client.get_database('El_Salvador')['Historic'],
-    adapter_types.Nicaragua: client.get_database('Nicaragua')['Historic'],
-    adapter_types.Costa_Rica: client.get_database('Costa_Rica')['Historic'],
-    adapter_types.Mexico: client.get_database('Mexico')['Historic']
+    AdapterTypes.El_Salvador: client.get_database('El_Salvador')['Historic'],
+    AdapterTypes.Nicaragua: client.get_database('Nicaragua')['Historic'],
+    AdapterTypes.Costa_Rica: client.get_database('Costa_Rica')['Historic'],
+    AdapterTypes.Mexico: client.get_database('Mexico')['Historic']
     # TODO add forecast types and db's to upload
     # IE: forecaster_type.El_Salvador: ... ['Forecast'], ... etc 
     # client.get_database('El_Salvador')['Forecast'],
@@ -46,10 +46,10 @@ db_switcher = {
 }
 
 tz_switcher = {
-    adapter_types.El_Salvador: pytz.timezone('America/El_Salvador'),
-    adapter_types.Nicaragua: pytz.timezone('America/Managua'),
-    adapter_types.Costa_Rica: pytz.timezone('America/Costa_Rica'),
-    adapter_types.Mexico: pytz.timezone('Mexico/General')
+    AdapterTypes.El_Salvador: pytz.timezone('America/El_Salvador'),
+    AdapterTypes.Nicaragua: pytz.timezone('America/Managua'),
+    AdapterTypes.Costa_Rica: pytz.timezone('America/Costa_Rica'),
+    AdapterTypes.Mexico: pytz.timezone('Mexico/General')
     # TODO add forecast types
     # pytz.timezone('America/El_Salvador'),
     # pytz.timezone('America/Managua'),
@@ -75,7 +75,7 @@ def main():
         # for WHATEVER REASON, 29th and the 30th in 8/2019 have extra columns
         # this means Nic will continue to fail this week/days until we fix it
         print("checking DB...")
-        for adapter in adapter_types:
+        for adapter in AdapterTypes:
             db = db_switcher[adapter]
             now = datetime.datetime.now() - datetime.timedelta(days=1)
             start = datetime.datetime(2019, 1, 1)

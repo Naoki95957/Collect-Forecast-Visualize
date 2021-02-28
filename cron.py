@@ -3,7 +3,7 @@ from adapters.mexico_adapter import MexicoAdapter
 from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
-from adapters.adapter_tasks import AdapterThread, adapter_types
+from adapters.adapter_tasks import AdapterThread, AdapterTypes
 from threading import Thread
 from datetime import datetime
 
@@ -33,10 +33,10 @@ class cron:
         crat = AdapterThread(cra, queue)
 
         self.__switcher = {
-            adapter_types.El_Salvador: esat,
-            adapter_types.Costa_Rica: crat,
-            adapter_types.Mexico: mat,
-            adapter_types.Nicaragua: nat
+            AdapterTypes.El_Salvador: esat,
+            AdapterTypes.Costa_Rica: crat,
+            AdapterTypes.Mexico: mat,
+            AdapterTypes.Nicaragua: nat
         }
 
         self.adapter_threads.extend(
@@ -54,7 +54,7 @@ class cron:
 
     def set_last_scrape_date(
             self, 
-            adapter_type: adapter_types,
+            adapter_type: AdapterTypes,
             date: datetime):
         '''
         Set the last scraped date for the adapters
@@ -62,7 +62,7 @@ class cron:
         thread = self.__switcher[adapter_type]
         ScraperAdapter(thread.adapter).set_last_scraped_date(date)
 
-    def scrape_todays_data_now(self, adapter_type: adapter_types):
+    def scrape_todays_data_now(self, adapter_type: AdapterTypes):
         '''
         This will let the adpter know that we want to attempt
         to scrape the landing page infomation right now
@@ -71,7 +71,7 @@ class cron:
 
     def request_historical(
             self, 
-            adapter_type: adapter_types,
+            adapter_type: AdapterTypes,
             start_date: datetime,
             end_date: datetime):
         '''

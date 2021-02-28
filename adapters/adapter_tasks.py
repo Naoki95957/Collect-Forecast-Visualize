@@ -9,7 +9,7 @@ from enum import Enum
 import time
 import threading
 
-class adapter_types(Enum):
+class AdapterTypes(Enum):
     '''
     Used to identify what type of adapter
     '''
@@ -30,10 +30,10 @@ class AdapterThread(threading.Thread):
     __bypass = False
     __adapter_type = None
     __new_adapter_switcher = {
-        adapter_types.Costa_Rica: CostaRicaAdapter,
-        adapter_types.El_Salvador: ElSalvadorAdapter,
-        adapter_types.Mexico: MexicoAdapter,
-        adapter_types.Nicaragua: NicaraguaAdapter
+        AdapterTypes.Costa_Rica: CostaRicaAdapter,
+        AdapterTypes.El_Salvador: ElSalvadorAdapter,
+        AdapterTypes.Mexico: MexicoAdapter,
+        AdapterTypes.Nicaragua: NicaraguaAdapter
     }
 
     # in seconds
@@ -48,13 +48,13 @@ class AdapterThread(threading.Thread):
         self.adapter = adapter
         self.upload_queue = upload_data
         if isinstance(adapter, MexicoAdapter):
-            self.__adapter_type = adapter_types.Mexico
+            self.__adapter_type = AdapterTypes.Mexico
         elif isinstance(adapter, NicaraguaAdapter):
-            self.__adapter_type = adapter_types.Nicaragua
+            self.__adapter_type = AdapterTypes.Nicaragua
         elif isinstance(adapter, ElSalvadorAdapter):
-            self.__adapter_type = adapter_types.El_Salvador
+            self.__adapter_type = AdapterTypes.El_Salvador
         elif isinstance(adapter, CostaRicaAdapter):
-            self.__adapter_type = adapter_types.Costa_Rica
+            self.__adapter_type = AdapterTypes.Costa_Rica
     
     def __scrape_intermittent(self, startdate, enddate):
         try:
