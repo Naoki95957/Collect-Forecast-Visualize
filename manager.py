@@ -2,8 +2,8 @@ from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.mexico_adapter import MexicoAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
-from adapters.scraper_adapter import ScraperAdapter
 from adapters.adapter_tasks import AdapterTypes
+from forecast.forecast_tasks import ForecasterTypes
 from cron import cron
 from arrow import Arrow
 from threading import Thread
@@ -36,25 +36,22 @@ db_switcher = {
     AdapterTypes.El_Salvador: client.get_database('El_Salvador')['Historic'],
     AdapterTypes.Nicaragua: client.get_database('Nicaragua')['Historic'],
     AdapterTypes.Costa_Rica: client.get_database('Costa_Rica')['Historic'],
-    AdapterTypes.Mexico: client.get_database('Mexico')['Historic']
-    # TODO add forecast types and db's to upload
-    # IE: forecaster_type.El_Salvador: ... ['Forecast'], ... etc 
-    # client.get_database('El_Salvador')['Forecast'],
-    # client.get_database('Nicaragua')['Forecast'],
-    # client.get_database('Costa_Rica')['Forecast'],
-    # client.get_database('Mexico')['Forecast']
+    AdapterTypes.Mexico: client.get_database('Mexico')['Historic'],
+    ForecasterTypes.El_Salvador : client.get_database('El_Salvador')['Forecast'],
+    ForecasterTypes.Nicaragua : client.get_database('Nicaragua')['Forecast'],
+    ForecasterTypes.Costa_Rica : client.get_database('Costa_Rica')['Forecast'],
+    ForecasterTypes.Mexico : client.get_database('Mexico')['Forecast']
 }
 
 tz_switcher = {
     AdapterTypes.El_Salvador: pytz.timezone('America/El_Salvador'),
     AdapterTypes.Nicaragua: pytz.timezone('America/Managua'),
     AdapterTypes.Costa_Rica: pytz.timezone('America/Costa_Rica'),
-    AdapterTypes.Mexico: pytz.timezone('Mexico/General')
-    # TODO add forecast types
-    # pytz.timezone('America/El_Salvador'),
-    # pytz.timezone('America/Managua'),
-    # pytz.timezone('America/Costa_Rica'),
-    # pytz.timezone('Mexico/General')
+    AdapterTypes.Mexico: pytz.timezone('Mexico/General'),
+    ForecasterTypes.El_Salvador : pytz.timezone('America/El_Salvador'),
+    ForecasterTypes.Nicaragua : pytz.timezone('America/Managua'),
+    ForecasterTypes.Costa_Rica : pytz.timezone('America/Costa_Rica'),
+    ForecasterTypes.Mexico : pytz.timezone('Mexico/General')
 }
 
 def main():
@@ -115,7 +112,8 @@ def uploader(cron_obj: cron, upload_queue: list):
                 for entry in entries.keys()
             ]
             print("uploading data for", data[0])
-            upload_sorter(collection, marked_entries)
+            # Forcasted data will constantly be updated, therefore needs to be overwritten
+            upload_sorter(collection, marked_entries, overwrite=isinstance(data[0], ForecasterTypes))
         time.sleep(1)
     print("cron died! Death on:", datetime.datetime.now())
 

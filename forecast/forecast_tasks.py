@@ -1,10 +1,15 @@
+from numpy.lib.arraysetops import isin
 from forecast.forecast import Forecast
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 from enum import Enum
+import warnings
 import time
 import threading
 
-class ForcasterTypes(Enum):
+LOCAL_TZ = "America/Los_Angeles"
+
+class ForecasterTypes(Enum):
     '''
     Used to identify what type of forecaster
     '''
@@ -12,6 +17,49 @@ class ForcasterTypes(Enum):
     Costa_Rica=2,
     Nicaragua=3,
     Mexico=4
+
+class ForecastFactory:
+
+    def get_datetimes(self, offset=timedelta(0), as_tz=None) -> tuple:
+        """
+        Simple helper function to get start/end datetime objects
+
+        Args:
+           offset (timedelta): timedelta value to dial back the time a bit
+        Returns:
+            tuple: (start, end)
+        """
+        start = datetime.now(tz=pytz.timezone(LOCAL_TZ))
+        end = start + timedelta(days=7)
+        start = start - offset
+        end = end - offset
+        if as_tz:
+            start = start.astimezone(pytz.timezone(as_tz))
+            end = end.astimezone(pytz.timezone(as_tz))
+        return (start, end)
+
+    def el_salvador_forecaster(self) -> Forecast:
+        # TODO dial back start/end a few more days/hours, where ever start actually needs to begin
+        # for example, if data lags one day:
+        # start, end = self.get_datetimes(offset=timedelta(days=1))
+        start, end = self.get_datetimes(as_tz='America/El_Salvador')
+        return Forecast("El_Salvador", start=start, end=end)
+
+    def costa_rica_forecaster(self) -> Forecast:
+        # TODO dial back start/end a few more days/hours
+        start, end = self.get_datetimes(as_tz='America/Costa_Rica')
+        return Forecast("Costa_Rica", start=start, end=end)
+
+    def nicaragua_forecaster(self) -> Forecast:
+        # TODO dial back start/end a few more days/hours
+        start, end = self.get_datetimes(as_tz='America/Managua')
+        return Forecast("Nicaragua", start=start, end=end)
+
+    def mexico_forecaster(self) -> Forecast:
+        """
+        NOT IMPLEMENTED
+        """
+        pass
 
 class ForecasterThread(threading.Thread):
     '''
@@ -39,10 +87,10 @@ class ForecasterThread(threading.Thread):
         self.forecaster = forecaster
         self.upload_queue = upload_data
         self.__new_forecaster_switcher = {
-            ForcasterTypes.Costa_Rica: self.__costa_rica_forecaster,
-            ForcasterTypes.El_Salvador: self.__el_salvador_forecaster,
-            ForcasterTypes.Mexico: self.__mexico_forecaster,
-            ForcasterTypes.Nicaragua: self.__nicaragua_forecaster
+            ForcasterTypes.Costa_Rica: ForecastFactory.costa_rica_forecaster,
+            ForcasterTypes.El_Salvador: ForecastFactory.el_salvador_forecaster,
+            ForcasterTypes.Mexico: ForecastFactory.mexico_forecaster,
+            ForcasterTypes.Nicaragua: ForecastFactory.nicaragua_forecaster
         }
         if forecaster.db == 'Mexico':
             self.__forecaster_type = ForcasterTypes.Mexico
@@ -135,23 +183,6 @@ class ForecasterThread(threading.Thread):
     def join(self, timeout=30):
         self.__kill = True
         super().join(timeout)
-
-    def __el_salvador_forecaster(self) -> Forecast:
-        # TODO generate new forcast object in the event of a crash
-        # params with time, freq, etc
-        return Forecast("El_Salvador")
-
-    def __costa_rica_forecaster(self) -> Forecast:
-        # TODO generate new forcast object
-        pass
-
-    def __nicaragua_forecaster(self) -> Forecast:
-        # TODO generate new forcast object
-        pass
-
-    def __mexico_forecaster(self) -> Forecast:
-        # TODO generate new forcast object
-        pass
 
     def __del__(self):
         self.join()

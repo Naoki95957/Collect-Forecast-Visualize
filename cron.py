@@ -1,9 +1,11 @@
+from scrapers.nicaragua import Nicaragua
 from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.mexico_adapter import MexicoAdapter
 from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.scraper_adapter import ScraperAdapter
 from adapters.adapter_tasks import AdapterThread, AdapterTypes
+from forecast.forecast_tasks import ForecasterTypes, ForecasterThread, ForecastFactory
 from threading import Thread
 from datetime import datetime
 
@@ -11,7 +13,7 @@ class cron:
     '''
     Sort of a scheduler. This is meant to handle all things threads and adapters
     '''
-    adapter_threads = list()
+    created_threads = list()
     manager_queue = None
     cron_alive = True
     __cron_thread = None
@@ -24,33 +26,47 @@ class cron:
         ma = MexicoAdapter()
         na = NicaraguaAdapter()
         cra = CostaRicaAdapter()
-
-        # TODO add in neccessary components for Forecasting
+        # esf = ForecastFactory.el_salvador_forecaster()
+        # nf = ForecastFactory.nicaragua_forecaster()
+        # crf = ForecastFactory.costa_rica_forecaster()
+        # mf = ForecastFactory.mexico_forecaster()
 
         esat = AdapterThread(esa, queue)
         mat = AdapterThread(ma, queue)
         nat = AdapterThread(na, queue)
         crat = AdapterThread(cra, queue)
+        # esft = ForecasterThread(esf, queue)
+        # crft = ForecasterThread(crf, queue)
+        # nft = ForecasterThread(nf, queue)
+        # mft = ForecasterThread(mf, queue)
 
         self.__switcher = {
             AdapterTypes.El_Salvador: esat,
             AdapterTypes.Costa_Rica: crat,
             AdapterTypes.Mexico: mat,
-            AdapterTypes.Nicaragua: nat
+            AdapterTypes.Nicaragua: nat,
+            # ForecasterTypes.El_Salvador: esft,
+            # ForecasterTypes.Nicaragua: nft,
+            # ForecasterTypes.Costa_Rica: crft
+            # ForecasterTypes.Mexico: mft
         }
 
-        self.adapter_threads.extend(
+        self.created_threads.extend(
             [
                 esat,
                 crat,
                 mat,
-                nat
+                nat,
+                # esft,
+                # crft,
+                # nft
+                # mft
             ]
         )
         self.__set_up_health_check()
 
     def get_adapter_threads(self) -> list:
-        return self.adapter_threads
+        return self.created_threads
 
     def set_last_scrape_date(
             self, 
@@ -88,26 +104,33 @@ class cron:
         New thread w/ loop to constantly check health of adapters
         '''
         self.cron_alive = True
-        for t in self.adapter_threads:
-            t.start()
+        for t in self.created_threads:
+            if isinstance(t, AdapterThread):
+                t.start()
+            elif isinstance(t, ForecasterThread):
+                t.start()
         self.__cron_thread = Thread(target=self.__health_loop)
         self.__cron_thread.start()
 
     def __health_loop(self):
         while self.cron_alive:
-            self.check_adapters()
-            # TODO check forecasters
+            self.check_threads()
 
-    def check_adapters(self):
-        if not self.adapter_threads:
+    def check_threads(self):
+        if not self.created_threads:
             return
-        for t in self.adapter_threads:
-            if t.bad_adapter:
+        for t in self.created_threads:
+            if isinstance(t, AdapterThread) and t.bad_adapter:
                 t.reset_adapter()
+            elif isinstance(t, ForecasterThread) and t.bad_forecaster:
+                t.reset_forecaster()
 
     def __del__(self):
         self.cron_alive = False
         self.__cron_thread.join()
         # TODO join forecaster threads
-        for t in self.adapter_threads:
-            t.join()
+        for t in self.created_threads:
+            if isinstance(t, AdapterThread):
+                t.join()
+            elif isinstance(t, ForecasterThread):
+                t.join()
