@@ -4,6 +4,7 @@ import copy
 import pytz
 import datetime
 
+LOCAL_TZ = "America/Los_Angeles"
 
 class MexicoAdapter(ScraperAdapter):
 
@@ -36,7 +37,7 @@ class MexicoAdapter(ScraperAdapter):
         '''
         will_scrape = False
         delta = None
-        now = datetime.datetime.now(tz=pytz.timezone("America/Los_Angeles"))
+        now = datetime.datetime.now(tz=pytz.timezone(LOCAL_TZ))
         now = now.astimezone(pytz.timezone('Mexico/General'))
         if (not self.last_scrape_date):
             will_scrape = True

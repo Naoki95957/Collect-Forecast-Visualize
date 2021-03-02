@@ -4,6 +4,7 @@ import copy
 import pytz
 import datetime
 
+LOCAL_TZ = "LOCAL_TZ"
 
 class ElSalvadorAdapter(ScraperAdapter):
 
@@ -38,7 +39,7 @@ class ElSalvadorAdapter(ScraperAdapter):
         '''
         will_scrape = False
         delta = None
-        now = datetime.datetime.now(tz=pytz.timezone("America/Los_Angeles"))
+        now = datetime.datetime.now(tz=pytz.timezone(LOCAL_TZ))
         now = now.astimezone(pytz.timezone('America/El_Salvador'))
         if (not self.last_scrape_date):
             will_scrape = True
