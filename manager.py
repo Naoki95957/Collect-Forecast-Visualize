@@ -112,7 +112,7 @@ def uploader(cron_obj: cron, upload_queue: list):
                 for entry in entries.keys()
             ]
             print("uploading data for", data[0])
-            # Forcasted data will constantly be updated, therefore needs to be overwritten
+            # Forecasted data will constantly be updated, therefore needs to be overwritten
             upload_sorter(collection, marked_entries, overwrite=isinstance(data[0], ForecasterTypes))
         time.sleep(1)
     print("cron died! Death on:", datetime.datetime.now())

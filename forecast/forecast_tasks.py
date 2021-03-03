@@ -87,19 +87,19 @@ class ForecasterThread(threading.Thread):
         self.forecaster = forecaster
         self.upload_queue = upload_data
         self.__new_forecaster_switcher = {
-            ForcasterTypes.Costa_Rica: ForecastFactory.costa_rica_forecaster,
-            ForcasterTypes.El_Salvador: ForecastFactory.el_salvador_forecaster,
-            ForcasterTypes.Mexico: ForecastFactory.mexico_forecaster,
-            ForcasterTypes.Nicaragua: ForecastFactory.nicaragua_forecaster
+            ForecasterTypes.Costa_Rica: ForecastFactory.costa_rica_forecaster,
+            ForecasterTypes.El_Salvador: ForecastFactory.el_salvador_forecaster,
+            ForecasterTypes.Mexico: ForecastFactory.mexico_forecaster,
+            ForecasterTypes.Nicaragua: ForecastFactory.nicaragua_forecaster
         }
         if forecaster.db == 'Mexico':
-            self.__forecaster_type = ForcasterTypes.Mexico
+            self.__forecaster_type = ForecasterTypes.Mexico
         elif forecaster.db == 'Nicaragua':
-            self.__forecaster_type = ForcasterTypes.Nicaragua
+            self.__forecaster_type = ForecasterTypes.Nicaragua
         elif forecaster.db == 'El_Salvador':
-            self.__forecaster_type = ForcasterTypes.El_Salvador
+            self.__forecaster_type = ForecasterTypes.El_Salvador
         elif forecaster.db == 'Costa_Rica':
-            self.__forecaster_type = ForcasterTypes.Costa_Rica
+            self.__forecaster_type = ForecasterTypes.Costa_Rica
         
     def get_forecaster_failure(self) -> bool:
         '''
