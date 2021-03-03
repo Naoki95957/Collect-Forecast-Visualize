@@ -47,7 +47,7 @@ class cron:
             AdapterTypes.Nicaragua: nat,
             # ForecasterTypes.El_Salvador: esft,
             # ForecasterTypes.Nicaragua: nft,
-            # ForecasterTypes.Costa_Rica: crft
+            # ForecasterTypes.Costa_Rica: crft,
             # ForecasterTypes.Mexico: mft
         }
 
@@ -59,7 +59,7 @@ class cron:
                 nat,
                 # esft,
                 # crft,
-                # nft
+                # nft,
                 # mft
             ]
         )
