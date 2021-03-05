@@ -7,11 +7,15 @@ from forecast.forecast_tasks import ForecasterTypes
 from cron import cron
 from arrow import Arrow
 from threading import Thread
+from dotenv import load_dotenv
+import os
 import datetime
 import pytz
 import arrow
 import pymongo
 import time
+
+load_dotenv()
 
 # hours between checking the DB
 db_checking_frequency = 12
@@ -27,10 +31,7 @@ doc_start_time = {
 doc_format = "%d/%m/%Y"
 
 # client
-client = pymongo.MongoClient(
-    "mongodb+srv://BCWATT:WattTime2021" +
-    "@cluster0.tbh2o.mongodb.net/" +
-    "WattTime?retryWrites=true&w=majority")
+client = pymongo.MongoClient(os.getenv("MONGO_SRV"))
 
 db_switcher = {
     AdapterTypes.El_Salvador: client.get_database('El_Salvador')['Historic'],

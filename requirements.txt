@@ -6,3 +6,4 @@ selenium
 pymongo
 pymongo[srv]
 matplotlib
+python-dotenv
