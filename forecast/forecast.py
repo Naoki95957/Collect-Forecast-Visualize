@@ -163,25 +163,7 @@ class Forecast:
             self.prediction[meta] = self.prediction[meta].iloc[-per:]
             self.prediction[meta] = self.prediction[meta].set_index('ds')
 
-    def cross_validation(self):a
-        pass
-
-    def publish(self):
-        # for meta in self.prediction:
-        #     forecast = self.prediction[meta][['ds', 'yhat']].iloc[self.periods:]
-
-        # start = datetime.date(2020, 1, 1)
-        # delta = timedelta(days=6)
-        # # 1/1/2019 to 1/7/2019
-        # # 1/8/2019 to 1/14/2019
-        # # 1/15/2019 ...
-        # for week in range(2):
-        #     end = start + delta
-        #     data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-        #     id = start.strftime("%d/%m/%Y")
-        #     data['_id'] = id
-        #     db.insert_one(data)
-        #     start = end + datetime.timedelta(days=1)
+    def cross_validation(self):
         pass
 
     def plot(self, hist=False):
@@ -225,8 +207,8 @@ class Forecast:
 
 
 def main():
-    print('Grabbing El_Salvador')
-    model = Forecast('El_Salvador')
+    print('Grabbing Nicaragua')
+    model = Forecast('Nicaragua')
     model.fit()
     model.predict()
     model.plot()

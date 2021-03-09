@@ -4,3 +4,5 @@ datetime
 requests
 selenium
 pymongo
+scikit-learn
+statsmodels
