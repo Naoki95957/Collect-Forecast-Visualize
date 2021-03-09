@@ -53,8 +53,8 @@ Students will be working within a framework provided by WattTime which already i
   - pandas
   - pymongo
   
-  You can install all required python modules with `pip install -r requirments.txt`
-  (You'll need to manually install pandas due to different instructions per OS)
+  You can install most required python modules with `pip install -r requirments.txt`
+  (You'll need to manually install pandas and fbprophet due to some bugs or OS limitations. Some instructions are found in `other_requirements.txt`)
   
 ## APIs:
  - [Watttime.org](https://www.watttime.org/api-documentation/#introduction)

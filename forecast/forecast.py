@@ -1,10 +1,14 @@
 import numpy as np
+import copy
+from numpy.core.numeric import full
 import pandas as pd
+from pandas.core.frame import DataFrame
 import pymongo
 import matplotlib.pyplot as plt
 from datetime import datetime
 from datetime import timedelta
 from fbprophet import Prophet
+from pymongo.common import TIMEOUT_OPTIONS
 
 '''
     Notes
@@ -33,6 +37,7 @@ from fbprophet import Prophet
             5. conda deactivate
                 -> deactivate env (don't forget this line before exiting)
 '''
+
 class Forecast:
     '''
     This class can generate predicted values of energy generation data for
@@ -59,12 +64,13 @@ class Forecast:
              'Nicaragua' : ['GEOTHERMAL','HYDRO','INTERCHANGE','SOLAR','THERMAL','WIND']}
     
     def __init__(self,
-                 db,
+                 db: str,
                  col='Historic',
                  fltr={},
                  start=datetime(2020,1,1,0),
                  stop=datetime(2020,12,31,23),
-                 test=True):
+                 frequency=60*60,
+                 test=False):
         '''
         Initializes mongoDB cursor
 
@@ -85,6 +91,7 @@ class Forecast:
         self.cursor = self.col.find(fltr)
         self.start = start
         self.stop = stop
+        self.__frequency = frequency
         self.data = self.__get_data()
         self.train = self.data.loc[start:stop]
         if test:
@@ -166,6 +173,83 @@ class Forecast:
     def cross_validation(self):
         pass
 
+    def publish(self):
+        # for meta in self.prediction:
+        #     forecast = self.prediction[meta][['ds', 'yhat']].iloc[self.periods:]
+
+        # start = datetime.date(2020, 1, 1)
+        # delta = timedelta(days=6)
+        # # 1/1/2019 to 1/7/2019
+        # # 1/8/2019 to 1/14/2019
+        # # 1/15/2019 ...
+        # for week in range(2):
+        #     end = start + delta
+        #     data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
+        #     id = start.strftime("%d/%m/%Y")
+        #     data['_id'] = id
+        #     db.insert_one(data)
+        #     start = end + datetime.timedelta(days=1)
+        pass
+
+    def get_exported_data(self) -> list:
+        """
+        Generates a dictionary of values in the DB form for upload
+
+        Does not need to check for entries, only needs to hand off data
+
+        Yes this looks gnarly and that's because list compresion is faster in df
+        than iteration of rows
+
+        Returns:
+            list: in DB format
+        """
+        if isinstance(self.data, DataFrame):
+            meta_types = self.metas[self.db]
+            full_frame = copy.deepcopy(meta_types)
+            full_frame = full_frame.extend(['ds'])
+            return [
+                self.__format_helper(
+                    row['ds'],
+                    [
+                        (meta, row[meta])
+                        for meta in meta_types
+                    ]
+                )
+                for row in self.data[[full_frame]]
+            ]
+        else:
+            raise LookupError("Prediction DF has not been made yet")
+
+    def __format_helper(self, hour: datetime, values: list) -> dict:
+        """
+        Simple function that helps format data since it's a little complicated to make out of a lambda
+
+        This does the bulk of the formatting work and does so for one entry
+
+        Args:
+            hour (datetime): the DS value
+            values (list): the rest of the columns values in tuple form (type, value)
+
+        Returns:
+            dict: Single entry in the DB format
+        """ 
+        return {
+            hour.strftime("%H-%d/%m/%Y"):[
+                {'value': val[1], 'type': val[0]}
+                for val in values
+            ]
+        }
+
+
+    def frequency(self) -> int:
+        """
+        Gets the frequency at which this class should make predictions
+
+        Returns:
+            int: time in seconds to sleep before next iteration
+        """
+        return self.__frequency
+    
     def plot(self, hist=False):
         '''
         Creates a simple plot, using matplotlib.pyplot, for each dataframe
@@ -205,10 +289,9 @@ class Forecast:
             elif year % 100 == 0 and year % 400 == 0:
                 return True
 
-
 def main():
-    print('Grabbing Nicaragua')
-    model = Forecast('Nicaragua')
+    print('Grabbing El_Salvador')
+    model = Forecast('El_Salvador', test=True)
     model.fit()
     model.predict()
     model.plot()
