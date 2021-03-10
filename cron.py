@@ -15,51 +15,52 @@ class cron:
     '''
     created_threads = list()
     manager_queue = None
+    main_job_queue = None
     cron_alive = True
     __cron_thread = None
     __switcher = dict()
 
-    def __init__(self, queue: list):
+    def __init__(self, queue: list, main_job_queue: list):
         self.manager_queue = queue
-
-        esa = ElSalvadorAdapter()
-        ma = MexicoAdapter()
-        na = NicaraguaAdapter()
-        cra = CostaRicaAdapter()
-        # esf = ForecastFactory.el_salvador_forecaster()
-        # nf = ForecastFactory.nicaragua_forecaster()
-        # crf = ForecastFactory.costa_rica_forecaster()
+        self.main_job_queue = main_job_queue
+        # esa = ElSalvadorAdapter()
+        # ma = MexicoAdapter()
+        # na = NicaraguaAdapter()
+        # cra = CostaRicaAdapter()
+        esf = ForecastFactory.el_salvador_forecaster()
+        nf = ForecastFactory.nicaragua_forecaster()
+        crf = ForecastFactory.costa_rica_forecaster()
         # mf = ForecastFactory.mexico_forecaster()
 
-        esat = AdapterThread(esa, queue)
-        mat = AdapterThread(ma, queue)
-        nat = AdapterThread(na, queue)
-        crat = AdapterThread(cra, queue)
-        # esft = ForecasterThread(esf, queue)
-        # crft = ForecasterThread(crf, queue)
-        # nft = ForecasterThread(nf, queue)
+        # esat = AdapterThread(esa, queue)
+        # mat = AdapterThread(ma, queue)
+        # nat = AdapterThread(na, queue)
+        # crat = AdapterThread(cra, queue)
+        esft = ForecasterThread(esf, queue)
+        crft = ForecasterThread(crf, queue)
+        nft = ForecasterThread(nf, queue)
         # mft = ForecasterThread(mf, queue)
 
         self.__switcher = {
-            AdapterTypes.El_Salvador: esat,
-            AdapterTypes.Costa_Rica: crat,
-            AdapterTypes.Mexico: mat,
-            AdapterTypes.Nicaragua: nat,
-            # ForecasterTypes.El_Salvador: esft,
-            # ForecasterTypes.Nicaragua: nft,
-            # ForecasterTypes.Costa_Rica: crft,
+            # AdapterTypes.El_Salvador: esat,
+            # AdapterTypes.Costa_Rica: crat,
+            # AdapterTypes.Mexico: mat,
+            # AdapterTypes.Nicaragua: nat,
+            ForecasterTypes.El_Salvador: esft,
+            ForecasterTypes.Nicaragua: nft,
+            ForecasterTypes.Costa_Rica: crft,
             # ForecasterTypes.Mexico: mft
         }
 
         self.created_threads.extend(
             [
-                esat,
-                crat,
-                mat,
-                nat,
-                # esft,
-                # crft,
-                # nft,
+                # esat,
+                # crat,
+                # mat,
+                # nat,
+                esft,
+                crft,
+                nft,
                 # mft
             ]
         )

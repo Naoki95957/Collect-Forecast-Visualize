@@ -1,9 +1,10 @@
+from operator import truediv
 from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.mexico_adapter import MexicoAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.adapter_tasks import AdapterTypes
-from forecast.forecast_tasks import ForecasterTypes
+from forecast.forecast_tasks import ForecasterThread, ForecasterTypes
 from cron import cron
 from arrow import Arrow
 from threading import Thread
@@ -14,6 +15,7 @@ import pytz
 import arrow
 import pymongo
 import time
+import subprocess
 
 load_dotenv()
 
@@ -55,15 +57,24 @@ tz_switcher = {
     ForecasterTypes.Mexico : pytz.timezone('Mexico/General')
 }
 
+main_jobs = []
+
 def main():
     # set up queue and cron jobs
     upload_queue = list()
-    jobs = cron(upload_queue)
+    jobs = cron(upload_queue, main_jobs)
     # Start uploader job
     Thread(target=uploader, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
+    # Thread(target=check_db, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
 
-    # check db until we crash
+    # some jobs don't work unless on main thread???
     while True:
+        if main_jobs:
+            main_jobs.pop(0)()
+        time.sleep(1)
+
+def check_db(cron_obj: cron, upload_queue: list):
+     while True:
         # look for missing entries and add them to queue
         # PROBLEM: Nicaragua still has broken data on
         # TODO manually sort out the week 27/8/2019
@@ -87,7 +98,7 @@ def main():
                     # This will get pushed into the queue
                     print("Requesting data from ", adapter, ":")
                     print("\tfor week:", start.strftime(doc_format))
-                    jobs.request_historical(adapter, start, end)
+                    cron_obj.request_historical(adapter, start, end)
                 # iterate
                 start = end + datetime.timedelta(days=1)
         print("Done checking db. Sleeping now...")
