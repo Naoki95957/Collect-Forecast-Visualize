@@ -23,29 +23,29 @@ class cron:
     def __init__(self, queue: list, main_job_queue: list):
         self.manager_queue = queue
         self.main_job_queue = main_job_queue
-        # esa = ElSalvadorAdapter()
-        # ma = MexicoAdapter()
-        # na = NicaraguaAdapter()
-        # cra = CostaRicaAdapter()
+        esa = ElSalvadorAdapter()
+        ma = MexicoAdapter()
+        na = NicaraguaAdapter()
+        cra = CostaRicaAdapter()
         esf = ForecastFactory.el_salvador_forecaster()
         nf = ForecastFactory.nicaragua_forecaster()
         crf = ForecastFactory.costa_rica_forecaster()
         # mf = ForecastFactory.mexico_forecaster()
 
-        # esat = AdapterThread(esa, queue)
-        # mat = AdapterThread(ma, queue)
-        # nat = AdapterThread(na, queue)
-        # crat = AdapterThread(cra, queue)
+        esat = AdapterThread(esa, queue)
+        mat = AdapterThread(ma, queue)
+        nat = AdapterThread(na, queue)
+        crat = AdapterThread(cra, queue)
         esft = ForecasterThread(esf, queue)
         crft = ForecasterThread(crf, queue)
         nft = ForecasterThread(nf, queue)
         # mft = ForecasterThread(mf, queue)
 
         self.__switcher = {
-            # AdapterTypes.El_Salvador: esat,
-            # AdapterTypes.Costa_Rica: crat,
-            # AdapterTypes.Mexico: mat,
-            # AdapterTypes.Nicaragua: nat,
+            AdapterTypes.El_Salvador: esat,
+            AdapterTypes.Costa_Rica: crat,
+            AdapterTypes.Mexico: mat,
+            AdapterTypes.Nicaragua: nat,
             ForecasterTypes.El_Salvador: esft,
             ForecasterTypes.Nicaragua: nft,
             ForecasterTypes.Costa_Rica: crft,

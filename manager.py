@@ -65,7 +65,7 @@ def main():
     jobs = cron(upload_queue, main_jobs)
     # Start uploader job
     Thread(target=uploader, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
-    # Thread(target=check_db, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
+    Thread(target=check_db, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
 
     # some jobs don't work unless on main thread???
     while True:
