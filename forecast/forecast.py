@@ -1,6 +1,7 @@
+from os.path import join
 import numpy as np
 import copy
-from numpy.core.numeric import full
+from numpy.core.numeric import False_, full
 import pandas as pd
 from pandas.core.frame import DataFrame
 import pymongo
@@ -9,6 +10,11 @@ from datetime import datetime
 from datetime import timedelta
 from fbprophet import Prophet
 from pymongo.common import TIMEOUT_OPTIONS
+import subprocess
+import sys
+import time
+import pickle
+import os
 
 '''
     Notes
@@ -37,6 +43,9 @@ from pymongo.common import TIMEOUT_OPTIONS
             5. conda deactivate
                 -> deactivate env (don't forget this line before exiting)
 '''
+
+PYTHON_EXE = "C:\\Users\\Naoki\\anaconda3\\envs\\py38\\python.exe"
+TIMEOUT = 3000
 
 class Forecast:
     '''
@@ -67,10 +76,8 @@ class Forecast:
                  db: str,
                  col='Historic',
                  fltr={},
-                 start=datetime(2020,1,1,0),
-                 stop=datetime(2020,12,31,23),
                  frequency=60*60,
-                 test=False):
+                 print_statements=False):
         '''
         Initializes mongoDB cursor
 
@@ -89,22 +96,14 @@ class Forecast:
         self.db = self.client[db]
         self.col = self.db[col]
         self.cursor = self.col.find(fltr)
-        self.start = start
-        self.stop = stop
         self.__frequency = frequency
         self.data = self.__get_data()
-        self.train = self.data.loc[start:stop]
-        if test:
-            test_start = stop + timedelta(hours=1)
-            test_stop = test_start + timedelta(days=6, hours=23)
-            self.test = self.data.loc[test_start:test_stop]
-        else:
-            self.test = None
         self.model = {}
         self.results = {}
         self.prediction = {}
         self.periods = 168
         self.first = None
+        self.print_statements = print_statements
 
     def __get_data(self):
         ''' 
@@ -137,61 +136,55 @@ class Forecast:
         # drop duplicates
         data = data.drop_duplicates('ds')
         # resample data to fill missing dates
-        data= data.set_index('ds') \
+        data = data.set_index('ds') \
                   .resample('H') \
                   .asfreq() \
-        
+                  .reset_index()
+
+        # use only last two years to train
+        stop = data.iloc[-1]['ds']
+        delta = timedelta(days=365 * 2)
+        start = stop - delta
+        data= data.set_index('ds')
+        data = data[start:stop]
+        data= data.reset_index()
+
         return data
 
     def stationarize(self):
         # TODO: make all statistical properties constant
         pass
 
+    def test_fit(self):
+        # test_start = stop + timedelta(hours=1)
+        # test_stop = test_start + timedelta(days=6, hours=23)
+        # self.test = self.data.loc[test_start:test_stop]
+        pass
+
     def fit(self):
         self.model = {}
         for meta in self.energy:
-            print("------------------------------")
-            print("Fitting", meta)
-            print("------------------------------")
+            if self.print_statements:
+                print("------------------------------")
+                print("Fitting", meta)
+                print("------------------------------")
 
-            df = self.train.reset_index()
-            df = df[['ds', meta]].rename(columns={'ds': 'ds', meta: 'y'})
+            df = self.data[['ds', meta]].rename(columns={'ds': 'ds', meta: 'y'})
             self.model[meta] = Prophet()
             self.model[meta].fit(df)
 
     def predict(self, per=168):
         for meta in self.model:
-            print("------------------------------")
-            print("Predicting", meta)
-            print("------------------------------")
+            if self.print_statements:
+                print("------------------------------")
+                print("Predicting", meta)
+                print("------------------------------")
             future_dates = self.model[meta].make_future_dataframe(periods=per, freq='h')
             self.results[meta] = self.model[meta].predict(future_dates)
             self.prediction[meta] = self.results[meta][['ds', 'yhat']]
             self.prediction[meta] = self.prediction[meta].iloc[-per:]
-            self.prediction[meta] = self.prediction[meta].set_index('ds')
 
-    def cross_validation(self):
-        pass
-
-    def publish(self):
-        # for meta in self.prediction:
-        #     forecast = self.prediction[meta][['ds', 'yhat']].iloc[self.periods:]
-
-        # start = datetime.date(2020, 1, 1)
-        # delta = timedelta(days=6)
-        # # 1/1/2019 to 1/7/2019
-        # # 1/8/2019 to 1/14/2019
-        # # 1/15/2019 ...
-        # for week in range(2):
-        #     end = start + delta
-        #     data = el_salvador.scrape_history(start.year, start.month, start.day, end.year, end.month, end.day)
-        #     id = start.strftime("%d/%m/%Y")
-        #     data['_id'] = id
-        #     db.insert_one(data)
-        #     start = end + datetime.timedelta(days=1)
-        pass
-
-    def get_exported_data(self) -> list:
+    def get_exported_data(self, worker=False) -> list:
         """
         Generates a dictionary of values in the DB form for upload
 
@@ -200,25 +193,55 @@ class Forecast:
         Yes this looks gnarly and that's because list compresion is faster in df
         than iteration of rows
 
+        Args:
+            worker (boolean): indicated whether or not it needs to get a worker to get the data
+
         Returns:
             list: in DB format
         """
-        if isinstance(self.data, DataFrame):
-            meta_types = self.metas[self.db]
-            full_frame = copy.deepcopy(meta_types)
-            full_frame = full_frame.extend(['ds'])
-            return [
+        class_path = os.getcwd()
+        if not class_path.endswith('forecast'):
+            class_path = os.path.join(class_path, 'forecast')
+        file_path = copy.deepcopy(class_path)
+        file_path = os.path.join(file_path, self.country + 'prediciton')
+        class_path = os.path.join(class_path, 'forecast.py')
+        if worker:
+            command = [PYTHON_EXE, class_path, self.country, file_path]
+            if self.print_statements:
+                print(command)
+            subprocess.Popen(command)
+            count = 0
+            while not os.path.isfile(file_path):
+                count += 1
+                if count > TIMEOUT:
+                    raise TimeoutError("Process failed to complete in time:", TIMEOUT, "s")
+                time.sleep(1)
+        self.prediction = pickle.load(open(file_path, 'rb'))
+        os.remove(file_path)
+        meta_types = self.metas[self.country]
+        full_frame = copy.deepcopy(meta_types)
+        full_frame.extend(['ds'])
+        # format 
+        # TODO: make cleaner
+        pred = self.prediction[full_frame[0]]
+        pred = pred.rename(columns = {'ds':'ds', 'yhat':full_frame[0]})
+        for meta in self.prediction:
+            if(meta not in pred.columns):
+                pred[meta] = self.prediction[meta]['yhat']
+        if self.print_statements:
+            print(pred)
+        output = {}
+        for row in pred.index:
+            output.update(
                 self.__format_helper(
-                    row['ds'],
+                    pred['ds'][row],
                     [
-                        (meta, row[meta])
+                        (meta, pred[meta][row])
                         for meta in meta_types
                     ]
                 )
-                for row in self.data[[full_frame]]
-            ]
-        else:
-            raise LookupError("Prediction DF has not been made yet")
+            )
+        return output
 
     def __format_helper(self, hour: datetime, values: list) -> dict:
         """
@@ -290,11 +313,23 @@ class Forecast:
                 return True
 
 def main():
-    print('Grabbing El_Salvador')
-    model = Forecast('El_Salvador', test=True)
-    model.fit()
-    model.predict()
-    model.plot()
+    if len(sys.argv) > 1:
+        try:
+            print('Grabbing', sys.argv[1])
+            model = Forecast(sys.argv[1])
+            model.fit()
+            model.predict()
+            pickle.dump(model.prediction, open(sys.argv[2], 'wb'))
+            print('successfully dumped prediction')
+        except Exception as e:
+            print(e)
+    else:
+        print('Grabbing', 'El_Salvador')
+        model = Forecast('El_Salvador', print_statements=True)
+        model.fit()
+        model.predict()
+        model.plot()
+
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,7 @@ from enum import Enum
 import warnings
 import time
 import threading
+import subprocess
 
 LOCAL_TZ = "America/Los_Angeles"
 
@@ -20,7 +21,8 @@ class ForecasterTypes(Enum):
 
 class ForecastFactory:
 
-    def get_datetimes(self, offset=timedelta(0), as_tz=None) -> tuple:
+    @staticmethod
+    def get_datetimes(offset=timedelta(0), as_tz=None) -> tuple:
         """
         Simple helper function to get start/end datetime objects
 
@@ -38,24 +40,28 @@ class ForecastFactory:
             end = end.astimezone(pytz.timezone(as_tz))
         return (start, end)
 
-    def el_salvador_forecaster(self) -> Forecast:
+    @staticmethod
+    def el_salvador_forecaster() -> Forecast:
         # TODO dial back start/end a few more days/hours, where ever start actually needs to begin
         # for example, if data lags one day:
         # start, end = self.get_datetimes(offset=timedelta(days=1))
-        start, end = self.get_datetimes(as_tz='America/El_Salvador')
-        return Forecast("El_Salvador", start=start, end=end)
+        # start, end = ForecastFactory.get_datetimes(as_tz='America/El_Salvador')
+        return Forecast("El_Salvador")
 
-    def costa_rica_forecaster(self) -> Forecast:
+    @staticmethod
+    def costa_rica_forecaster() -> Forecast:
         # TODO dial back start/end a few more days/hours
-        start, end = self.get_datetimes(as_tz='America/Costa_Rica')
-        return Forecast("Costa_Rica", start=start, end=end)
+        # start, end = ForecastFactory.get_datetimes(as_tz='America/Costa_Rica')
+        return Forecast("Costa_Rica")
 
-    def nicaragua_forecaster(self) -> Forecast:
+    @staticmethod
+    def nicaragua_forecaster() -> Forecast:
         # TODO dial back start/end a few more days/hours
-        start, end = self.get_datetimes(as_tz='America/Managua')
-        return Forecast("Nicaragua", start=start, end=end)
+        # start, end = ForecastFactory.get_datetimes(as_tz='America/Managua')
+        return Forecast("Nicaragua")
 
-    def mexico_forecaster(self) -> Forecast:
+    @staticmethod
+    def mexico_forecaster() -> Forecast:
         """
         NOT IMPLEMENTED
         """
@@ -92,13 +98,13 @@ class ForecasterThread(threading.Thread):
             ForecasterTypes.Mexico: ForecastFactory.mexico_forecaster,
             ForecasterTypes.Nicaragua: ForecastFactory.nicaragua_forecaster
         }
-        if forecaster.db == 'Mexico':
+        if forecaster.db.name == 'Mexico':
             self.__forecaster_type = ForecasterTypes.Mexico
-        elif forecaster.db == 'Nicaragua':
+        elif forecaster.db.name == 'Nicaragua':
             self.__forecaster_type = ForecasterTypes.Nicaragua
-        elif forecaster.db == 'El_Salvador':
+        elif forecaster.db.name == 'El_Salvador':
             self.__forecaster_type = ForecasterTypes.El_Salvador
-        elif forecaster.db == 'Costa_Rica':
+        elif forecaster.db.name == 'Costa_Rica':
             self.__forecaster_type = ForecasterTypes.Costa_Rica
         
     def get_forecaster_failure(self) -> bool:
@@ -142,11 +148,13 @@ class ForecasterThread(threading.Thread):
         This will attempt to get todays data
         '''
         try:
-            data = self.forecaster.get_exported_data()
+            data = self.forecaster.get_exported_data(worker=True)
             if data:
                 self.upload_queue.append((self.__forecaster_type, data))
+                self.bad_forecaster = True
         except Exception as e:
             print(e)
+            print(self.__forecaster_type, "failed")
             self.bad_forecaster = True
 
     def is_alive(self):
