@@ -44,7 +44,7 @@ import os
                 -> deactivate env (don't forget this line before exiting)
 '''
 
-PYTHON_EXE = "C:\\Users\\Naoki\\anaconda3\\envs\\py38\\python.exe"
+# PYTHON_EXE = "C:\\Users\\Naoki\\anaconda3\\python.exe"
 TIMEOUT = 3000
 
 class Forecast:
@@ -206,7 +206,7 @@ class Forecast:
         file_path = os.path.join(file_path, self.country + 'prediciton')
         class_path = os.path.join(class_path, 'forecast.py')
         if worker:
-            command = [PYTHON_EXE, class_path, self.country, file_path]
+            command = [sys.executable, class_path, self.country, file_path]
             if self.print_statements:
                 print(command)
             subprocess.Popen(command)
