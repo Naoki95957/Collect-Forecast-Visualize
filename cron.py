@@ -37,8 +37,8 @@ class cron:
         nat = AdapterThread(na, queue)
         crat = AdapterThread(cra, queue)
         esft = ForecasterThread(esf, queue)
-        crft = ForecasterThread(crf, queue)
         nft = ForecasterThread(nf, queue)
+        crft = ForecasterThread(crf, queue)
         # mft = ForecasterThread(mf, queue)
 
         self.__switcher = {
@@ -54,19 +54,19 @@ class cron:
 
         self.created_threads.extend(
             [
-                # esat,
-                # crat,
-                # mat,
-                # nat,
+                esat,
+                crat,
+                mat,
+                nat,
                 esft,
-                crft,
                 nft,
+                crft,
                 # mft
             ]
         )
         self.__set_up_health_check()
 
-    def get_adapter_threads(self) -> list:
+    def get_threads(self) -> list:
         return self.created_threads
 
     def set_last_scrape_date(
