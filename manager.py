@@ -9,6 +9,7 @@ from cron import cron
 from arrow import Arrow
 from threading import Thread
 from dotenv import load_dotenv
+from forecast.forecast import str2datetime, get_doc
 import os
 import datetime
 import pytz
@@ -19,15 +20,10 @@ import subprocess
 
 load_dotenv()
 
+# TO CHANGE START REF. go to forecast.forecast.py
+
 # hours between checking the DB
 db_checking_frequency = 12
-
-# the basis to check the db
-doc_start_time = {
-    'year': 2016,
-    'month': 12, 
-    'day': 27
-}
 
 # doc string format for mongodb
 doc_format = "%d/%m/%Y"
@@ -65,7 +61,7 @@ def main():
     jobs = cron(upload_queue, main_jobs)
     # Start uploader job
     Thread(target=uploader, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
-    Thread(target=check_db, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
+    # Thread(target=check_db, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
 
     # some jobs don't work unless on main thread???
     while True:
@@ -162,30 +158,6 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
             updated_entries += 1
         i += 1
     print("Updated", updated_entries, "entries")
-
-def str2datetime(string: str, tzinfo=None) -> datetime.datetime:
-    '''
-    This str to datetime is for the hourly format we're using
-    '''
-    return arrow.get(string, "HH-DD/MM/YYYY", tzinfo=tzinfo)
-
-def get_doc(date: datetime.datetime) -> str:
-    '''
-    Helper function to get the doc for x/y/z date
-
-    returns the str that should be the ID of the doc
-    '''
-    start = datetime.datetime(
-        doc_start_time['year'],
-        doc_start_time['month'],
-        doc_start_time['day']
-    )
-    # yes this is a bit redundant, but I wanna have JUST days, not hours
-    end = datetime.datetime(date.year, date.month, date.day)
-    diff = (end - start).days % 7
-    week = end - datetime.timedelta(days=diff)
-    week_date = Arrow.strptime(str(week), "%Y-%m-%d %H:%M:%S").datetime
-    return week_date.strftime("%d/%m/%Y")
 
 # Everything w/ demo is an old example of
 # how we pushed historical data to our DB

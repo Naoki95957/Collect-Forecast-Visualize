@@ -46,19 +46,19 @@ class ForecastFactory:
         # for example, if data lags one day:
         # start, end = self.get_datetimes(offset=timedelta(days=1))
         # start, end = ForecastFactory.get_datetimes(as_tz='America/El_Salvador')
-        return Forecast("El_Salvador")
+        return Forecast("El_Salvador", incremental=True)
 
     @staticmethod
     def costa_rica_forecaster() -> Forecast:
         # TODO dial back start/end a few more days/hours
         # start, end = ForecastFactory.get_datetimes(as_tz='America/Costa_Rica')
-        return Forecast("Costa_Rica")
+        return Forecast("Costa_Rica", incremental=True)
 
     @staticmethod
     def nicaragua_forecaster() -> Forecast:
         # TODO dial back start/end a few more days/hours
         # start, end = ForecastFactory.get_datetimes(as_tz='America/Managua')
-        return Forecast("Nicaragua")
+        return Forecast("Nicaragua", incremental=True)
 
     @staticmethod
     def mexico_forecaster() -> Forecast:

@@ -10,6 +10,7 @@ from datetime import datetime
 from datetime import timedelta
 from fbprophet import Prophet
 from pymongo.common import TIMEOUT_OPTIONS
+import arrow
 import subprocess
 import sys
 import time
@@ -44,6 +45,8 @@ import os
                 -> deactivate env (don't forget this line before exiting)
 '''
 
+doc_start_time = datetime(year=2016, month=12, day=27)
+
 # PYTHON_EXE = "C:\\Users\\Naoki\\anaconda3\\python.exe"
 TIMEOUT = 3000
 
@@ -69,7 +72,7 @@ class Forecast:
         )
     
     metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar','Wind'],
-             'Costa_Rica' : ['Hydroelectric','Interchange','Other','Solar','Thermal','Wind','Geothermal'],
+             'Costa_Rica' : ['Hydroelectric','Interchange','Other','Solar','Thermal','Wind'], # 'Geothermal' has been temp removed 
              'Nicaragua' : ['GEOTHERMAL','HYDRO','INTERCHANGE','SOLAR','THERMAL','WIND']}
     
     def __init__(self,
@@ -77,6 +80,8 @@ class Forecast:
                  col='Historic',
                  fltr={},
                  frequency=60*60,
+                 incremental=False,
+                 worker=False,
                  print_statements=False):
         '''
         Initializes mongoDB cursor
@@ -95,9 +100,13 @@ class Forecast:
         self.energy = self.metas[db]
         self.db = self.client[db]
         self.col = self.db[col]
-        self.cursor = self.col.find(fltr)
         self.__frequency = frequency
-        self.data = self.__get_data()
+        if worker:
+            if incremental:
+                self.cursor = self.col.find(fltr)
+            else:
+                self.cursor = None
+            self.data = self.__get_data(incremental=incremental)
         self.model = {}
         self.results = {}
         self.prediction = {}
@@ -105,7 +114,7 @@ class Forecast:
         self.first = None
         self.print_statements = print_statements
 
-    def __get_data(self):
+    def __get_data(self, incremental=False):
         ''' 
         Grabs all the data from the cursor (cursor needs to be set first, use
         set_cursor(db, col)), then reformats the data into a dataframe with 
@@ -118,18 +127,40 @@ class Forecast:
             * data is in consecutive order
             * data contains no missing values within range
         '''
-        # grab data from MongoDB
         data = []
-        for doc in self.cursor:
-            doc.pop('_id')
-            for key in doc:
-                hour = [np.nan for x in range(len(self.energy) + 1)]
-                dt = datetime.strptime(key, '%H-%d/%m/%Y')
-                hour[0] = dt
-                for item in doc[key]:
-                    i = self.energy.index(item['type']) + 1
-                    hour[i] = item['value']
-                data.append(hour)
+
+        if incremental:
+            start = datetime.now()
+            start = datetime(year=start.year, month=start.month, day=start.day)
+            delta = timedelta(days=7)
+
+            query = lambda time: {'_id': get_doc(time)}
+
+            for week_index in range(0, 105):
+                tmp_cursor = self.col.find(query(start))
+                for doc in tmp_cursor:
+                    doc.pop('_id')
+                    for key in doc:
+                        hour = [np.nan for x in range(len(self.energy) + 1)]
+                        dt = datetime.strptime(key, '%H-%d/%m/%Y')
+                        hour[0] = dt
+                        for item in doc[key]:
+                            i = self.energy.index(item['type']) + 1
+                            hour[i] = item['value']
+                        data.append(hour)
+                start = start - delta
+        else:
+            data = []
+            for doc in self.cursor:
+                doc.pop('_id')
+                for key in doc:
+                    hour = [np.nan for x in range(len(self.energy) + 1)]
+                    dt = datetime.strptime(key, '%H-%d/%m/%Y')
+                    hour[0] = dt
+                    for item in doc[key]:
+                        i = self.energy.index(item['type']) + 1
+                        hour[i] = item['value']
+                    data.append(hour)
         
         # reformat data into dataframe
         data = pd.DataFrame(data, columns = ['ds'] + self.energy)
@@ -184,7 +215,7 @@ class Forecast:
             self.prediction[meta] = self.results[meta][['ds', 'yhat']]
             self.prediction[meta] = self.prediction[meta].iloc[-per:]
 
-    def get_exported_data(self, worker=False) -> list:
+    def get_exported_data(self, worker=False)-> dict:
         """
         Generates a dictionary of values in the DB form for upload
 
@@ -197,7 +228,7 @@ class Forecast:
             worker (boolean): indicated whether or not it needs to get a worker to get the data
 
         Returns:
-            list: in DB format
+            Dict: in DB format
         """
         class_path = os.getcwd()
         if not class_path.endswith('forecast'):
@@ -312,11 +343,32 @@ class Forecast:
             elif year % 100 == 0 and year % 400 == 0:
                 return True
 
+# the basis to check the db
+
+def str2datetime(string: str, tzinfo=None) -> datetime:
+    '''
+    This str to datetime is for the hourly format we're using
+    '''
+    return arrow.get(string, "HH-DD/MM/YYYY", tzinfo=tzinfo)
+
+def get_doc(date: datetime) -> str:
+    '''
+    Helper function to get the doc for x/y/z date
+
+    returns the str that should be the ID of the doc
+    '''
+    # yes this is a bit redundant, but I wanna have JUST days, not hours
+    end = datetime(date.year, date.month, date.day)
+    diff = (end - doc_start_time).days % 7
+    week = end - timedelta(days=diff)
+    week_date = arrow.Arrow.strptime(str(week), "%Y-%m-%d %H:%M:%S").datetime
+    return week_date.strftime("%d/%m/%Y")
+
 def main():
     if len(sys.argv) > 1:
         try:
             print('Grabbing', sys.argv[1])
-            model = Forecast(sys.argv[1])
+            model = Forecast(sys.argv[1], worker=True, incremental=True)
             model.fit()
             model.predict()
             pickle.dump(model.prediction, open(sys.argv[2], 'wb'))
@@ -325,7 +377,7 @@ def main():
             print(e)
     else:
         print('Grabbing', 'El_Salvador')
-        model = Forecast('El_Salvador', print_statements=True)
+        model = Forecast('El_Salvador', worker=True, print_statements=True)
         model.fit()
         model.predict()
         model.plot()
