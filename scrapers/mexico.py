@@ -86,7 +86,7 @@ class Mexico:
                 chrome_driver = 'linux_chromedriver87_64bit'
             os.chmod(os.path.join(drivers_dir, chrome_driver), 0o777)
         elif operating_system == "Windows":
-            chrome_driver = 'win_chromedriver88.exe'
+            chrome_driver = 'win_chromedriver90.exe'
 
         self.driver = selenium.webdriver.Chrome(
             options=options,

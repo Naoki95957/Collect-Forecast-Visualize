@@ -47,7 +47,7 @@ class CostaRica:
                 chrome_driver = '/drivers/linux_chromedriver87_64bit'
             os.chmod(full_path + chrome_driver, 0o777)
         elif operating_system == "Windows":
-            chrome_driver = '/drivers/win_chromedriver88.exe'
+            chrome_driver = '/drivers/win_chromedriver90.exe'
         self.driver = selenium.webdriver.Chrome(
             options=options,
             executable_path=(full_path + chrome_driver))
