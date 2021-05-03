@@ -109,7 +109,8 @@ class CostaRicaAdapter(ScraperAdapter):
         'Carrillos': 'Solar',
         'Parque Solar Juanilama': 'Solar',
         'Parque Solar Miravalles': 'Solar',
-        'La Esperanza (CoopeL)': 'Solar'
+        'La Esperanza (CoopeL)': 'Solar',
+        'Other' : 'Other'
     }
 
     PLANT_DEFINITIONS = [
