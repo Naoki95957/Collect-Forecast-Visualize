@@ -1,31 +1,29 @@
+from operator import truediv
 from adapters.nicaragua_adapter import NicaraguaAdapter
 from adapters.el_salvador_adapter import ElSalvadorAdapter
 from adapters.mexico_adapter import MexicoAdapter
 from adapters.costa_rica_adapter import CostaRicaAdapter
 from adapters.adapter_tasks import AdapterTypes
-from forecast.forecast_tasks import ForecasterTypes
+from forecast.forecast_tasks import ForecasterThread, ForecasterTypes
 from cron import cron
 from arrow import Arrow
 from threading import Thread
 from dotenv import load_dotenv
+from forecast.forecast import str2datetime, get_doc
 import os
 import datetime
 import pytz
 import arrow
 import pymongo
 import time
+import subprocess
 
 load_dotenv()
 
+# TO CHANGE START REF. go to forecast.forecast.py
+
 # hours between checking the DB
 db_checking_frequency = 12
-
-# the basis to check the db
-doc_start_time = {
-    'year': 2016,
-    'month': 12, 
-    'day': 27
-}
 
 # doc string format for mongodb
 doc_format = "%d/%m/%Y"
@@ -55,15 +53,24 @@ tz_switcher = {
     ForecasterTypes.Mexico : pytz.timezone('Mexico/General')
 }
 
+main_jobs = []
+
 def main():
     # set up queue and cron jobs
     upload_queue = list()
-    jobs = cron(upload_queue)
+    jobs = cron(upload_queue, main_jobs)
     # Start uploader job
     Thread(target=uploader, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
+    Thread(target=check_db, kwargs={"cron_obj":jobs, "upload_queue":upload_queue}).start()
 
-    # check db until we crash
+    # some jobs don't work unless on main thread???
     while True:
+        if main_jobs:
+            main_jobs.pop(0)()
+        time.sleep(1)
+
+def check_db(cron_obj: cron, upload_queue: list):
+     while True:
         # look for missing entries and add them to queue
         # PROBLEM: Nicaragua still has broken data on
         # TODO manually sort out the week 27/8/2019
@@ -87,7 +94,7 @@ def main():
                     # This will get pushed into the queue
                     print("Requesting data from ", adapter, ":")
                     print("\tfor week:", start.strftime(doc_format))
-                    jobs.request_historical(adapter, start, end)
+                    cron_obj.request_historical(adapter, start, end)
                 # iterate
                 start = end + datetime.timedelta(days=1)
         print("Done checking db. Sleeping now...")
@@ -151,30 +158,6 @@ def upload_sorter(db_collection, marked_entries, overwrite=False):
             updated_entries += 1
         i += 1
     print("Updated", updated_entries, "entries")
-
-def str2datetime(string: str, tzinfo=None) -> datetime.datetime:
-    '''
-    This str to datetime is for the hourly format we're using
-    '''
-    return arrow.get(string, "HH-DD/MM/YYYY", tzinfo=tzinfo)
-
-def get_doc(date: datetime.datetime) -> str:
-    '''
-    Helper function to get the doc for x/y/z date
-
-    returns the str that should be the ID of the doc
-    '''
-    start = datetime.datetime(
-        doc_start_time['year'],
-        doc_start_time['month'],
-        doc_start_time['day']
-    )
-    # yes this is a bit redundant, but I wanna have JUST days, not hours
-    end = datetime.datetime(date.year, date.month, date.day)
-    diff = (end - start).days % 7
-    week = end - datetime.timedelta(days=diff)
-    week_date = Arrow.strptime(str(week), "%Y-%m-%d %H:%M:%S").datetime
-    return week_date.strftime("%d/%m/%Y")
 
 # Everything w/ demo is an old example of
 # how we pushed historical data to our DB
