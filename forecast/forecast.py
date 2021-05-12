@@ -71,9 +71,9 @@ class Forecast:
         "WattTime?retryWrites=true&w=majority"
         )
     
-    metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar','Wind'],
-             'Costa_Rica' : ['Hydroelectric','Interchange','Other','Solar','Thermal','Wind'], # 'Geothermal' has been temp removed 
-             'Nicaragua' : ['GEOTHERMAL','HYDRO','INTERCHANGE','SOLAR','THERMAL','WIND']}
+    metas = {'El_Salvador' : ['Interconnection','Geothermal','HydroElectric','Solar','Thermal','Wind','Biomass'],
+             'Costa_Rica' : ['Interchange','Geothermal','Hydroelectric','Solar','Thermal','Wind','Other'],
+             'Nicaragua' : ['INTERCHANGE','GEOTHERMAL','HYDRO','SOLAR','THERMAL','WIND']}
     
     def __init__(self,
                  db: str,
@@ -82,7 +82,8 @@ class Forecast:
                  frequency=60*60,
                  incremental=False,
                  worker=False,
-                 print_statements=False):
+                 print_statements=False,
+                 test=False):
         '''
         Initializes mongoDB cursor
 
@@ -101,12 +102,11 @@ class Forecast:
         self.db = self.client[db]
         self.col = self.db[col]
         self.__frequency = frequency
+        self.cursor = self.col.find(fltr)
+        self.test = None
+        self.t = test
         if worker:
-            if incremental:
-                self.cursor = self.col.find(fltr)
-            else:
-                self.cursor = None
-            self.data = self.__get_data(incremental=incremental)
+            self.data = self.__get_data(incremental=incremental, test=test)
         self.model = {}
         self.results = {}
         self.prediction = {}
@@ -114,7 +114,7 @@ class Forecast:
         self.first = None
         self.print_statements = print_statements
 
-    def __get_data(self, incremental=False):
+    def __get_data(self, incremental=False, test=False):
         ''' 
         Grabs all the data from the cursor (cursor needs to be set first, use
         set_cursor(db, col)), then reformats the data into a dataframe with 
@@ -173,12 +173,22 @@ class Forecast:
                   .reset_index()
 
         # use only last two years to train
-        stop = data.iloc[-1]['ds']
+        if test:
+            test_stop = data.iloc[-1]['ds']
+            delta = timedelta(days=7)
+            test_start = test_stop - delta
+            self.test = data.set_index('ds')
+            self.test = self.test[test_start:test_stop]
+            self.test = self.test.reset_index()
+            stop = data.iloc[-169]['ds']
+            print(self.test)
+        else:
+            stop = data.iloc[-1]['ds']
         delta = timedelta(days=365 * 2)
         start = stop - delta
-        data= data.set_index('ds')
+        data = data.set_index('ds')
         data = data[start:stop]
-        data= data.reset_index()
+        data = data.reset_index()
 
         return data
 
@@ -214,6 +224,11 @@ class Forecast:
             self.results[meta] = self.model[meta].predict(future_dates)
             self.prediction[meta] = self.results[meta][['ds', 'yhat']]
             self.prediction[meta] = self.prediction[meta].iloc[-per:]
+
+            # check for negative values (exclude interchange)
+            # replace negatives with zero
+            if self.energy.index(meta) != 0:
+                self.prediction[meta].loc[self.prediction[meta]['yhat'] < 0] = 0
 
     def get_exported_data(self, worker=False)-> dict:
         """
@@ -327,10 +342,11 @@ class Forecast:
                 print(meta)
                 print('E')
                 print(self.prediction[meta])
-                ax = self.prediction[meta].plot()
-                print('A')
-                print(self.test[meta])
-                self.test[meta].plot(ax=ax, title=meta, )
+                ax = self.prediction[meta].plot(x='ds')
+                if self.t:
+                    print('A')
+                    print(self.test[meta])
+                    self.test.plot(ax=ax, title=meta, x='ds', y=meta)
                 plt.show()
 
     def get_prediction(self):
@@ -377,7 +393,7 @@ def main():
             print(e)
     else:
         print('Grabbing', 'El_Salvador')
-        model = Forecast('El_Salvador', worker=True, print_statements=True)
+        model = Forecast('El_Salvador', worker=True, print_statements=True, test=True)
         model.fit()
         model.predict()
         model.plot()
