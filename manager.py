@@ -23,7 +23,7 @@ load_dotenv()
 # TO CHANGE START REF. go to forecast.forecast.py
 
 # hours between checking the DB
-db_checking_frequency = 12
+db_checking_frequency = 8
 
 # doc string format for mongodb
 doc_format = "%d/%m/%Y"

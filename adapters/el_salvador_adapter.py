@@ -4,7 +4,7 @@ import copy
 import pytz
 import datetime
 
-LOCAL_TZ = "LOCAL_TZ"
+LOCAL_TZ = "US/Pacific"
 
 class ElSalvadorAdapter(ScraperAdapter):
 
@@ -41,17 +41,21 @@ class ElSalvadorAdapter(ScraperAdapter):
         delta = None
         now = datetime.datetime.now(tz=pytz.timezone(LOCAL_TZ))
         now = now.astimezone(pytz.timezone('America/El_Salvador'))
-        if (not self.last_scrape_date):
-            will_scrape = True
-        else:
-            delta = now - self.last_scrape_date
-            if (delta.days > 0):
-                will_scrape = True
-                self.last_scrape_list = None
-            if (delta.seconds / self.__frequency > 1):
-                will_scrape = True
+        # Manager will handle this
+        # 
+        # if (not self.last_scrape_date):
+        #     will_scrape = True
+        # else:
+        #     delta = now - self.last_scrape_date
+        #     if (delta.days > 0):
+        #         will_scrape = True
+        #         self.last_scrape_list = None
+        #     if (delta.seconds / self.__frequency > 1):
+        #         will_scrape = True
 
-        if (will_scrape):
+        will_scrape = True
+
+        if will_scrape:
             data = self.scraper.scrape_data()
             # data_copy = copy.deepcopy(self.last_scrape_list)
             # self.last_scrape_list = data
@@ -97,8 +101,9 @@ class ElSalvadorAdapter(ScraperAdapter):
             for j in range(i, len(data)):
                 if data[i]['ts'] == data[j]['ts']:
                     dict_val = dict()
-                    if data[j]['value'] == 0:
-                        continue
+                    # uploading zeros now
+                    # if data[j]['value'] == 0:
+                    #     continue
                     dict_val['value'] = data[j]['value']
                     dict_val['type'] = data[j]['meta'].replace(" (MWh)", "")
                     entries.append(dict_val)

@@ -16,6 +16,9 @@ import sys
 import time
 import pickle
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 '''
     Notes
@@ -66,13 +69,11 @@ class Forecast:
     * pystan 2.19.1.1 (for fbpprophet)
     * properly installed C++ compiler (for fbprophet)
     '''
-    client = pymongo.MongoClient(
-        "mongodb+srv://BCWATT:WattTime2021@cluster0.tbh2o.mongodb.net/" +
-        "WattTime?retryWrites=true&w=majority"
-        )
+    client = pymongo.MongoClient(os.getenv("MONGO_SRV"))
     
-    metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar','Wind'],
-             'Costa_Rica' : ['Hydroelectric','Interchange','Other','Solar','Thermal','Wind'], # 'Geothermal' has been temp removed 
+    # TODO replace this dicitonary with one that gets dynamically built
+    metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar'], # ,'Wind'
+             'Costa_Rica' : ['Hydroelectric','Interchange','Other','Solar','Thermal','Wind', 'Geothermal'], # 'Geothermal' has been temp removed 
              'Nicaragua' : ['GEOTHERMAL','HYDRO','INTERCHANGE','SOLAR','THERMAL','WIND']}
     
     def __init__(self,
@@ -102,10 +103,6 @@ class Forecast:
         self.col = self.db[col]
         self.__frequency = frequency
         if worker:
-            if incremental:
-                self.cursor = self.col.find(fltr)
-            else:
-                self.cursor = None
             self.data = self.__get_data(incremental=incremental)
         self.model = {}
         self.results = {}
@@ -136,6 +133,19 @@ class Forecast:
 
             query = lambda time: {'_id': get_doc(time)}
 
+            # preliminary run to build typs first
+            self.energy = []
+            for week_index in range(0, 105):
+                tmp_cursor = self.col.find(query(start))
+                for doc in tmp_cursor:
+                    doc.pop('_id')
+                    for key in doc:
+                        for item in doc[key]:
+                            if item['type'] not in self.energy:
+                                self.energy.append(item['type'])
+            if not self.energy:
+                self.energy = self.metas[self.country]
+            
             for week_index in range(0, 105):
                 tmp_cursor = self.col.find(query(start))
                 for doc in tmp_cursor:

@@ -167,6 +167,8 @@ class CostaRicaAdapter(ScraperAdapter):
 
             self.appended_new = pd.DataFrame(self.new_data)
             self.appended_new = self.appended_new.drop('ba', axis=1)
+            if self.appended_new['meta'] not in self.PLANT_DICTIONARY:
+                self.appended_new['meta'] = 'Other'
             self.appended_new['meta'] = self.appended_new['meta'].replace(self.PLANT_DICTIONARY)
             self.appended_new = self.appended_new.groupby(['ts', 'meta'])['value'].agg('sum').reset_index()
 
