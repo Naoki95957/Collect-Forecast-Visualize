@@ -52,7 +52,7 @@ load_dotenv()
 doc_start_time = datetime(year=2016, month=12, day=27)
 
 # PYTHON_EXE = "C:\\Users\\Naoki\\anaconda3\\python.exe"
-TIMEOUT = 3000
+TIMEOUT = 6000
 
 class Forecast:
     '''
