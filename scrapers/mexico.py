@@ -10,6 +10,7 @@ import pandas as pd
 import os
 import errno
 import shutil
+import time
 
 
 class Mexico:
@@ -85,7 +86,7 @@ class Mexico:
                 chrome_driver = 'linux_chromedriver87_64bit'
             os.chmod(os.path.join(drivers_dir, chrome_driver), 0o777)
         elif operating_system == "Windows":
-            chrome_driver = 'win_chromedriver88.exe'
+            chrome_driver = 'win_chromedriver90.exe'
 
         self.driver = selenium.webdriver.Chrome(
             options=options,
@@ -203,7 +204,18 @@ class Mexico:
         data for a single month of input.
         The data only dates back to April of 2016.
         """
-        return self.scrape_month_range(month, year, month, year)
+        data = self.scrape_month_range(month, year, month, year)
+        if os.path.isdir(self.downloads_dir):
+            try:
+                time.sleep(0.5)
+                shutil.rmtree(self.downloads_dir)
+                time.sleep(0.5)
+                os.mkdir(self.downloads_dir)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    os.remove(self.downloads_dir)
+                    os.mkdir(self.downloads_dir)
+        return data
 
 
 def main():

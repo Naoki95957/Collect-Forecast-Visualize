@@ -4,3 +4,8 @@ datetime
 requests
 selenium
 pymongo
+scikit-learn
+statsmodels
+pymongo[srv]
+matplotlib
+python-dotenv

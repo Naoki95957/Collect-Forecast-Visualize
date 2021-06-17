@@ -7,6 +7,8 @@
 *.o
 *.so
 *.pyc
+*.env
+settings.json
 
 # Packages #
 ############

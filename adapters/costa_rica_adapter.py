@@ -52,6 +52,24 @@ class CostaRicaAdapter(ScraperAdapter):
         'Toro III': 'Hydroelectric',
         'Tuis (JASEC)': 'Hydroelectric',
         'Ventanas-Garita': 'Hydroelectric',
+        'Cariblanco': 'Hydroelectric',
+        'Cubujuquí': 'Hydroelectric',
+        'Echandi': 'Hydroelectric',
+        'Volcán': 'Hydroelectric',
+        'CNFL': 'Hydroelectric',
+        'Guápiles': 'Hydroelectric',
+        'Hidrozarcas': 'Hydroelectric',
+        'Matamoros': 'Hydroelectric',
+        'MOVASA': 'Hydroelectric',
+        'Orotina': 'Hydroelectric',
+        'Platanar': 'Hydroelectric',
+        'Pocosol': 'Hydroelectric',
+        'Rebeca I': 'Hydroelectric',
+        'Suerkata': 'Hydroelectric',
+        'Tacares': 'Hydroelectric',
+        'Tapezco': 'Hydroelectric',
+        'Vara Blanca': 'Hydroelectric',
+        'El General': 'Hydroelectric',
         'Garabito': 'Thermal',
         'Moín II': 'Thermal',
         'Moín III': 'Thermal',
@@ -61,6 +79,9 @@ class CostaRicaAdapter(ScraperAdapter):
         'Miravalles II': 'Geothermal',
         'Miravalles III': 'Geothermal',
         'Miravalles V': 'Geothermal',
+        'Boca de Pozo': 'Geothermal',
+        'Pailas': 'Geothermal',
+        'Jorge Manuel Dengo': 'Geothermal',
         'Altamira': 'Wind',
         'Campos Azules': 'Wind',
         'Chiripa': 'Wind',
@@ -72,43 +93,35 @@ class CostaRicaAdapter(ScraperAdapter):
         'Vientos de La Perla': 'Wind',
         'Vientos de Miramar': 'Wind',
         'Vientos del Este': 'Wind',
-        'Parque Solar Juanilama': 'Solar',
-        'Parque Solar Miravalles': 'Solar',
         'Aeroenergía': 'Wind',
-        'Boca de Pozo': 'Geothermal',
-        'Cariblanco': 'Hydroelectric',
-        'CNFL': 'Other',
-        'Cubujuquí': 'Hydroelectric',
-        'Echandi': 'Hydroelectric',
-        'El Angel': 'Other',
-        'El Angel Ampliación': 'Other',
-        'El General': 'Other',
-        'El Viejo': 'Other',
-        'Guápiles': 'Other',
-        'Hidrozarcas': 'Other',
+        'PE Cacao': 'Wind',
+        'PE Mogote': 'Wind',
+        'PE Río Naranjo': 'Wind',
+        'PEG': 'Wind',
+        'Taboga': 'Wind',
+        'Valle Central': 'Wind',
         'Intercambio Norte': 'Interchange',
         'Intercambio Sur': 'Interchange',
-        'Jorge Manuel Dengo': 'Other',
-        'La Esperanza (CoopeL)': 'Other',
-        'Matamoros': 'Other',
-        'MOVASA': 'Other',
-        'Orotina': 'Other',
-        'Pailas': 'Geothermal',
-        'PE Cacao': 'Other',
-        'PE Mogote': 'Other',
-        'PE Río Naranjo': 'Other',
-        'PEG': 'Other',
-        'Platanar': 'Other',
-        'Pocosol': 'Other',
-        'Rebeca I': 'Other',
-        'Suerkata': 'Other',
-        'Taboga': 'Other',
-        'Tacares': 'Other',
-        'Tapezco': 'Other',
-        'Valle Central': 'Other',
-        'Vara Blanca': 'Other',
-        'Volcán': 'Hydroelectric'
+        'El Angel': 'Other',
+        'El Angel Ampliación': 'Other',
+        'El Viejo': 'Other',
+        'Otros': 'Other',
+        'Carrillos': 'Solar',
+        'Parque Solar Juanilama': 'Solar',
+        'Parque Solar Miravalles': 'Solar',
+        'La Esperanza (CoopeL)': 'Solar',
+        'Other' : 'Other'
     }
+
+    PLANT_DEFINITIONS = [
+        'Hydroelectric',
+        'Geothermal',
+        'Thermal',
+        'Wind',
+        'Interchange',
+        'Solar',
+        'Other'
+    ]
 
     historic_data = None
     appended_hist = None
@@ -154,23 +167,32 @@ class CostaRicaAdapter(ScraperAdapter):
 
             self.appended_new = pd.DataFrame(self.new_data)
             self.appended_new = self.appended_new.drop('ba', axis=1)
+            if self.appended_new['meta'] not in self.PLANT_DICTIONARY:
+                self.appended_new['meta'] = 'Other'
             self.appended_new['meta'] = self.appended_new['meta'].replace(self.PLANT_DICTIONARY)
             self.appended_new = self.appended_new.groupby(['ts', 'meta'])['value'].agg('sum').reset_index()
 
             return self.__filter_data(self.appended_new)
 
     def __filter_data(self, data) -> dict:
-
         buffer = dict()
-        for i in range(0, len(data) - 1, 7):
+        for i in range(0, len(data) - 1):
             time = data.iat[i, 0].strftime("%H-%d/%m/%Y")
+            if time in buffer:
+                continue
             entries = list()
-            for j in range(6):
-                dict_val = dict()
-                dict_val['value'] = data.iat[i + j, 2]
-                dict_val['type'] = data.iat[i + j, 1]
-                entries.append(dict_val)
-
+            for j in range(i, len(data) - 1):
+                if (
+                        data.iat[j, 0] == data.iat[i, 0] and
+                        not data.iat[i, 1] == data.iat[j, 1]
+                    ):
+                    dict_val = dict()
+                    dict_val['value'] = data.iat[j, 2]
+                    prod_type = data.iat[j, 1]
+                    if prod_type not in self.PLANT_DEFINITIONS:
+                        prod_type = 'Other'
+                    dict_val['type'] = prod_type
+                    entries.append(dict_val)
             buffer[time] = entries
         return buffer
 

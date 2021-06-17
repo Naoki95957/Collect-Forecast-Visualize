@@ -5,6 +5,7 @@ import pytz
 import arrow
 import datetime
 
+skip = pytest.mark.skip(msg="updated to skip since manager is doublechecking duplicates")
 
 @pytest.fixture(scope='module', autouse=True)
 def get_adapter():
@@ -38,6 +39,7 @@ def test_adapter_inheritance(get_adapter):
 
 
 # T3
+@skip
 def test_adapter_scrape_too_fast(get_adapter):
     esa = get_adapter
     reset_adapter(esa)
@@ -92,6 +94,7 @@ def test_adapter_frequency(get_adapter):
 
 
 # T7
+@skip
 def test_adapter_set_date(get_adapter):
     esa = get_adapter
     reset_adapter(esa)
