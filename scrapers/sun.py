@@ -1,13 +1,9 @@
-import datetime
 import platform
-import re
 from pathlib import Path
 import os
-import arrow
 import selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
 
 import pandas as pd
 
@@ -38,11 +34,11 @@ class Sun:
 
     def __del__(self):
         self.driver.quit()
-    
+
     def scrape(self):
         soup = BeautifulSoup(self.driver.page_source, "html.parser")
         data = []
-        table = soup.find('table', attrs={'id':'as-monthsun'})
+        table = soup.find('table', attrs={'id': 'as-monthsun'})
         table_body = table.find('tbody')
 
         rows = table_body.find_all('tr')
@@ -50,9 +46,8 @@ class Sun:
             cols = row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
             data.append(cols)
-            
-        print(pd.DataFrame(data))
 
+        print(pd.DataFrame(data))
 
     # def date(self, year, month, day) -> list:
     #     return self.date_range(year, month, day, year, month, day)
@@ -88,7 +83,10 @@ class Sun:
 
     # def __data_point(self, date, plant_hour) -> dict:
     #     plant = re.search(r'(.*?),(.*)', plant_hour['title']).group(1)
-    #     emission_hour = re.search(r'(.*?),(.*)', plant_hour['title']).group(2)
+    #     emission_hour = re.search(
+    #           r'(.*?),(.*)',
+    #           plant_hour['title']
+    #     ).group(2)
     #     time_stamp = arrow.get(
     #         date + emission_hour,
     #         'DD/MM/YYYY HH:mm',
