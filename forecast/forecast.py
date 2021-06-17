@@ -1,3 +1,4 @@
+from io import IncrementalNewlineDecoder
 from os.path import join
 import numpy as np
 import copy
@@ -72,7 +73,7 @@ class Forecast:
     client = pymongo.MongoClient(os.getenv("MONGO_SRV"))
     
     # TODO replace this dicitonary with one that gets dynamically built
-    metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar'], # ,'Wind'
+    metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar', 'Wind'], #
              'Costa_Rica' : ['Hydroelectric','Interchange','Other','Solar','Thermal','Wind', 'Geothermal'], # 'Geothermal' has been temp removed 
              'Nicaragua' : ['GEOTHERMAL','HYDRO','INTERCHANGE','SOLAR','THERMAL','WIND']}
     
@@ -147,6 +148,7 @@ class Forecast:
                         for item in doc[key]:
                             if item['type'] not in self.energy:
                                 self.energy.append(item['type'])
+                start = start - delta
             if not self.energy:
                 self.energy = self.metas[self.country]
             
@@ -407,7 +409,7 @@ def main():
             print(e)
     else:
         print('Grabbing', 'El_Salvador')
-        model = Forecast('El_Salvador', worker=True, print_statements=True, test=True)
+        model = Forecast('El_Salvador', worker=True, incremental=True) # print_statements=True, test=True
         model.fit()
         model.predict()
         model.plot()
