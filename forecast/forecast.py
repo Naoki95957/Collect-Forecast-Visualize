@@ -11,6 +11,7 @@ from datetime import datetime
 from datetime import timedelta
 from fbprophet import Prophet
 from pymongo.common import TIMEOUT_OPTIONS
+import ssl
 import arrow
 import subprocess
 import sys
@@ -70,7 +71,7 @@ class Forecast:
     * pystan 2.19.1.1 (for fbpprophet)
     * properly installed C++ compiler (for fbprophet)
     '''
-    client = pymongo.MongoClient(os.getenv("MONGO_SRV"))
+    client = pymongo.MongoClient(os.getenv("MONGO_SRV"), ssl_cert_reqs=ssl.CERT_NONE)
     
     # TODO replace this dicitonary with one that gets dynamically built
     metas = {'El_Salvador' : ['Biomass','Geothermal','HydroElectric','Interconnection','Thermal','Solar', 'Wind'], #

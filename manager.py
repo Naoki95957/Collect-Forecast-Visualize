@@ -10,6 +10,7 @@ from arrow import Arrow
 from threading import Thread
 from dotenv import load_dotenv
 from forecast.forecast import str2datetime, get_doc
+import ssl
 import os
 import datetime
 import pytz
@@ -29,7 +30,7 @@ db_checking_frequency = 8
 doc_format = "%d/%m/%Y"
 
 # client
-client = pymongo.MongoClient(os.getenv("MONGO_SRV"))
+client = pymongo.MongoClient(os.getenv("MONGO_SRV"), ssl_cert_reqs=ssl.CERT_NONE)
 
 db_switcher = {
     AdapterTypes.El_Salvador: client.get_database('El_Salvador')['Historic'],
